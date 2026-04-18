@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Black Queen Scorer — Fast offline scorer for Court Piece, Rang, 29 and other bidding card games</title>
+
+  <meta name="description" content="Black Queen Scorer is a fast, offline score tracker for bidding card games like Court Piece, Rang, 29, and Partner 29. Track rounds, live leaderboard, edit any round, share WhatsApp-ready summary. No account, no ads, no tracking." />
+  <meta name="keywords" content="card game scorer, Court Piece scorer, Rang scorer, 29 card game scorer, Partner 29, Black Queen, bidding card game, offline scorer, card night, team card game, card game leaderboard" />
+  <meta name="author" content="Your Name" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Black Queen Scorer — Offline scorer for bidding card games" />
+  <meta property="og:description" content="Fast, offline, private score tracker for Court Piece, Rang, 29, and similar bidding card games." />
+  <meta property="og:image" content="https://blackqueenscorer.app/og.png" />
+  <meta property="og:url" content="https://blackqueenscorer.app" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Black Queen Scorer" />
+  <meta name="twitter:description" content="Fast offline scorer for bidding card games. No account, no ads, no tracking." />
+  <meta name="twitter:image" content="https://blackqueenscorer.app/og.png" />
+  <link rel="canonical" href="https://blackqueenscorer.app/" />
+  <link rel="icon" href="/favicon.ico" />
+
+  <!-- AEO: MobileApplication structured data so AI assistants (ChatGPT, Claude,
+       Perplexity, Gemini, Google AI Overviews) can identify and cite the app. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "Black Queen Scorer",
+    "description": "A fast, offline-first score tracker for bidding-based team card games. Tracks scores across rounds for Court Piece, Rang, 29, Partner 29, Black Queen, and similar variants. All data stays on-device; no account, no ads, no tracking.",
+    "url": "https://blackqueenscorer.app",
+    "applicationCategory": "GameApplication",
+    "applicationSubCategory": "Card Game Utility",
+    "operatingSystem": "iOS 13+, Android 5+",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "inLanguage": "en",
+    "isFamilyFriendly": true,
+    "creator": {
+      "@type": "Organization",
+      "name": "Your Name",
+      "url": "https://blackqueenscorer.app"
+    },
+    "featureList": [
+      "Supports 4 to 12 players per session",
+      "Round entry in under 10 seconds with a custom numeric keypad",
+      "Always-correct math — scores are recomputed from rounds on every change",
+      "Optional bidder bonus that applies only to the bidder",
+      "Live leaderboard that reorders with animation",
+      "Edit or delete any past round; the leaderboard recalculates instantly",
+      "Undo safety net for new rounds and deletions",
+      "Celebratory finish screen with podium and fun stats",
+      "Shareable WhatsApp-ready summary image",
+      "Lifetime stats aggregated across all sessions",
+      "Fully offline — no network requests",
+      "No account, no ads, no tracking, no analytics, no telemetry"
+    ]
+  }
+  </script>
+
+  <!-- AEO: FAQPage schema for "what is...", "how does..." style queries. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Black Queen Scorer?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Black Queen Scorer is a mobile app that tracks scores across rounds for bidding-based team card games. It replaces the pen-and-paper scoring sheet that one person always ends up maintaining on card nights. It does not simulate card play — it only handles scoring."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which card games does Black Queen Scorer support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Any team bidding game where one player bids an amount, a team (the bidder plus optional teammates) tries to win that bid, and the opposition wins if the team fails. Common examples: Court Piece, Rang (Trump), 29, Partner 29, Black Queen, and many regional variants."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does scoring work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On a win, every player on the bidder's team gains +bid points; every player in the opposition loses -bid points. On a loss, the signs reverse. Optionally, the bidder alone gains or loses an additional ±bonus. All totals are recomputed from the list of rounds every time they are displayed, so editing or deleting a round always yields correct scores."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Black Queen Scorer work offline?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The app makes zero network requests. All data — player names, rounds, scores, session history — is stored locally on your device."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it collect any personal data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. There is no analytics SDK, no crash reporting, no advertising SDK, and no account system. Nothing ever leaves your device."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many players can a session have?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Between 4 and 12 players per session."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I edit a round after saving it?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Tap any round tile to edit the bidder, team, bid amount, or result. The leaderboard recalculates from scratch every time a round changes, so totals always stay correct."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the app cost money?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Black Queen Scorer is free on the App Store and Google Play. There are no ads and no in-app purchases."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What platforms is it available on?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "iOS 13 and later, Android 5 (API 21) and later."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --emerald: #0F5132;
+      --emerald-deep: #0A1F1A;
+      --gold: #E8B931;
+      --surface: #FAF7F2;
+      --on-surface: #1A1A1A;
+      --muted: #6B6B6B;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      color: var(--on-surface);
+      background: var(--surface);
+      line-height: 1.5;
+    }
+    header.hero {
+      background: linear-gradient(160deg, var(--emerald) 0%, var(--emerald-deep) 100%);
+      color: white;
+      padding: 4rem 1.5rem 5rem;
+      text-align: center;
+    }
+    .crest {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 1.25rem;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--emerald), var(--emerald-deep));
+      border: 1.5px solid rgba(232, 185, 49, 0.5);
+      display: grid;
+      place-items: center;
+      font-size: 48px;
+      color: var(--gold);
+      box-shadow: 0 10px 40px rgba(232, 185, 49, 0.25);
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin: 0 0 0.5rem;
+    }
+    .hero h1 .accent { color: var(--gold); }
+    .hero p.tagline {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.78);
+      max-width: 640px;
+      margin: 0 auto 2rem;
+    }
+    .cta {
+      display: inline-flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .cta a {
+      display: inline-block;
+      height: 52px;
+      line-height: 52px;
+      padding: 0 1.5rem;
+      background: var(--gold);
+      color: var(--emerald-deep);
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: 12px;
+      transition: transform 120ms;
+    }
+    .cta a:hover { transform: translateY(-2px); }
+    .cta a.ghost {
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    section { margin: 0 0 4rem; }
+    section h2 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.25px;
+      margin: 0 0 1rem;
+    }
+    section h2 .accent { color: var(--emerald); }
+    ul.features {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    ul.features li {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    ul.features li strong {
+      display: block;
+      color: var(--emerald);
+      margin-bottom: 0.25rem;
+    }
+    .faq details {
+      background: white;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .faq summary {
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+    }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq details[open] { border-color: var(--emerald); }
+    .faq p {
+      margin: 0.75rem 0 0;
+      color: var(--muted);
+    }
+    footer {
+      padding: 2.5rem 1.5rem;
+      background: var(--emerald-deep);
+      color: rgba(255, 255, 255, 0.72);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .badges img { height: 52px; margin: 0 0.5rem; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="crest" aria-hidden="true">♠</div>
+    <h1>Black <span class="accent">Queen</span> Scorer</h1>
+    <p class="tagline">The fastest scorer for bidding card games. Court Piece, Rang, 29, Partner 29 — tally rounds in seconds, leaderboard updates live, share a podium card when you're done. Fully offline. No account. No ads.</p>
+    <div class="cta">
+      <a href="https://apps.apple.com/app/idYOUR_APPLE_ID">Download for iPhone</a>
+      <a href="https://play.google.com/store/apps/details?id=com.blackqueenscorer.app">Get it on Google Play</a>
+      <a href="#faq" class="ghost">Learn more</a>
+    </div>
+  </header>
+
+  <main>
+    <section id="features">
+      <h2>What <span class="accent">Black Queen Scorer</span> does</h2>
+      <p style="color: var(--muted); max-width: 640px;">Built for the one friend who always keeps score on card night. Setup takes seconds. Each round is a few taps. The math is transparent and always correct.</p>
+      <ul class="features">
+        <li>
+          <strong>Sessions in seconds</strong>
+          Add 4 to 12 players, tap start. Recent names are remembered for next time.
+        </li>
+        <li>
+          <strong>10-second round entry</strong>
+          Pick the bidder, tap teammates, type the bid on a custom keypad, tap Won or Lost.
+        </li>
+        <li>
+          <strong>Always-correct math</strong>
+          Totals are recomputed from the rounds list on every change. Edit freely — nothing goes stale.
+        </li>
+        <li>
+          <strong>Optional bidder bonus</strong>
+          A ±bonus that applies only to the bidder. Toggle per session.
+        </li>
+        <li>
+          <strong>Live leaderboard</strong>
+          Rows reorder smoothly as scores move. Score pulses green on gain, red on loss.
+        </li>
+        <li>
+          <strong>Round history</strong>
+          Every round is editable. Long-press to delete. Undo safety net for new rounds.
+        </li>
+        <li>
+          <strong>Shareable finish</strong>
+          Podium, fun stats, and a WhatsApp-friendly summary card to send the chat.
+        </li>
+        <li>
+          <strong>Lifetime stats</strong>
+          Top winner, top earner, longest cold streak, most bids won — tracked across every session.
+        </li>
+        <li>
+          <strong>100% offline</strong>
+          No network requests, no account, no tracking. Everything stays on your device.
+        </li>
+      </ul>
+    </section>
+
+    <section id="faq" class="faq">
+      <h2>Frequently asked questions</h2>
+
+      <details>
+        <summary>What is Black Queen Scorer?</summary>
+        <p>A mobile score tracker for bidding-based team card games. It replaces the pen-and-paper scoring sheet that one person always ends up maintaining on card nights. The app does not simulate card play — it handles scoring only.</p>
+      </details>
+      <details>
+        <summary>Which card games does it support?</summary>
+        <p>Any team bidding game where one player bids an amount, a team tries to win that bid, and the opposition wins if the team fails. Common examples: Court Piece, Rang (Trump), 29, Partner 29, Black Queen, and many regional variants.</p>
+      </details>
+      <details>
+        <summary>How does the scoring math work?</summary>
+        <p>On a win, the bidder's team gains +bid, the opposition loses -bid. On a loss, the signs reverse. Optionally, the bidder alone gains or loses an additional ±bonus. All totals are recomputed from the rounds list every time they are displayed — so editing or deleting a round always yields correct scores.</p>
+      </details>
+      <details>
+        <summary>Does it work offline?</summary>
+        <p>Yes. The app makes zero network requests. All data is stored locally on your device.</p>
+      </details>
+      <details>
+        <summary>Does it collect any personal data?</summary>
+        <p>No analytics, no crash reporting, no advertising SDK, no account, no telemetry. Nothing ever leaves your device.</p>
+      </details>
+      <details>
+        <summary>How many players per session?</summary>
+        <p>Between 4 and 12.</p>
+      </details>
+      <details>
+        <summary>Can I edit a round after saving it?</summary>
+        <p>Yes. Tap any round tile to edit the bidder, team, bid, or result. Totals recompute instantly.</p>
+      </details>
+      <details>
+        <summary>Does the app cost money?</summary>
+        <p>No. It's free on the App Store and Google Play. No ads, no in-app purchases.</p>
+      </details>
+      <details>
+        <summary>What platforms is it on?</summary>
+        <p>iOS 13 and later, Android 5 (API 21) and later.</p>
+      </details>
+    </section>
+
+    <section id="privacy">
+      <h2>Privacy, briefly</h2>
+      <p>No data collection. No analytics. No ads. No account. Everything stays on your device. See the <a href="/privacy">full privacy policy</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Your Name · <a href="/privacy">Privacy</a> · <a href="mailto:your@email.com">Contact</a></p>
+  </footer>
+</body>
+</html>
