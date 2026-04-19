@@ -97,7 +97,9 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            if (kDebugMode) ...[
+            if (kDebugMode &&
+                !const bool.fromEnvironment('MARKETING',
+                    defaultValue: false)) ...[
               const SizedBox(height: Spacing.md),
               _SettingsCard(
                 icon: PhosphorIconsRegular.flask,
