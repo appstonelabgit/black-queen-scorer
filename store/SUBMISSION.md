@@ -15,7 +15,7 @@ One file, one tab open while submitting. Paste from here into App Store Connect 
 | Build number | 1 (bump for every re-upload) |
 | iOS bundle id | `com.blackqueenscorer.app` |
 | Android application id | `com.blackqueenscorer.app` |
-| Primary category | Games → Card |
+| Primary category | iOS: Utilities · Play: Apps → Tools |
 | Age rating | 4+ (iOS) / Everyone (Play) |
 | Price | Free |
 

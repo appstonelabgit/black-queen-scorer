@@ -10,11 +10,11 @@ Copy these fields directly into the Play Console when you create the app.
 |---|---|
 | App name | Black Queen Scorer |
 | Short description (80 chars) | Fast offline scorer for Court Piece, Rang, 29 and other bidding card games. |
-| Category | Games → Card |
-| Tags | Card games, Score, Offline |
+| Category | Apps → Tools |
+| Tags | Utilities, Productivity, Offline |
 | Contact email | your@email.com |
-| Website | https://blackqueenscorer.app |
-| Privacy policy | https://blackqueenscorer.app/privacy |
+| Website | https://appstonelabgit.github.io/black-queen-scorer/ |
+| Privacy policy | https://appstonelabgit.github.io/black-queen-scorer/privacy.html |
 
 ## Full description (max 4000 chars)
 

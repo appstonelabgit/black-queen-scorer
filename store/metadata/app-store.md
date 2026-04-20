@@ -10,8 +10,8 @@ Copy these fields directly into App Store Connect when you create the app record
 |---|---|
 | Name | Black Queen Scorer |
 | Subtitle | Fast offline card-night scorer |
-| Primary category | Games |
-| Subcategory | Card |
+| Primary category | Utilities |
+| Subcategory | — |
 | Content rights | Does not use third-party content |
 | Age rating | 4+ (no objectionable content) |
 
@@ -121,9 +121,9 @@ Welcome to Black Queen Scorer 1.0!
 • Fully offline, no account, no tracking
 ```
 
-**Support URL** (required): `https://blackqueenscorer.app/support` (or a GitHub Issues URL).
+**Support URL** (required): `https://github.com/appstonelabgit/black-queen-scorer/issues`
 
-**Marketing URL** (optional): `https://blackqueenscorer.app`
+**Marketing URL** (optional): `https://appstonelabgit.github.io/black-queen-scorer/`
 
 **Copyright**: `© 2026 Your Name`
 
