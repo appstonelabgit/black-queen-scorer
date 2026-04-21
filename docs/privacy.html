@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Privacy Policy — Black Queen Scorer</title>
-  <meta name="description" content="Black Queen Scorer privacy policy. The app collects no data, has no analytics, no ads, no account, and makes no network calls." />
+  <meta name="description" content="Black Queen Scorer privacy policy. Explains what data the app collects for ads, live session sharing, and what stays on your device." />
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://appstonelabgit.github.io/black-queen-scorer/privacy.html" />
   <link rel="icon" href="./icon.png" />
@@ -82,40 +82,70 @@
 
   <main>
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: 18 April 2026</p>
+    <p class="updated">Last updated: 21 April 2026</p>
 
-    <p>Black Queen Scorer (“the app”, “we”) is developed and maintained by <strong>AppStoneLab</strong>. This page explains, in plain English, what data the app handles — and, more importantly, what it does not.</p>
+    <p>Black Queen Scorer (“the app”, “we”) is developed and maintained by <strong>AppStoneLab</strong>. This page explains, in plain English, what data the app handles.</p>
 
     <h2>Summary</h2>
-    <p>Black Queen Scorer <strong>does not collect, store, transmit, or share any personal data</strong>. Everything you enter — player names, scores, session history — is stored only on your device.</p>
-
-    <h2>Data the app collects about you</h2>
-    <p><strong>None.</strong> The app has:</p>
-    <ul>
-      <li>No analytics SDK</li>
-      <li>No crash reporting</li>
-      <li>No advertising SDK</li>
-      <li>No telemetry</li>
-      <li>No account system</li>
-      <li>No network requests of any kind</li>
-    </ul>
-    <p>We cannot see your data because we do not receive your data.</p>
+    <p>Gameplay data — player names, scores, session history — is stored on your device by default. The app uses Google services for advertising, basic crash prevention, and the optional live-session sharing feature. No account, sign-in, or personal identifier is ever requested.</p>
 
     <h2>Data you create inside the app</h2>
-    <p>When you add players, record rounds, and finish sessions, the app stores that information in your device's private application storage (via Hive, an on-device local database). That data:</p>
+    <p>When you add players, record rounds, and finish sessions, the app stores that information in your device's private application storage (Hive). That data:</p>
     <ul>
-      <li>Never leaves your device</li>
+      <li>Never leaves your device unless you explicitly start or share a live session (see below)</li>
       <li>Is not accessible to other apps</li>
       <li>Is automatically deleted when you uninstall the app</li>
       <li>Can be deleted at any time from <strong>Settings → Data → Delete all history</strong></li>
     </ul>
 
+    <h2>Live session sharing (opt-in per session)</h2>
+    <p>Every session you start is also synced to <strong>Firebase Realtime Database</strong> so that friends with the session code can follow the scoreboard live. The data synced is limited to:</p>
+    <ul>
+      <li>Player names as you enter them</li>
+      <li>Rounds (bidder, bid amount, win/loss, per-player score deltas)</li>
+      <li>Session start and finish timestamps</li>
+      <li>An anonymous Firebase user ID assigned by Firebase to your device (not linked to any account — generated on first launch)</li>
+    </ul>
+    <p>The session is reachable only to people you share the 8-character code with. Nothing in this data identifies you personally; it contains only what you typed into the app.</p>
+    <p>To stop sharing a session, delete it from history or uninstall the app. Inactive sessions older than 30 days are automatically purged from the server.</p>
+
+    <h2>Advertising</h2>
+    <p>The app shows advertisements through <strong>Google AdMob</strong>. AdMob may access:</p>
+    <ul>
+      <li>Your device's advertising identifier (to serve and measure ads; you can reset or opt-out in your device settings)</li>
+      <li>Approximate geography inferred from IP address</li>
+      <li>Basic device information (model, OS version, language)</li>
+    </ul>
+    <p>On iOS, the app asks for tracking permission the first time it launches. If you decline, ads you see are non-personalized.</p>
+    <p>For details on AdMob's data handling, see <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's privacy policy</a>. You can opt out of personalized advertising on Android via <em>Settings → Google → Ads</em> and on iOS via <em>Settings → Privacy → Tracking</em>.</p>
+
+    <h2>Firebase services</h2>
+    <p>We use these Firebase products:</p>
+    <ul>
+      <li><strong>Firebase Authentication (Anonymous)</strong> — assigns your device a random anonymous ID so the Realtime Database can allow writes without requiring a sign-up</li>
+      <li><strong>Firebase Realtime Database</strong> — hosts live-session data (see above)</li>
+      <li><strong>Firebase Remote Config</strong> — lets us tune ad placements and frequency without releasing a new app version</li>
+    </ul>
+    <p>Firebase is a Google service governed by <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Google's Firebase privacy commitments</a>.</p>
+
+    <h2>Data we never collect</h2>
+    <ul>
+      <li>Name, email, phone number, date of birth</li>
+      <li>Precise location</li>
+      <li>Contacts, photos, or files on your device</li>
+      <li>Microphone, camera, or biometric data</li>
+    </ul>
+
     <h2>Permissions</h2>
-    <p>The app requests no runtime permissions. It uses only the private storage every app gets by default.</p>
-    <p>When you tap <strong>Share</strong> on the session summary, the app generates an image on your device and hands it to the system share sheet. The app never uploads anything; whatever you do with that image (AirDrop, WhatsApp, email, etc.) is between you and the destination app.</p>
+    <p>The app asks for:</p>
+    <ul>
+      <li><strong>Internet</strong> — required for ads and live-session sync</li>
+      <li><strong>Advertising ID</strong> (Android) — used only by the ad SDK</li>
+    </ul>
+    <p>When you tap <strong>Share</strong> on a session summary, the app generates an image on your device and hands it to the system share sheet. Whatever you do with that image (WhatsApp, email, AirDrop, etc.) is between you and the destination app.</p>
 
     <h2>Children's privacy</h2>
-    <p>The app does not collect information from anyone, including children under 13. There is no sign-up and no account.</p>
+    <p>The app is rated for ages 13 and up. It does not knowingly collect personal data from anyone under 13.</p>
 
     <h2>Changes to this policy</h2>
     <p>If this policy ever changes, we will publish the updated version at the same URL and update the "Last updated" date at the top.</p>

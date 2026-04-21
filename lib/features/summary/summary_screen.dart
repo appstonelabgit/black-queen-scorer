@@ -10,6 +10,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/ads/ad_service.dart';
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
@@ -178,6 +179,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
               ]
             : null,
       ),
+      bottomNavigationBar: SafeArea(child: AdService.banner()),
       body: Stack(
         children: [
           SafeArea(

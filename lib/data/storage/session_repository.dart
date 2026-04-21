@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:hive/hive.dart';
 
+import '../../core/live/live_session_writer.dart';
 import '../models/session.dart';
 import 'hive_boxes.dart';
 
@@ -62,7 +63,11 @@ class HiveSessionRepository implements SessionRepository {
   }
 
   @override
-  Future<void> save(Session s) => _box.put(s.id, s);
+  Future<void> save(Session s) async {
+    await _box.put(s.id, s);
+    // Fire-and-forget live-sync so local writes never block on the network.
+    unawaited(LiveSessionWriter.instance.sync(s));
+  }
 
   @override
   Future<void> delete(String id) => _box.delete(id);
@@ -73,6 +78,7 @@ class HiveSessionRepository implements SessionRepository {
     if (s == null) return null;
     final updated = s.copyWith(finishedAt: DateTime.now());
     await _box.put(id, updated);
+    unawaited(LiveSessionWriter.instance.sync(updated));
     return updated;
   }
 }

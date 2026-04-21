@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../core/ads/ad_service.dart';
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
@@ -24,6 +25,7 @@ class HistoryScreen extends ConsumerWidget {
     final sessionsAsync = ref.watch(allSessionsStreamProvider);
     return Scaffold(
       appBar: AppBar(title: const Text(Strings.history)),
+      bottomNavigationBar: SafeArea(child: AdService.banner()),
       body: sessionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),

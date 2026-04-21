@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Watch live — Black Queen Scorer</title>
+  <meta name="description" content="Follow a live card-night session on Black Queen Scorer. Install the app to join with a session code." />
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="icon" href="../icon.png" />
+  <style>
+    :root {
+      --emerald: #0F5132;
+      --emerald-deep: #0A1F1A;
+      --gold: #E8B931;
+      --cream: #FAF7F2;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      color: var(--cream);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(232,185,49,0.08), transparent 50%),
+        linear-gradient(180deg, var(--emerald) 0%, var(--emerald-deep) 100%);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+      text-align: center;
+    }
+    .crest {
+      display: inline-block;
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, var(--gold), #D4A017);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin: 0 0 0.5rem;
+    }
+    h1 em { color: var(--gold); font-style: normal; }
+    p { margin: 0.6rem 0; }
+    .muted { opacity: 0.75; }
+    .code {
+      margin: 2rem auto;
+      max-width: 320px;
+      padding: 1rem 1.25rem;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(232,185,49,0.35);
+      border-radius: 14px;
+      font-size: 1.4rem;
+      letter-spacing: 6px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .store-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+    .btn {
+      display: block;
+      padding: 0.9rem 1rem;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--emerald-deep);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--cream);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    footer {
+      padding: 1.5rem;
+      opacity: 0.6;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="crest">
+      <svg viewBox="0 0 24 24" fill="none" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l4 4-1.5 1.5-1 1v2l2 2c2 2 3 4 3 6 0 2.5-2 4-4 4-1 0-2-.5-2.5-1.5V21h-.0L10 21v-.5C9.5 21.5 8.5 22 7.5 22c-2 0-4-1.5-4-4 0-2 1-4 3-6l2-2v-2l-1-1L8 6l4-4z" fill="#0A1F1A"/></svg>
+    </div>
+    <h1>Watch <em>Live</em></h1>
+    <p class="muted">Your friend is hosting a card-night session on Black Queen Scorer.</p>
+    <div class="code" id="code">—</div>
+    <p class="muted">Install the app, open it, tap <strong>Watch a live game</strong> on the home screen, and enter the code above.</p>
+    <div class="store-row">
+      <a class="btn btn-primary" id="androidLink" href="https://play.google.com/store/apps/details?id=com.blackqueenscorer.app">Get it on Google Play</a>
+      <a class="btn btn-secondary" id="iosLink" href="https://apps.apple.com/app/black-queen-scorer/id0">Get it on the App Store</a>
+    </div>
+  </main>
+  <footer>
+    <a href="../">Black Queen Scorer</a> · <a href="../privacy.html">Privacy</a>
+  </footer>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var code = (params.get('code') || '').toUpperCase();
+      if (code) document.getElementById('code').textContent = code;
+      // Try to open the native app via the App Link the moment the
+      // page loads. If the app is installed, iOS/Android usually
+      // intercepts BEFORE we ever get here, so this is a best-effort
+      // nudge for edge cases (e.g. referrer-stripped shares).
+      if (code) {
+        setTimeout(function () {
+          location.href = 'bqs://live/' + code;
+        }, 200);
+      }
+    })();
+  </script>
+</body>
+</html>

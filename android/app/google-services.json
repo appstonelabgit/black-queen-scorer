@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "908672463707",
+    "project_id": "black-queen-scorer",
+    "storage_bucket": "black-queen-scorer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:908672463707:android:6cb0a9aa12b2f93346e07e",
+        "android_client_info": {
+          "package_name": "com.blackqueenscorer.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAB7p5qPsg4shNbrvopRob8Jad2xuUWMQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

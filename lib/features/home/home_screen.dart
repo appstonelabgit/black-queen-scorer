@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../core/ads/ad_service.dart';
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
@@ -79,6 +80,10 @@ class HomeScreen extends ConsumerWidget {
                   )
                 else
                   const _WelcomeHint(),
+                const SizedBox(height: Spacing.md),
+                _WatchLiveCard(onTap: () => context.push('/watch')),
+                const SizedBox(height: Spacing.md),
+                AdService.nativeMedium(),
                 const SizedBox(height: Spacing.xl),
                 Center(
                   child: Text(
@@ -347,6 +352,68 @@ class _PrimaryCta extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WatchLiveCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _WatchLiveCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Material(
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(Radii.lg),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(Radii.lg),
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Radii.lg),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.5),
+            ),
+          ),
+          padding: const EdgeInsets.all(Spacing.md),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: scheme.secondary.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Icon(PhosphorIconsRegular.broadcast,
+                    color: scheme.secondary, size: 20),
+              ),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Watch a live game',
+                        style: text.titleMedium),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Got a code from a friend? Tap to follow their scoreboard.',
+                      style: text.bodySmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(PhosphorIconsRegular.caretRight,
+                  size: 16, color: scheme.onSurfaceVariant),
+            ],
           ),
         ),
       ),

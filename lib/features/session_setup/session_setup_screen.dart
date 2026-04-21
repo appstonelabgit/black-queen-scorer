@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../core/ads/ad_service.dart';
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/haptics.dart';
@@ -108,6 +109,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
         title: const Text('New Session'),
         centerTitle: false,
       ),
+      bottomNavigationBar: SafeArea(child: AdService.banner()),
       body: SafeArea(
         child: Column(
           children: [

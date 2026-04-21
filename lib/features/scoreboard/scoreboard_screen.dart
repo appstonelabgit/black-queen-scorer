@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../core/ads/ad_service.dart';
+import '../../core/live/live_session_writer.dart';
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
@@ -13,6 +15,7 @@ import '../../data/models/round.dart';
 import '../../data/models/session.dart';
 import '../../data/providers.dart';
 import '../../data/scoring.dart';
+import '../../features/live/live_share_sheet.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 import 'widgets/player_row.dart';
 import 'widgets/round_list.dart';
@@ -107,6 +110,11 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
             ? []
             : [
                 IconButton(
+                  tooltip: 'Share live',
+                  icon: const Icon(PhosphorIconsRegular.broadcast),
+                  onPressed: () => _onShareLive(session),
+                ),
+                IconButton(
                   tooltip: 'Session options',
                   icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
                   onPressed: () => _showSessionOptions(session),
@@ -168,6 +176,8 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                     ? null
                     : (i) => _showRoundOptions(session, i),
               ),
+              const SizedBox(height: Spacing.md),
+              AdService.banner(),
               const SizedBox(height: 96),
             ],
           ),
@@ -273,7 +283,24 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
     );
     if (!ok) return;
     if (!mounted) return;
+    AdService.onSessionFinished();
     context.go('/session/${s.id}/summary');
+  }
+
+  Future<void> _onShareLive(Session s) async {
+    final code = await LiveSessionWriter.instance.ensureCode(s.id);
+    await LiveSessionWriter.instance.sync(s);
+    if (!mounted) return;
+    if (code == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Live sharing needs internet. Try again later.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+    await showLiveShareSheet(context, code);
   }
 
   void _showSessionOptions(Session session) {

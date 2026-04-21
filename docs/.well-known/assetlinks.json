@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.blackqueenscorer.app",
+      "sha256_cert_fingerprints": [
+        "61:CB:00:04:12:FD:6A:AE:39:BA:C5:A9:A8:76:88:C7:CE:9C:F1:3E:34:00:00:27:6C:7E:6A:13:EB:5F:F5:20"
+      ]
+    }
+  }
+]

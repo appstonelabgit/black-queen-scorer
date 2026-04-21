@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Redirecting…</title>
+  <script>
+    // SPA fallback: live-session URLs land here because GitHub Pages
+    // doesn't know the /l/<code> path exists as a file. Forward to the
+    // real landing with the code attached as a query param.
+    (function () {
+      var m = location.pathname.match(/\/black-queen-scorer\/l\/([A-Z0-9\-]+)/i);
+      if (m) {
+        location.replace('/black-queen-scorer/l/?code=' + encodeURIComponent(m[1].toUpperCase()));
+      }
+    })();
+  </script>
+  <meta http-equiv="refresh" content="2;url=/black-queen-scorer/" />
+</head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0A1F1A;color:#FAF7F2;padding:3rem 1.5rem;text-align:center;">
+  <h1>Page not found</h1>
+  <p><a style="color:#E8B931;" href="/black-queen-scorer/">Go to home</a></p>
+</body>
+</html>

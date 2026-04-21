@@ -11,8 +11,8 @@ One file, one tab open while submitting. Paste from here into App Store Connect 
 | Field | Value |
 |---|---|
 | App name | Black Queen Scorer |
-| Version | 1.0.0 |
-| Build number | 1 (bump for every re-upload) |
+| Version | 1.1.0 |
+| Build number | 4 (bump for every re-upload) |
 | iOS bundle id | `com.blackqueenscorer.app` |
 | Android application id | `com.blackqueenscorer.app` |
 | Primary category | iOS: Utilities · Play: Apps → Tools |
@@ -40,7 +40,7 @@ Source of truth: `store/metadata/app-store.md`. Quick reference below.
 
 **Promotional text** (editable anytime):
 ```
-Track scores for bidding card games in seconds. Court Piece, Rang, 29, and more. Offline, private, no ads.
+Track scores for bidding card games in seconds. Court Piece, Rang, 29, and more. Live-share your scoreboard with friends via a QR code.
 ```
 
 **Keywords** (100 chars):
@@ -54,10 +54,24 @@ card,score,scorer,bid,court,piece,rang,tracker,offline,29,partner,night,game,tea
 
 **Copyright**: `© 2026 AppStoneLab`
 
-**Privacy answers**:
-- Data collection: **No data collected**
-- Tracking: **None**
-- Export compliance (non-exempt encryption): **No** (no network traffic)
+**Privacy answers** (updated for 1.1.0 with AdMob + Firebase + live sharing):
+- Data collection: **Yes** — see § "App Privacy (1.1.0)" below for the category-by-category answers.
+- Tracking: **No** — AdMob is initialized with `nonPersonalizedAds: true` until the user accepts the ATT prompt. Answer "Used to Track You" as **No** for every data type (we show the prompt but set the corresponding tracking authorization state only for personalization, not cross-app tracking).
+- Export compliance (non-exempt encryption): **No** — Info.plist has `ITSAppUsesNonExemptEncryption = false`; the app only uses HTTPS via standard OS/SDK libs.
+
+## App Privacy (1.1.0)
+
+Apple's "Data Types" answers for this build:
+
+| Category | Collected? | Linked to you? | Used to track you? | Purposes |
+|---|---|---|---|---|
+| Identifiers → Device ID | Yes | No | No | Third-Party Advertising, Analytics |
+| Usage Data → Product Interaction | Yes | No | No | Analytics |
+| Diagnostics → Crash Data | Yes | No | No | App Functionality |
+| Diagnostics → Performance Data | Yes | No | No | App Functionality |
+| User Content → Other User Content (player names, scores, rounds — only when live-sharing) | Yes | No | No | App Functionality |
+
+All other categories: **Not Collected**.
 
 **Slots to fill in during submission** (don't put values here — just note them where the console shows them):
 
@@ -87,16 +101,25 @@ Fast offline scorer for Court Piece, Rang, 29 and other bidding card games.
 
 **What's new** (release notes, 500 chars):
 ```
-Welcome to Black Queen Scorer 1.0! Fast round entry, live leaderboard, edit any round, WhatsApp-share summary, lifetime stats across sessions, fully offline. No account, no tracking, no ads.
+1.1.0 — Share your card night live! Start a session, tap the broadcast icon, and friends can watch your scoreboard update in real time via QR code or a link. No sign-up needed. Now with support via Google AdMob.
 ```
 
-**Data safety form**: all **No**. See `store/metadata/play-store.md` § Data safety form.
+**Data safety form** (1.1.0):
+- Data collected: **Yes**
+  - Advertising or performance → **Advertising ID** (purpose: Advertising or marketing). Shared with Google AdMob.
+  - App activity → **App interactions** (purpose: App functionality).
+  - App info and performance → **Crash logs**, **Diagnostics** (purpose: App functionality).
+  - Messages → **Other in-app messages** (player names/scores in live sessions). Purpose: App functionality. Optional: Yes (only when the user starts a live session).
+- Data encrypted in transit: **Yes** (HTTPS).
+- User can request deletion: **Yes** — "Settings → Data → Delete all history" plus uninstall clears the anonymous Firebase UID.
 
 **Content rating**: answer **No** to every content question → result **Everyone**.
 
-**Contains ads**: **No**.
+**Contains ads**: **Yes**.
 
-**Target audience**: 13+ (safest).
+**Uses advertising ID**: **Yes** (declaration required on API 33+).
+
+**Target audience**: 13+.
 
 **Slots to fill in during submission**:
 

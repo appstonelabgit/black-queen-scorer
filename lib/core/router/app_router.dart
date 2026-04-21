@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/history/history_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../../features/live/live_viewer_screen.dart';
+import '../../features/live/watch_live_screen.dart';
 import '../../features/round_entry/round_entry_screen.dart';
 import '../../features/scoreboard/scoreboard_screen.dart';
 import '../../features/session_setup/session_setup_screen.dart';
@@ -74,6 +76,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings/players',
         builder: (_, __) => const ManagePlayersScreen(),
+      ),
+      GoRoute(
+        path: '/watch',
+        builder: (_, __) => const WatchLiveScreen(),
+      ),
+      GoRoute(
+        path: '/live/:code',
+        builder: (_, state) => LiveViewerScreen(
+          code: state.pathParameters['code']!,
+        ),
+      ),
+      // Deep-link alias so https://…/l/CODE universal links resolve.
+      GoRoute(
+        path: '/l/:code',
+        redirect: (_, state) => '/live/${state.pathParameters['code']}',
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
