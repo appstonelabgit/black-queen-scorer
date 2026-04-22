@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import '../../core/ads/ad_service.dart';
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
@@ -13,6 +12,7 @@ import '../../core/utils/haptics.dart';
 import '../../data/models/round.dart';
 import '../../data/models/session.dart';
 import '../../data/providers.dart';
+import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 import 'widgets/bid_keypad.dart';
 import 'widgets/player_selector.dart';
@@ -195,8 +195,10 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
         if (session == null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Session not found')),
+            AppToast.show(
+              context,
+              'Session not found',
+              style: ToastStyle.error,
             );
             context.pop();
           });
@@ -219,8 +221,10 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
         if (widget.roundId != null && round != null && round.id.isEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Round was deleted')),
+            AppToast.show(
+              context,
+              'Round was deleted',
+              style: ToastStyle.error,
             );
             context.pop();
           });
@@ -404,9 +408,7 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
                 enabled: _canCommit,
                 onPick: (won) => _commit(won, session),
               ),
-              const SizedBox(height: Spacing.lg),
-              AdService.banner(),
-              const SizedBox(height: Spacing.lg),
+              const SizedBox(height: Spacing.xl),
             ],
           ),
         ),

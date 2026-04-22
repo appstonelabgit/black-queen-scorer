@@ -6,6 +6,7 @@ import 'ad_config.dart';
 
 const _emeraldDeep = Color(0xFF0A1F1A);
 const _gold = Color(0xFFE8B931);
+const _nativeSurface = Color(0xFF143028);
 
 class _BqsAdIdManager extends AdsIdManager {
   final AdConfig cfg;
@@ -27,7 +28,14 @@ class AdService {
   static bool _sdkInitialized = false;
   static int _finishCount = 0;
 
-  static bool get ready => _sdkInitialized && AdConfigLoader.current.showAds;
+  /// Flipped to true once the SDK is ready *and* ad IDs are usable. Widgets
+  /// returned by [banner] / [nativeMedium] rebuild against this so they
+  /// paint the first time init finishes — critical for Home's native ad,
+  /// which is rendered before post-frame init completes.
+  static final ValueNotifier<bool> readyNotifier = ValueNotifier(false);
+
+  static bool get ready =>
+      _sdkInitialized && AdConfigLoader.current.showAds;
 
   /// Called post-frame from main.dart. Safe to call even if Firebase init
   /// failed — it simply no-ops and the app keeps working.
@@ -42,6 +50,7 @@ class AdService {
         adMobAdRequest: const AdRequest(),
       );
       _sdkInitialized = true;
+      readyNotifier.value = true;
     } catch (e) {
       debugPrint('AdService.initialize failed: $e');
     }
@@ -50,22 +59,36 @@ class AdService {
   /// Fixed-height banner that returns an empty box while loading or if
   /// ads are disabled. Callers can place it unconditionally.
   static Widget banner() {
-    if (!ready) return const SizedBox.shrink();
-    return const SizedBox(
-      height: 50,
-      child: ApslSequenceBannerAd(
-        orderOfAdNetworks: [AdNetwork.admob],
-      ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: readyNotifier,
+      builder: (_, ready, __) {
+        if (!ready) return const SizedBox.shrink();
+        return const SizedBox(
+          height: 50,
+          child: ApslSequenceBannerAd(
+            orderOfAdNetworks: [AdNetwork.admob],
+          ),
+        );
+      },
     );
   }
 
   /// Native ad themed to the app's emerald/gold tokens.
   static Widget nativeMedium() {
-    if (!ready) return const SizedBox.shrink();
+    return ValueListenableBuilder<bool>(
+      valueListenable: readyNotifier,
+      builder: (_, ready, __) {
+        if (!ready) return const SizedBox.shrink();
+        return _nativeInner();
+      },
+    );
+  }
+
+  static Widget _nativeInner() {
     final style = NativeTemplateStyle(
       templateType: TemplateType.medium,
-      mainBackgroundColor: Colors.transparent,
-      cornerRadius: Radii.lg,
+      mainBackgroundColor: _nativeSurface,
+      cornerRadius: 0,
       callToActionTextStyle: NativeTemplateTextStyle(
         textColor: _emeraldDeep,
         backgroundColor: _gold,
@@ -75,23 +98,33 @@ class AdService {
       primaryTextStyle: NativeTemplateTextStyle(
         textColor: Colors.white,
         style: NativeTemplateFontStyle.bold,
-        size: 15,
+        size: 16,
       ),
       secondaryTextStyle: NativeTemplateTextStyle(
-        textColor: Colors.white70,
+        textColor: Colors.white.withValues(alpha: 0.72),
         size: 13,
       ),
       tertiaryTextStyle: NativeTemplateTextStyle(
-        textColor: Colors.white60,
+        textColor: Colors.white.withValues(alpha: 0.55),
         size: 12,
       ),
     );
-    return SizedBox(
-      height: 330,
-      child: ApslSequenceNativeAd(
-        orderOfAdNetworks: const [AdNetwork.admob],
-        templateType: TemplateType.medium,
-        nativeTemplateStyle: style,
+    return Container(
+      decoration: BoxDecoration(
+        color: _nativeSurface,
+        borderRadius: BorderRadius.circular(Radii.lg),
+        border: Border.all(
+          color: _gold.withValues(alpha: 0.25),
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: SizedBox(
+        height: 360,
+        child: ApslSequenceNativeAd(
+          orderOfAdNetworks: const [AdNetwork.admob],
+          templateType: TemplateType.medium,
+          nativeTemplateStyle: style,
+        ),
       ),
     );
   }

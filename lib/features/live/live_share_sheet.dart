@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/theme/tokens.dart';
+import '../../shared/widgets/app_toast.dart';
 
 /// Share sheet shown from Scoreboard when users want friends to watch
 /// the current session live. Displays QR + short code + share/copy actions.
@@ -88,11 +89,11 @@ class LiveShareSheet extends StatelessWidget {
                     onPressed: () async {
                       await Clipboard.setData(ClipboardData(text: _shareUrl));
                       if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Link copied'),
-                          duration: Duration(seconds: 2),
-                        ),
+                      AppToast.show(
+                        context,
+                        'Link copied',
+                        style: ToastStyle.success,
+                        duration: const Duration(seconds: 2),
                       );
                     },
                     icon: const Icon(PhosphorIconsRegular.copy, size: 18),

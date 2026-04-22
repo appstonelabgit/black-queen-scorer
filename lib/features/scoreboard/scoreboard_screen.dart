@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/ads/ad_service.dart';
+import '../../core/firebase/firebase_bootstrap.dart';
 import '../../core/live/live_session_writer.dart';
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
@@ -16,6 +17,7 @@ import '../../data/models/session.dart';
 import '../../data/providers.dart';
 import '../../data/scoring.dart';
 import '../../features/live/live_share_sheet.dart';
+import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 import 'widgets/player_row.dart';
 import 'widgets/round_list.dart';
@@ -176,8 +178,6 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                     ? null
                     : (i) => _showRoundOptions(session, i),
               ),
-              const SizedBox(height: Spacing.md),
-              AdService.banner(),
               const SizedBox(height: 96),
             ],
           ),
@@ -245,32 +245,21 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
   }
 
   void _showUndoSnackbar(Session session, Round newRound, int roundNum) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    const visibleFor = Duration(seconds: 4);
-    // Flutter stretches SnackBar.duration to ~1 year when
-    // MediaQuery.accessibleNavigation is true, so force a manual dismiss.
-    final autoHide = Timer(visibleFor, messenger.hideCurrentSnackBar);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('Round $roundNum saved'),
-        duration: visibleFor,
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () async {
-            autoHide.cancel();
-            final current =
-                ref.read(sessionRepositoryProvider).get(session.id);
-            if (current == null) return;
-            final updated = current.copyWith(
-              rounds: current.rounds
-                  .where((r) => r.id != newRound.id)
-                  .toList(),
-            );
-            await ref.read(sessionRepositoryProvider).save(updated);
-          },
-        ),
-      ),
+    AppToast.show(
+      context,
+      'Round $roundNum saved',
+      style: ToastStyle.success,
+      duration: const Duration(seconds: 4),
+      actionLabel: 'Undo',
+      onAction: () async {
+        final current = ref.read(sessionRepositoryProvider).get(session.id);
+        if (current == null) return;
+        final updated = current.copyWith(
+          rounds:
+              current.rounds.where((r) => r.id != newRound.id).toList(),
+        );
+        await ref.read(sessionRepositoryProvider).save(updated);
+      },
     );
   }
 
@@ -288,18 +277,26 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
   }
 
   Future<void> _onShareLive(Session s) async {
+    if (!FirebaseBootstrap.initialized) {
+      await FirebaseBootstrap.init();
+    }
     final code = await LiveSessionWriter.instance.ensureCode(s.id);
-    await LiveSessionWriter.instance.sync(s);
     if (!mounted) return;
     if (code == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Live sharing needs internet. Try again later.'),
-          duration: Duration(seconds: 2),
-        ),
+      final err = FirebaseBootstrap.lastError;
+      AppToast.show(
+        context,
+        err == null
+            ? 'Live sharing needs internet. Try again later.'
+            : 'Live sharing unavailable: $err',
+        style: ToastStyle.error,
+        duration: const Duration(seconds: 3),
       );
       return;
     }
+    // Push the current snapshot to RTDB in the background — the sheet
+    // doesn't need to wait on the network write to paint.
+    unawaited(LiveSessionWriter.instance.sync(s));
     await showLiveShareSheet(context, code);
   }
 

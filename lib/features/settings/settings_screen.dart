@@ -8,7 +8,9 @@ import '../../core/strings.dart';
 import '../../core/theme/theme_controller.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
+import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
+import '../../shared/widgets/shell_back_button.dart';
 import 'demo_data.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -18,7 +20,10 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(themeControllerProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text(Strings.settings)),
+      appBar: AppBar(
+        leading: const ShellBackButton(),
+        title: const Text(Strings.settings),
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
@@ -86,11 +91,11 @@ class SettingsScreen extends ConsumerWidget {
                         await repo.delete(s.id);
                       }
                       if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('All history deleted'),
-                          duration: Duration(seconds: 2),
-                        ),
+                      AppToast.show(
+                        context,
+                        'All history deleted',
+                        style: ToastStyle.success,
+                        duration: const Duration(seconds: 2),
                       );
                     },
                   ),
@@ -125,11 +130,11 @@ class SettingsScreen extends ConsumerWidget {
                     );
                     ref.read(recentPlayersProvider.notifier).refresh();
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Demo data seeded'),
-                        duration: Duration(seconds: 2),
-                      ),
+                    AppToast.show(
+                      context,
+                      'Demo data seeded',
+                      style: ToastStyle.success,
+                      duration: const Duration(seconds: 2),
                     );
                   },
                 ),

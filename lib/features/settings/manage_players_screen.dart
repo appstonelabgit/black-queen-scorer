@@ -6,6 +6,7 @@ import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/haptics.dart';
 import '../../data/providers.dart';
+import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../session_setup/widgets/player_chip.dart';
@@ -36,11 +37,11 @@ class ManagePlayersScreen extends ConsumerWidget {
                 if (!ok) return;
                 await ref.read(recentPlayersProvider.notifier).clear();
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Recent players cleared'),
-                    duration: Duration(seconds: 2),
-                  ),
+                AppToast.show(
+                  context,
+                  'Recent players cleared',
+                  style: ToastStyle.success,
+                  duration: const Duration(seconds: 2),
                 );
               },
               style: TextButton.styleFrom(foregroundColor: scheme.error),
@@ -121,23 +122,15 @@ class ManagePlayersScreen extends ConsumerWidget {
     Haptics.selection();
     await ref.read(recentPlayersProvider.notifier).remove(name);
     if (!context.mounted) return true;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    bool undone = false;
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('Removed $name'),
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () async {
-            undone = true;
-            await ref.read(recentPlayersProvider.notifier).add(name);
-          },
-        ),
-      ),
+    AppToast.show(
+      context,
+      'Removed $name',
+      style: ToastStyle.success,
+      duration: const Duration(seconds: 3),
+      actionLabel: 'Undo',
+      onAction: () => ref.read(recentPlayersProvider.notifier).add(name),
     );
-    return !undone;
+    return true;
   }
 }
 

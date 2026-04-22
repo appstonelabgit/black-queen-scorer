@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/ads/ad_service.dart';
 import '../../core/strings.dart';
@@ -42,10 +43,18 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 _TopBar(
                   onSettings: () => context.push('/settings'),
+                  onWatchLive: () => context.push('/watch'),
+                  onShareApp: () {
+                    Share.share(
+                      'Black Queen Scorer — the fastest scorer for card nights.\n'
+                      'Get it: https://appstonelabgit.github.io/black-queen-scorer/',
+                      subject: 'Black Queen Scorer',
+                    );
+                  },
                 ),
-                const SizedBox(height: Spacing.md),
+                const SizedBox(height: Spacing.sm),
                 const _Brand(),
-                const SizedBox(height: Spacing.xl),
+                const SizedBox(height: Spacing.lg),
                 if (active != null) ...[
                   _ResumeCard(session: active),
                   const SizedBox(height: Spacing.md),
@@ -81,10 +90,8 @@ class HomeScreen extends ConsumerWidget {
                 else
                   const _WelcomeHint(),
                 const SizedBox(height: Spacing.md),
-                _WatchLiveCard(onTap: () => context.push('/watch')),
-                const SizedBox(height: Spacing.md),
                 AdService.nativeMedium(),
-                const SizedBox(height: Spacing.xl),
+                const SizedBox(height: Spacing.md),
                 Center(
                   child: Text(
                     Strings.version,
@@ -164,30 +171,71 @@ class _FeltBackdrop extends StatelessWidget {
 
 class _TopBar extends StatelessWidget {
   final VoidCallback onSettings;
-  const _TopBar({required this.onSettings});
+  final VoidCallback onWatchLive;
+  final VoidCallback onShareApp;
+  const _TopBar({
+    required this.onSettings,
+    required this.onWatchLive,
+    required this.onShareApp,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        _CircleAction(
+          icon: PhosphorIconsRegular.shareNetwork,
+          tooltip: 'Share app',
+          onTap: onShareApp,
+        ),
+        const SizedBox(width: Spacing.sm),
+        _CircleAction(
+          icon: PhosphorIconsRegular.broadcast,
+          tooltip: 'Watch a live game',
+          onTap: onWatchLive,
+        ),
+        const SizedBox(width: Spacing.sm),
+        _CircleAction(
+          icon: PhosphorIconsRegular.gearSix,
+          tooltip: 'Settings',
+          onTap: onSettings,
+        ),
+      ],
+    );
+  }
+}
+
+class _CircleAction extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+  const _CircleAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Material(
-          color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: () {
-              Haptics.selection();
-              onSettings();
-            },
-            child: const Padding(
-              padding: EdgeInsets.all(Spacing.sm + 2),
-              child: Icon(PhosphorIconsRegular.gearSix, size: 20),
-            ),
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: () {
+            Haptics.selection();
+            onTap();
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(Spacing.sm + 2),
+            child: Icon(icon, size: 20),
           ),
         ),
-      ],
+      ),
     );
   }
 }
@@ -204,10 +252,10 @@ class _Brand extends StatelessWidget {
       children: [
         // Crest: gold queen-on-spade mark over emerald card felt.
         Container(
-          width: 72,
-          height: 72,
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Radii.lg),
+            borderRadius: BorderRadius.circular(Radii.md),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -218,13 +266,13 @@ class _Brand extends StatelessWidget {
             ),
             border: Border.all(
               color: scheme.secondary.withValues(alpha: 0.5),
-              width: 1.5,
+              width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: scheme.primary.withValues(alpha: 0.35),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
+                color: scheme.primary.withValues(alpha: 0.3),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
@@ -233,18 +281,18 @@ class _Brand extends StatelessWidget {
             children: [
               Icon(
                 PhosphorIconsFill.spade,
-                size: 44,
+                size: 34,
                 color: Colors.black.withValues(alpha: 0.35),
               ),
               Icon(
                 PhosphorIconsFill.crown,
-                size: 24,
+                size: 18,
                 color: scheme.secondary,
               ),
             ],
           ),
         ),
-        const SizedBox(height: Spacing.md),
+        const SizedBox(height: Spacing.sm),
         RichText(
           text: TextSpan(
             style: text.displaySmall ??
@@ -256,7 +304,7 @@ class _Brand extends StatelessWidget {
                   color: scheme.onSurface,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
-                  fontSize: 32,
+                  fontSize: 28,
                 ),
               ),
               TextSpan(
@@ -265,7 +313,7 @@ class _Brand extends StatelessWidget {
                   color: scheme.secondary,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
-                  fontSize: 32,
+                  fontSize: 28,
                 ),
               ),
               TextSpan(
@@ -274,7 +322,7 @@ class _Brand extends StatelessWidget {
                   color: scheme.onSurface,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
-                  fontSize: 32,
+                  fontSize: 28,
                 ),
               ),
             ],
@@ -352,68 +400,6 @@ class _PrimaryCta extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _WatchLiveCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _WatchLiveCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    return Material(
-      color: scheme.surfaceContainerHighest.withValues(alpha: 0.55),
-      borderRadius: BorderRadius.circular(Radii.lg),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Radii.lg),
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Radii.lg),
-            border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.5),
-            ),
-          ),
-          padding: const EdgeInsets.all(Spacing.md),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: scheme.secondary.withValues(alpha: 0.18),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Icon(PhosphorIconsRegular.broadcast,
-                    color: scheme.secondary, size: 20),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Watch a live game',
-                        style: text.titleMedium),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Got a code from a friend? Tap to follow their scoreboard.',
-                      style: text.bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(PhosphorIconsRegular.caretRight,
-                  size: 16, color: scheme.onSurfaceVariant),
-            ],
           ),
         ),
       ),

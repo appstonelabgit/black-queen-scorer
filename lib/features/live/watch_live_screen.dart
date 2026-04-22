@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/live/live_code.dart';
 import '../../core/theme/tokens.dart';
+import '../../shared/widgets/shell_back_button.dart';
 
 /// Lets a viewer type (or paste) a live-session code to jump into the
 /// viewer. QR scanning is a separate entry on the home screen.
@@ -40,7 +41,10 @@ class _WatchLiveScreenState extends State<WatchLiveScreen> {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Watch live')),
+      appBar: AppBar(
+        leading: const ShellBackButton(),
+        title: const Text('Watch live'),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(Spacing.md),

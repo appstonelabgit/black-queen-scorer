@@ -4,6 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../core/live/live_models.dart';
 import '../../core/live/live_session_viewer.dart';
 import '../../core/theme/tokens.dart';
+import '../../shared/widgets/shell_back_button.dart';
 
 class LiveViewerScreen extends StatelessWidget {
   final String code;
@@ -13,6 +14,7 @@ class LiveViewerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const ShellBackButton(),
         title: Text(code),
         centerTitle: true,
       ),

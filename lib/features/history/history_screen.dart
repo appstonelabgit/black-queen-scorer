@@ -6,14 +6,15 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import '../../core/ads/ad_service.dart';
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/session.dart';
 import '../../data/providers.dart';
 import '../../data/scoring.dart';
+import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/empty_state.dart';
+import '../../shared/widgets/shell_back_button.dart';
 import '../session_setup/widgets/player_chip.dart';
 import '../summary/widgets/stats_card.dart';
 
@@ -24,8 +25,10 @@ class HistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionsAsync = ref.watch(allSessionsStreamProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text(Strings.history)),
-      bottomNavigationBar: SafeArea(child: AdService.banner()),
+      appBar: AppBar(
+        leading: const ShellBackButton(),
+        title: const Text(Strings.history),
+      ),
       body: sessionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
@@ -202,33 +205,23 @@ class _HistoryTile extends ConsumerWidget {
   }
 
   Future<bool> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    bool undone = false;
-    final messenger = ScaffoldMessenger.of(context);
     final repo = ref.read(sessionRepositoryProvider);
     final snapshot = session;
     await repo.delete(session.id);
-    messenger.hideCurrentSnackBar();
-    const visibleFor = Duration(seconds: 3);
-    // Manual auto-hide because Flutter freezes SnackBar duration when
-    // MediaQuery.accessibleNavigation is true.
-    final autoHide = Timer(visibleFor, messenger.hideCurrentSnackBar);
-    final controller = messenger.showSnackBar(
-      SnackBar(
-        content: const Text('Session deleted'),
-        duration: visibleFor,
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () async {
-            autoHide.cancel();
-            undone = true;
-            await repo.save(snapshot);
-          },
-        ),
-      ),
-    );
-    await controller.closed;
-    autoHide.cancel();
-    return !undone;
+    if (context.mounted) {
+      // The stream re-inserts the session if Undo fires repo.save, so we
+      // let the dismissible drop the row immediately and rely on the list
+      // rebuild to restore it visually.
+      AppToast.show(
+        context,
+        'Session deleted',
+        style: ToastStyle.success,
+        duration: const Duration(seconds: 3),
+        actionLabel: 'Undo',
+        onAction: () => repo.save(snapshot),
+      );
+    }
+    return true;
   }
 }
 
