@@ -54,24 +54,26 @@ card,score,scorer,bid,court,piece,rang,29,partner,trump,kot,sar,tracker,leaderbo
 
 **Copyright**: `© 2026 AppStoneLab`
 
-**Privacy answers** (set in 1.1.0 with AdMob + Firebase + live sharing; unchanged for 1.2.0):
-- Data collection: **Yes** — see § "App Privacy (1.1.0)" below for the category-by-category answers.
-- Tracking: **No** — AdMob is initialized with `nonPersonalizedAds: true` until the user accepts the ATT prompt. Answer "Used to Track You" as **No** for every data type (we show the prompt but set the corresponding tracking authorization state only for personalization, not cross-app tracking).
+**Privacy answers** (corrected 2026-04-24 after Apple flagged the ATT disclosure; binary unchanged):
+- Data collection: **Yes** — see § "App Privacy (1.1.0+)" below for the category-by-category answers.
+- Tracking: **Yes** — Info.plist ships `NSUserTrackingUsageDescription` and `apsl_ads` (wrapping `google_mobile_ads`) triggers the ATT prompt. Users who grant ATT receive personalized ads via AdMob, which means Device ID and Product Interaction are "used to track you" per Apple's definition. Answer **Yes** for those two categories (see matrix below). If we later force `nonPersonalizedAds: true` and drop the ATT key, we can revert to No — track that decision as Path B in `docs/privacy.html`.
 - Export compliance (non-exempt encryption): **No** — Info.plist has `ITSAppUsesNonExemptEncryption = false`; the app only uses HTTPS via standard OS/SDK libs.
 
 ## App Privacy (1.1.0+)
 
-Apple's "Data Types" answers (set at 1.1.0, still valid for 1.2.0):
+Apple's "Data Types" answers (corrected for 1.2.0 after ATT-disclosure review gate):
 
 | Category | Collected? | Linked to you? | Used to track you? | Purposes |
 |---|---|---|---|---|
-| Identifiers → Device ID | Yes | No | No | Third-Party Advertising, Analytics |
-| Usage Data → Product Interaction | Yes | No | No | Analytics |
+| Identifiers → Device ID | Yes | No | **Yes** | Third-Party Advertising, Analytics |
+| Usage Data → Product Interaction | Yes | No | **Yes** | Third-Party Advertising, Analytics |
 | Diagnostics → Crash Data | Yes | No | No | App Functionality |
 | Diagnostics → Performance Data | Yes | No | No | App Functionality |
 | User Content → Other User Content (player names, scores, rounds — only when live-sharing) | Yes | No | No | App Functionality |
 
 All other categories: **Not Collected**.
+
+> Why Device ID + Product Interaction are marked "Used to track you": Apple defines tracking as linking user/device data collected from our app with data collected from other apps/sites for targeted advertising or measurement, or sharing that data with data brokers. AdMob with personalized ads (granted via the ATT prompt) does exactly that — it joins our Device ID / interaction signals with Google's cross-app graph. Crash, Performance, and live-session User Content are app-functionality only and stay on Google / Firebase's App-Functionality purpose path, so those rows remain No.
 
 **Slots to fill in during submission** (don't put values here — just note them where the console shows them):
 
