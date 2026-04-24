@@ -21,9 +21,9 @@ Source of truth for 1.2.0. Data safety answers live in `store/SUBMISSION.md` § 
 ## Full description (max 4000 chars)
 
 ```
-The fastest scorer for bidding card games — now with live sharing.
+Black Queen Scorer — fast offline scorer for Court Piece, Rang, 29, and Partner 29. Now with live-share: friends watch your scoreboard update in real time.
 
-Black Queen Scorer tracks scores across rounds for team card games like Court Piece, Rang, 29, and similar bidding variants. Built for the friend who always ends up keeping score — so the game never has to pause.
+Tracks scores across rounds for team card games like Court Piece, Rang, 29, Partner 29, and similar bidding variants. Built for the friend who always ends up keeping score — so the game never has to pause.
 
 NEW IN THIS RELEASE
 
@@ -60,6 +60,10 @@ Groups of 4 to 12 friends playing in person. One person enters scores while ever
 SUPPORTED GAMES
 
 Any bidding-based team card game where one player bids an amount, a team tries to win that bid, and opposition wins if the team fails. Works well for Court Piece, Rang (Trump), 29, Partner 29, Black Queen, and many regional variants.
+
+ALSO KNOWN AS
+
+Court Piece is also called Rang, Rung, Trump, Kot Piece, or Sar Bazi in South Asia. 29 is played as Partner 29 or 29 Card Game in Kerala and Nova Scotia.
 
 PRIVACY
 
@@ -122,13 +126,13 @@ Result: **Everyone**.
 |---|---|---|
 | Portrait | 1080 × 2340 recommended (min 320, max 3840) | 2 minimum, 8 maximum |
 
-Target order for 1.2.0 (6 shots):
+Target order for 1.2.0 (6 shots — scoreboard leads; live-share differentiates in slot 2):
 
-1. Home with active-session resume banner
-2. Scoreboard with broadcast icon visible
-3. **Live share sheet** (QR + demo code `ABCD-2345`) — new hero
-4. Round entry mid-bid
-5. Summary podium
+1. **Scoreboard** with broadcast icon visible
+2. **Live share sheet** (QR + demo code `ABCD-2345`) — hero differentiator
+3. Round entry mid-bid
+4. Summary podium
+5. Home with active-session resume banner
 6. Lifetime stats
 
 Feature graphic (1024 × 500 PNG) still required — see `store/SUBMISSION.md` § "Play Store feature graphic". Proposed headline: **"Live-share your card night."**
