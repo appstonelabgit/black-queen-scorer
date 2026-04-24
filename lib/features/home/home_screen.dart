@@ -46,7 +46,7 @@ class HomeScreen extends ConsumerWidget {
                   onWatchLive: () => context.push('/watch'),
                   onShareApp: () {
                     Share.share(
-                      'Black Queen Scorer — the fastest scorer for card nights.\n'
+                      'Black Queen Scorer — fast offline scorer for Court Piece, Rang, 29, Partner 29. Live-share your card night.\n'
                       'Get it: https://appstonelabgit.github.io/black-queen-scorer/',
                       subject: 'Black Queen Scorer',
                     );
