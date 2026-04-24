@@ -294,9 +294,17 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
       );
       return;
     }
-    // Push the current snapshot to RTDB in the background — the sheet
-    // doesn't need to wait on the network write to paint.
-    unawaited(LiveSessionWriter.instance.sync(s));
+    // Await the first sync so the viewer never hits "no session found"
+    // immediately after the host shares the code. Cap the wait so bad
+    // networks don't freeze the button.
+    try {
+      await LiveSessionWriter.instance
+          .sync(s)
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // ignore — viewer will still pick up data once the write eventually lands
+    }
+    if (!mounted) return;
     await showLiveShareSheet(context, code);
   }
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +16,15 @@ import '../../features/settings/manage_players_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/summary/summary_screen.dart';
 import 'banner_shell.dart';
+
+/// Platform-adaptive page — Cupertino on iOS (slide-from-right + edge
+/// swipe-back), Material on Android (fade-up + system back).
+Page<T> _adaptivePage<T>({required LocalKey key, required Widget child}) {
+  if (Platform.isIOS) {
+    return CupertinoPage<T>(key: key, child: child);
+  }
+  return MaterialPage<T>(key: key, child: child);
+}
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -42,7 +53,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/session/:id/round/new',
-            pageBuilder: (_, state) => CupertinoPage(
+            pageBuilder: (_, state) => _adaptivePage(
               key: state.pageKey,
               child: RoundEntryScreen(
                 sessionId: state.pathParameters['id']!,
@@ -51,7 +62,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/session/:id/round/:rid',
-            pageBuilder: (_, state) => CupertinoPage(
+            pageBuilder: (_, state) => _adaptivePage(
               key: state.pageKey,
               child: RoundEntryScreen(
                 sessionId: state.pathParameters['id']!,

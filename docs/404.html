@@ -2,22 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Redirecting…</title>
+  <style>
+    html, body { margin: 0; padding: 0; min-height: 100vh; background: #0A1F1A; color: #FAF7F2; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    main { padding: 3rem 1.5rem; text-align: center; }
+    .spinner { width: 32px; height: 32px; margin: 0 auto 1rem; border: 3px solid rgba(232,185,49,0.3); border-top-color: #E8B931; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .not-found, .loading { display: none; }
+    a { color: #E8B931; text-decoration: none; font-weight: 600; }
+  </style>
   <script>
-    // SPA fallback: live-session URLs land here because GitHub Pages
-    // doesn't know the /l/<code> path exists as a file. Forward to the
-    // real landing with the code attached as a query param.
     (function () {
       var m = location.pathname.match(/\/black-queen-scorer\/l\/([A-Z0-9\-]+)/i);
       if (m) {
+        // SPA fallback: live-session URLs land here because GitHub Pages
+        // doesn't know the /l/<code> path exists as a file. Forward to
+        // the real landing with the code attached as a query param.
         location.replace('/black-queen-scorer/l/?code=' + encodeURIComponent(m[1].toUpperCase()));
+      } else {
+        // No live code in URL — show a real not-found message once DOM is ready.
+        document.addEventListener('DOMContentLoaded', function () {
+          document.querySelector('.not-found').style.display = 'block';
+        });
       }
     })();
   </script>
-  <meta http-equiv="refresh" content="2;url=/black-queen-scorer/" />
 </head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0A1F1A;color:#FAF7F2;padding:3rem 1.5rem;text-align:center;">
-  <h1>Page not found</h1>
-  <p><a style="color:#E8B931;" href="/black-queen-scorer/">Go to home</a></p>
+<body>
+  <main>
+    <div class="spinner"></div>
+    <p class="loading" style="display:block;opacity:0.7;">Taking you to the app…</p>
+    <div class="not-found">
+      <h1>Page not found</h1>
+      <p><a href="/black-queen-scorer/">Go to home</a></p>
+    </div>
+  </main>
 </body>
 </html>

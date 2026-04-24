@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
+
+import '../firebase/firebase_bootstrap.dart';
 
 /// Google-published test ad unit IDs. Safe to send real traffic against
 /// during development — they never fire a real impression and never
@@ -61,7 +62,7 @@ class AdConfigLoader {
     }
     try {
       final platformKey = Platform.isIOS ? 'ios' : 'android';
-      final ref = FirebaseDatabase.instance.ref('ad_config');
+      final ref = FirebaseBootstrap.db.ref('ad_config');
       final snap = await ref.get().timeout(const Duration(seconds: 8));
       if (!snap.exists) return _current;
       final root = Map<String, dynamic>.from(snap.value as Map);

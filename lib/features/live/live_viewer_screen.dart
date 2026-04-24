@@ -1,35 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../core/firebase/firebase_bootstrap.dart';
 import '../../core/live/live_models.dart';
 import '../../core/live/live_session_viewer.dart';
 import '../../core/theme/tokens.dart';
 import '../../shared/widgets/shell_back_button.dart';
 
-class LiveViewerScreen extends StatelessWidget {
+class LiveViewerScreen extends StatefulWidget {
   final String code;
   const LiveViewerScreen({super.key, required this.code});
+
+  @override
+  State<LiveViewerScreen> createState() => _LiveViewerScreenState();
+}
+
+class _LiveViewerScreenState extends State<LiveViewerScreen> {
+  Future<bool>? _bootstrap;
+
+  @override
+  void initState() {
+    super.initState();
+    // Anonymous auth is required to read /live_sessions/{code}. If the
+    // user opened this screen via a deep-link cold start, Firebase may
+    // not have finished initializing yet.
+    _bootstrap = FirebaseBootstrap.init();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: const ShellBackButton(),
-        title: Text(code),
+        title: Text(widget.code),
         centerTitle: true,
       ),
       body: SafeArea(
-        child: StreamBuilder<LiveSessionState?>(
-          stream: LiveSessionViewer.watch(code),
-          builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting) {
+        child: FutureBuilder<bool>(
+          future: _bootstrap,
+          builder: (context, bootSnap) {
+            if (bootSnap.connectionState != ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
             }
-            final state = snap.data;
-            if (state == null) {
-              return _EmptyState(code: code);
+            if (bootSnap.data != true) {
+              return _ErrorState(
+                title: 'Can\'t connect',
+                message:
+                    'Live viewing needs a signed-in Firebase session. Check your internet, then open the link again.',
+              );
             }
-            return _LiveScoreboard(state: state);
+            return StreamBuilder<LiveSessionState?>(
+              stream: LiveSessionViewer.watch(widget.code),
+              builder: (context, snap) {
+                if (snap.hasError) {
+                  return _ErrorState(
+                    title: 'Can\'t read this session',
+                    message:
+                        'The host may have signed out, or the session was blocked. Ask them to re-share the code.',
+                  );
+                }
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final state = snap.data;
+                if (state == null) {
+                  return _EmptyState(code: widget.code);
+                }
+                return _LiveScoreboard(state: state);
+              },
+            );
           },
         ),
       ),
@@ -264,6 +303,37 @@ class _LastRoundCard extends StatelessWidget {
           Text(
             'Team: ${round.bidTeam.join(" + ")}',
             style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  final String title;
+  final String message;
+  const _ErrorState({required this.title, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.all(Spacing.xl),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(PhosphorIconsRegular.warningCircle,
+              size: 64, color: scheme.error),
+          const SizedBox(height: Spacing.md),
+          Text(title,
+              style: text.titleMedium, textAlign: TextAlign.center),
+          const SizedBox(height: Spacing.sm),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ),

@@ -1,5 +1,4 @@
-import 'package:firebase_database/firebase_database.dart';
-
+import '../firebase/firebase_bootstrap.dart';
 import 'live_models.dart';
 
 /// Subscribes to a live session at `/live_sessions/{code}` and emits a new
@@ -7,7 +6,7 @@ import 'live_models.dart';
 /// doesn't exist (either never registered or was deleted post-finish).
 class LiveSessionViewer {
   static Stream<LiveSessionState?> watch(String code) {
-    final ref = FirebaseDatabase.instance.ref('live_sessions/$code');
+    final ref = FirebaseBootstrap.db.ref('live_sessions/$code');
     return ref.onValue.map((event) {
       final v = event.snapshot.value;
       if (v == null) return null;

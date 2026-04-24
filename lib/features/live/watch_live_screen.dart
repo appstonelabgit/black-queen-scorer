@@ -7,6 +7,30 @@ import '../../core/live/live_code.dart';
 import '../../core/theme/tokens.dart';
 import '../../shared/widgets/shell_back_button.dart';
 
+/// Input formatter: uppercase, drop invalid characters, auto-insert the
+/// dash after the 4th alphanumeric, cap at 8 alphanumerics.
+class _LiveCodeFormatter extends TextInputFormatter {
+  const _LiveCodeFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final cleaned = newValue.text
+        .toUpperCase()
+        .replaceAll(RegExp(r'[^A-Z0-9]'), '')
+        .characters
+        .take(8)
+        .join();
+    final formatted = cleaned.length <= 4
+        ? cleaned
+        : '${cleaned.substring(0, 4)}-${cleaned.substring(4)}';
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
 /// Lets a viewer type (or paste) a live-session code to jump into the
 /// viewer. QR scanning is a separate entry on the home screen.
 class WatchLiveScreen extends StatefulWidget {
@@ -75,10 +99,7 @@ class _WatchLiveScreenState extends State<WatchLiveScreen> {
                 textAlign: TextAlign.center,
                 maxLength: 9,
                 style: text.headlineMedium?.copyWith(letterSpacing: 6),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                      RegExp(r'[A-Za-z0-9\-]')),
-                ],
+                inputFormatters: const [_LiveCodeFormatter()],
                 decoration: InputDecoration(
                   hintText: 'ABCD-EFGH',
                   counterText: '',

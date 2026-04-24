@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -62,7 +61,7 @@ class LiveSessionWriter {
     };
 
     try {
-      await FirebaseDatabase.instance.ref('live_sessions/$code').set(payload);
+      await FirebaseBootstrap.db.ref('live_sessions/$code').set(payload);
     } catch (e) {
       // Offline or permission failure — tolerate and retry on next change.
       debugPrint('LiveSessionWriter.sync failed: $e');

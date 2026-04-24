@@ -5,6 +5,13 @@ import 'package:flutter/foundation.dart';
 
 import '../../firebase_options.dart';
 
+/// Our Realtime Database lives in asia-southeast1, not the Firebase SDK
+/// default (us-central1). Every FirebaseDatabase reference must pass this
+/// URL explicitly — the options-level databaseURL is ignored by some
+/// versions of the Flutter SDK.
+const _rtdbUrl =
+    'https://black-queen-scorer-default-rtdb.asia-southeast1.firebasedatabase.app';
+
 class FirebaseBootstrap {
   static bool _coreReady = false;
   static bool _initialized = false;
@@ -14,6 +21,13 @@ class FirebaseBootstrap {
   static String? get uid => _uid;
   static bool get initialized => _initialized;
   static Object? get lastError => _lastError;
+
+  /// Region-aware RTDB handle. Use this everywhere instead of
+  /// `FirebaseDatabase.instance`.
+  static FirebaseDatabase get db => FirebaseDatabase.instanceFor(
+        app: Firebase.app(),
+        databaseURL: _rtdbUrl,
+      );
 
   /// Safe to call multiple times. Retries anonymous auth on each call if
   /// it previously failed, which is how the Scoreboard's "Share live" flow
@@ -30,7 +44,7 @@ class FirebaseBootstrap {
             options: DefaultFirebaseOptions.currentPlatform,
           );
         }
-        FirebaseDatabase.instance.setPersistenceEnabled(true);
+        db.setPersistenceEnabled(true);
         _coreReady = true;
       }
       final cred = await FirebaseAuth.instance.signInAnonymously();
