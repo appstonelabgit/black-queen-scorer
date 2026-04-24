@@ -57,18 +57,20 @@ flutter run --release
 
 ## 3. Shot list (recommended order for 1.2.0)
 
-Take 6 screenshots. Live share is the new hero — surface it in slot 3 before round entry.
+Take 6 screenshots. **Scoreboard leads** — it answers "what does this app do" in 0.5s. **Live-share is slot 2** so the differentiator lands before anyone scrolls off.
 
-| # | Screen | How to reach it | Why it sells |
+| # | Screen | How to reach it | Caption |
 |---|---|---|---|
-| 1 | **Home** (with resume banner) | Launch after seeding with an active session | Establishes brand + shows the persistent-banner pattern |
-| 2 | **Scoreboard** (live, broadcast icon visible) | Home → Resume | Introduces the leaderboard and primes the broadcast affordance |
-| 3 | **Live share sheet** (QR + short code) | Scoreboard → tap broadcast icon | The differentiator — "friends watch in real time" |
-| 4 | **Round Entry** | Scoreboard → New Round, pick bidder + team + bid 700 | Proves round entry is fast |
-| 5 | **Summary** (finish) | Any session → Finish | Celebratory moment — podium + gold numbers |
-| 6 | **Lifetime stats** (History) | Home → History | Shows depth — what you get for sticking with the app |
+| 1 | **Scoreboard** (live, broadcast icon visible) | Home → Resume | *Live leaderboard. Zero spreadsheet.* |
+| 2 | **Live share sheet** (QR + short code) | Scoreboard → tap broadcast icon | *Friends watch in real time. No app needed for viewers.* |
+| 3 | **Round Entry** | Scoreboard → New Round, pick bidder + team + bid 700 | *Bidder, team, bid — under 10 seconds.* |
+| 4 | **Summary** (finish) | Any session → Finish | *Finish with a shareable podium.* |
+| 5 | **Home** (with resume banner) | Launch after seeding with an active session | *One tap, back in the game.* |
+| 6 | **Lifetime stats** (History) | Home → History | *See who really owns the table.* |
 
 Skip the session-setup form, history-list, and Settings screens for store screenshots — they're less visually distinctive.
+
+Post-launch: A/B-test slots 1 and 2 in reverse via ASC Product Page Optimization. Hypothesis = live-share hero beats generic leaderboard hero.
 
 **Live-share capture note**: use a fake demo code matching the real format (e.g. `ABCD-2345`), not a real session code. Either end the real session before shooting or substitute the code in post. Code alphabet is `2-9 A-H J-N P-Z` (no `0/O/1/I/L`), grouped 4-4 with a dash — see `lib/core/live/live_code.dart`.
 
@@ -99,11 +101,11 @@ If you want one command to (re)produce all framed screenshots whenever the UI ch
 
 Short, scannable one-liners calibrated for App Store screenshot text:
 
-1. **Home** — *"One tap, right back in the game."*
-2. **Scoreboard** — *"Live leaderboard, zero spreadsheet."*
-3. **Live share** — *"Friends watch your card night in real time."*
-4. **Round Entry** — *"Bidder, team, bid, done — in under 10 seconds."*
-5. **Summary** — *"Finish with a podium and a shareable card."*
+1. **Scoreboard** — *"Live leaderboard. Zero spreadsheet."*
+2. **Live share** — *"Friends watch in real time. No app needed for viewers."*
+3. **Round Entry** — *"Bidder, team, bid — under 10 seconds."*
+4. **Summary** — *"Finish with a shareable podium."*
+5. **Home** — *"One tap, back in the game."*
 6. **Lifetime stats** — *"See who really owns the table."*
 
 ---
@@ -116,20 +118,20 @@ Organize final assets as:
 store/screenshots/
 ├── ios/
 │   ├── 6.9inch/
-│   │   ├── 01_home.png
-│   │   ├── 02_scoreboard.png
-│   │   ├── 03_live_share.png
-│   │   ├── 04_round_entry.png
-│   │   ├── 05_summary.png
+│   │   ├── 01_scoreboard.png
+│   │   ├── 02_live_share.png
+│   │   ├── 03_round_entry.png
+│   │   ├── 04_summary.png
+│   │   ├── 05_home.png
 │   │   └── 06_lifetime_stats.png
 │   └── 6.5inch/
 │       └── ... (optional)
 └── android/
     └── phone/
-        ├── 01_home.png
+        ├── 01_scoreboard.png
         └── ...
 ```
 
-> Previous 1.1.0 shots renamed: `03_round_entry` → `04_round_entry`, `04_summary` → `05_summary`, `05_lifetime_stats` → `06_lifetime_stats`. Old `06_settings.png` dropped from the store set (keep in repo if useful elsewhere).
+> v1.2.0 reorder vs 1.1.0: Scoreboard promoted to slot 1 (was slot 2), Live-share slot 2 (was slot 3), Home demoted to slot 5 (was slot 1). Rationale: scoreboard answers "what is this" fastest; live-share is the differentiator and needs top-of-list surface area.
 
 Upload via App Store Connect → **App Store → iOS App → Screenshots** and Play Console → **Main store listing → Graphics**.
