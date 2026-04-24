@@ -82,7 +82,7 @@
 
   <main>
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: 21 April 2026</p>
+    <p class="updated">Last updated: 24 April 2026</p>
 
     <p>Black Queen Scorer (“the app”, “we”) is developed and maintained by <strong>AppStoneLab</strong>. This page explains, in plain English, what data the app handles.</p>
 
@@ -99,15 +99,15 @@
     </ul>
 
     <h2>Live session sharing (opt-in per session)</h2>
-    <p>Every session you start is also synced to <strong>Firebase Realtime Database</strong> so that friends with the session code can follow the scoreboard live. The data synced is limited to:</p>
+    <p>Live sharing is off by default. When you tap the <strong>broadcast</strong> icon on a session's scoreboard, the app syncs that session to <strong>Firebase Realtime Database</strong> so anyone with the short code can follow the scoreboard live. The data synced is limited to:</p>
     <ul>
       <li>Player names as you enter them</li>
       <li>Rounds (bidder, bid amount, win/loss, per-player score deltas)</li>
       <li>Session start and finish timestamps</li>
-      <li>An anonymous Firebase user ID assigned by Firebase to your device (not linked to any account — generated on first launch)</li>
+      <li>An anonymous Firebase user ID assigned to your device (not linked to any account — generated on first launch)</li>
     </ul>
-    <p>The session is reachable only to people you share the 8-character code with. Nothing in this data identifies you personally; it contains only what you typed into the app.</p>
-    <p>To stop sharing a session, delete it from history or uninstall the app. Inactive sessions older than 30 days are automatically purged from the server.</p>
+    <p>The session is reachable only to people you share the 8-character code (format <code>XXXX-XXXX</code>) with. Nothing in this data identifies you personally; it contains only what you typed into the app.</p>
+    <p>To stop sharing, delete the session from history or uninstall the app. Inactive sessions older than 30 days are automatically purged from the server.</p>
 
     <h2>Advertising</h2>
     <p>The app shows advertisements through <strong>Google AdMob</strong>. AdMob may access:</p>

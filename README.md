@@ -15,10 +15,13 @@ The app replaces the pen-and-paper scoring sheet that one person always ends up 
 - Always-correct math (totals are recomputed from the rounds list on every change)
 - Optional bidder bonus that applies only to the bidder
 - Live leaderboard with animated reorder and score pulses
+- Live session sharing — QR + short link so friends can watch the scoreboard in real time (opt-in per session)
+- Seating order locks the player layout around the table
+- Persistent session banner — resume an active session in one tap after leaving the app
 - Full round history; every round is editable
 - Celebratory finish screen with podium, fun stats, and a shareable WhatsApp-ready card
 - Lifetime stats aggregated across every session
-- 100% offline — no account, no network calls, no tracking, no ads
+- Offline-first gameplay — scoring, history, and lifetime stats work without a network. Live sharing and ads use the network when enabled.
 
 ## Stack
 

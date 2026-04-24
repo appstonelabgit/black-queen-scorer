@@ -11,8 +11,8 @@ One file, one tab open while submitting. Paste from here into App Store Connect 
 | Field | Value |
 |---|---|
 | App name | Black Queen Scorer |
-| Version | 1.1.0 |
-| Build number | 4 (bump for every re-upload) |
+| Version | 1.2.0 |
+| Build number | 1 (bump for every re-upload) |
 | iOS bundle id | `com.blackqueenscorer.app` |
 | Android application id | `com.blackqueenscorer.app` |
 | Primary category | iOS: Utilities · Play: Apps → Tools |
@@ -40,12 +40,12 @@ Source of truth: `store/metadata/app-store.md`. Quick reference below.
 
 **Promotional text** (editable anytime):
 ```
-Track scores for bidding card games in seconds. Court Piece, Rang, 29, and more. Live-share your scoreboard with friends via a QR code.
+New: live-share your card night. Tap broadcast, friends watch the scoreboard update in real time via QR or link. Still the fastest scorer for Court Piece, Rang, 29.
 ```
 
 **Keywords** (100 chars):
 ```
-card,score,scorer,bid,court,piece,rang,tracker,offline,29,partner,night,game,team,leaderboard
+card,score,scorer,bid,court,piece,rang,29,partner,trump,kot,sar,tracker,leaderboard,live,offline
 ```
 
 **Description**: copy full block from `store/metadata/app-store.md` § Description.
@@ -54,14 +54,14 @@ card,score,scorer,bid,court,piece,rang,tracker,offline,29,partner,night,game,tea
 
 **Copyright**: `© 2026 AppStoneLab`
 
-**Privacy answers** (updated for 1.1.0 with AdMob + Firebase + live sharing):
+**Privacy answers** (set in 1.1.0 with AdMob + Firebase + live sharing; unchanged for 1.2.0):
 - Data collection: **Yes** — see § "App Privacy (1.1.0)" below for the category-by-category answers.
 - Tracking: **No** — AdMob is initialized with `nonPersonalizedAds: true` until the user accepts the ATT prompt. Answer "Used to Track You" as **No** for every data type (we show the prompt but set the corresponding tracking authorization state only for personalization, not cross-app tracking).
 - Export compliance (non-exempt encryption): **No** — Info.plist has `ITSAppUsesNonExemptEncryption = false`; the app only uses HTTPS via standard OS/SDK libs.
 
-## App Privacy (1.1.0)
+## App Privacy (1.1.0+)
 
-Apple's "Data Types" answers for this build:
+Apple's "Data Types" answers (set at 1.1.0, still valid for 1.2.0):
 
 | Category | Collected? | Linked to you? | Used to track you? | Purposes |
 |---|---|---|---|---|
@@ -81,7 +81,7 @@ All other categories: **Not Collected**.
 - [ ] PrivacyInfo.xcprivacy added to Copy Bundle Resources in Xcode
 - [ ] Archive uploaded via Xcode Organizer
 - [ ] Build selected for submission
-- [ ] Screenshots uploaded (6.9" required, 6.5" optional)
+- [ ] Screenshots uploaded (6 shots: Home / Scoreboard / Live share / Round entry / Summary / Lifetime — 6.9" required, 6.5" optional)
 - [ ] Submitted for review
 
 ---
@@ -94,17 +94,17 @@ Source of truth: `store/metadata/play-store.md`.
 
 **Short description** (80 chars):
 ```
-Fast offline scorer for Court Piece, Rang, 29 and other bidding card games.
+Live-share your card night. Fast offline scorer for Court Piece, Rang, 29.
 ```
 
 **Full description**: copy full block from `store/metadata/play-store.md`.
 
 **What's new** (release notes, 500 chars):
 ```
-1.1.0 — Share your card night live! Start a session, tap the broadcast icon, and friends can watch your scoreboard update in real time via QR code or a link. No sign-up needed. Now with support via Google AdMob.
+1.2 — New: seating order locks the player layout you actually sit in, and a persistent banner lets you resume your active session in one tap after leaving the app. Plus faster toasts, one-tap share-the-app link, and fixes across history + summary.
 ```
 
-**Data safety form** (1.1.0):
+**Data safety form** (set in 1.1.0; unchanged for 1.2.0):
 - Data collected: **Yes**
   - Advertising or performance → **Advertising ID** (purpose: Advertising or marketing). Shared with Google AdMob.
   - App activity → **App interactions** (purpose: App functionality).
@@ -129,8 +129,8 @@ Fast offline scorer for Court Piece, Rang, 29 and other bidding card games.
 - [ ] AAB uploaded: `flutter build appbundle --release`
 - [ ] Data safety form completed
 - [ ] Content rating questionnaire completed
-- [ ] Screenshots uploaded (2 minimum, 8 max)
-- [ ] Feature graphic uploaded (1024 × 500 PNG — see below)
+- [ ] Screenshots uploaded (6 shots: Home / Scoreboard / Live share / Round entry / Summary / Lifetime — 2 min, 8 max)
+- [ ] Feature graphic uploaded (1024 × 500 PNG, headline "Live-share your card night." — see below)
 - [ ] Internal testing track → Closed testing → Production
 
 ---

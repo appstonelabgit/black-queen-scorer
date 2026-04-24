@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Black Queen Scorer — Fast offline scorer for Court Piece, Rang, 29 and other bidding card games</title>
 
-  <meta name="description" content="Black Queen Scorer is a fast, offline-first score tracker for bidding card games like Court Piece, Rang, 29, and Partner 29. Track rounds, live leaderboard, edit any round, share WhatsApp-ready summary. Free, no account required." />
-  <meta name="keywords" content="card game scorer, Court Piece scorer, Rang scorer, 29 card game scorer, Partner 29, Black Queen, bidding card game, offline scorer, card night, team card game, card game leaderboard" />
+  <meta name="description" content="Black Queen Scorer is a fast, offline-first score tracker for bidding card games like Court Piece, Rang, 29, and Partner 29. Live-share your scoreboard so friends can watch in real time via QR code. Free, no account required." />
+  <meta name="keywords" content="card game scorer, Court Piece scorer, Rang scorer, 29 card game scorer, Partner 29, Black Queen, bidding card game, offline scorer, live scoreboard, card night, team card game, card game leaderboard, QR scoreboard" />
   <meta name="author" content="AppStoneLab" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Black Queen Scorer — Offline scorer for bidding card games" />
-  <meta property="og:description" content="Fast, offline, private score tracker for Court Piece, Rang, 29, and similar bidding card games." />
+  <meta property="og:title" content="Black Queen Scorer — Live-share card-night scoreboards" />
+  <meta property="og:description" content="Fast offline scorer for Court Piece, Rang, 29, and more. Live-share your scoreboard with friends via QR code or short link." />
   <meta property="og:image" content="https://appstonelabgit.github.io/black-queen-scorer/og.png" />
   <meta property="og:url" content="https://appstonelabgit.github.io/black-queen-scorer/" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Black Queen Scorer" />
-  <meta name="twitter:description" content="Fast offline-first scorer for bidding card games. Free, no account required." />
+  <meta name="twitter:description" content="Fast offline scorer for bidding card games. Live-share your scoreboard with friends via QR code. Free, no account required." />
   <meta name="twitter:image" content="https://appstonelabgit.github.io/black-queen-scorer/og.png" />
   <link rel="canonical" href="https://appstonelabgit.github.io/black-queen-scorer/" />
   <link rel="icon" href="./icon.png" />
@@ -28,7 +28,7 @@
     "@context": "https://schema.org",
     "@type": "MobileApplication",
     "name": "Black Queen Scorer",
-    "description": "A fast, offline-first score tracker for bidding-based team card games. Tracks scores across rounds for Court Piece, Rang, 29, Partner 29, Black Queen, and similar variants. Gameplay data stays on-device; free, no account required.",
+    "description": "A fast, offline-first score tracker for bidding-based team card games. Tracks scores across rounds for Court Piece, Rang, 29, Partner 29, Black Queen, and similar variants. Includes opt-in live sharing so friends can watch the scoreboard update in real time via QR code or short link. Free, no account required.",
     "url": "https://appstonelabgit.github.io/black-queen-scorer/",
     "installUrl": "https://apps.apple.com/us/app/black-queen-scorer/id6762565568",
     "downloadUrl": "https://apps.apple.com/us/app/black-queen-scorer/id6762565568",
@@ -53,12 +53,15 @@
       "Always-correct math — scores are recomputed from rounds on every change",
       "Optional bidder bonus that applies only to the bidder",
       "Live leaderboard that reorders with animation",
+      "Live session sharing — friends watch the scoreboard in real time via QR code or short link, no app install needed for viewers",
+      "Seating order locks the player layout around the table",
+      "Persistent session banner resumes an active game in one tap",
       "Edit or delete any past round; the leaderboard recalculates instantly",
       "Undo safety net for new rounds and deletions",
       "Celebratory finish screen with podium and fun stats",
       "Shareable WhatsApp-ready summary image",
       "Lifetime stats aggregated across all sessions",
-      "Offline-first — gameplay works without network; ads require internet",
+      "Offline-first — gameplay works without network; live sharing and ads use internet",
       "Free with ads; no account, no in-app purchases"
     ]
   }
@@ -99,7 +102,15 @@
         "name": "Does Black Queen Scorer work offline?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Gameplay works fully offline. Player names, rounds, scores, and session history are stored locally on your device. An internet connection is only used to load ads."
+          "text": "Gameplay works fully offline. Player names, rounds, scores, and session history are stored locally on your device. An internet connection is only used to load ads and for the optional live-sharing feature."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does live sharing work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On any session's scoreboard, tap the broadcast icon. The app shows a QR code and an 8-character short code (format XXXX-XXXX). Friends either scan the QR or open a short link — no app install or sign-up required on their side. They see the scoreboard update live as you record rounds. Sharing is opt-in per session and the synced data contains only player names, rounds, and timestamps; inactive sessions are purged after 30 days."
         }
       },
       {
@@ -107,7 +118,7 @@
         "name": "Does it show ads or collect data?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "The app shows ads via Google AdMob, which may collect device identifiers and related data for ad delivery and measurement in line with Google's policies. Gameplay data (players, rounds, scores) never leaves your device. There is no account system. See the privacy policy for full detail."
+          "text": "The app shows ads via Google AdMob, which may collect device identifiers and related data for ad delivery and measurement in line with Google's policies. Gameplay data (players, rounds, scores) stays on your device unless you opt in to live sharing for a session. There is no account system. See the privacy policy for full detail."
         }
       },
       {
@@ -294,7 +305,7 @@
       <img src="./icon.png" alt="Black Queen Scorer app icon — a gold crown and spade on an emerald tile" />
     </div>
     <h1>Black <span class="accent">Queen</span> Scorer</h1>
-    <p class="tagline">The fastest scorer for bidding card games. Court Piece, Rang, 29, Partner 29 — tally rounds in seconds, leaderboard updates live, share a podium card when you're done. Offline-first. Free. No account.</p>
+    <p class="tagline">The fastest scorer for bidding card games. Court Piece, Rang, 29, Partner 29 — tally rounds in seconds, live-share your scoreboard so friends can watch in real time via QR code, share a podium card when you're done. Offline-first. Free. No account.</p>
     <div class="cta">
       <a href="https://apps.apple.com/us/app/black-queen-scorer/id6762565568" title="Download on the App Store">🍎 Download on the App Store</a>
       <a href="#" aria-disabled="true" title="Coming to Google Play">▶ Coming to Google Play</a>
@@ -328,6 +339,18 @@
           Rows reorder smoothly as scores move. Score pulses green on gain, red on loss.
         </li>
         <li>
+          <strong>Live session sharing</strong>
+          Tap broadcast — friends scan a QR or open a short link and watch your scoreboard update live. No app install or sign-up on their side.
+        </li>
+        <li>
+          <strong>Seating order</strong>
+          Lock the player layout you actually sit in around the table. Scoreboard and round entry follow it.
+        </li>
+        <li>
+          <strong>Resume in one tap</strong>
+          A persistent banner reopens your active session after you leave the app to take a call or answer a text.
+        </li>
+        <li>
           <strong>Round history</strong>
           Every round is editable. Long-press to delete. Undo safety net for new rounds.
         </li>
@@ -341,7 +364,7 @@
         </li>
         <li>
           <strong>Offline-first gameplay</strong>
-          Scoring works without internet. No account required. Gameplay data stays on your device; ads use a network connection when available.
+          Scoring works without internet. No account required. Gameplay data stays on your device; ads and opt-in live sharing use the network.
         </li>
       </ul>
     </section>
@@ -363,11 +386,15 @@
       </details>
       <details>
         <summary>Does it work offline?</summary>
-        <p>Gameplay works fully offline — all scoring data is stored locally on your device. An internet connection is only used to load ads.</p>
+        <p>Gameplay works fully offline — all scoring data is stored locally on your device. An internet connection is only used to load ads and for the optional live-sharing feature.</p>
+      </details>
+      <details>
+        <summary>How does live sharing work?</summary>
+        <p>On any session's scoreboard, tap the broadcast icon. The app shows a QR code and an 8-character short code (<code>XXXX-XXXX</code>). Friends scan the QR or open the short link — no app install or sign-up on their side. They see the scoreboard update live as you record rounds. Sharing is opt-in per session; inactive sessions are purged after 30 days.</p>
       </details>
       <details>
         <summary>Does it show ads or collect data?</summary>
-        <p>The app shows ads via Google AdMob, which may collect device identifiers and related data for ad delivery and measurement under Google's policies. Gameplay data (players, rounds, scores) never leaves your device. No account system. See the <a href="./privacy.html">privacy policy</a> for detail.</p>
+        <p>The app shows ads via Google AdMob, which may collect device identifiers and related data for ad delivery and measurement under Google's policies. Gameplay data (players, rounds, scores) stays on your device unless you opt in to live sharing for a session. No account system. See the <a href="./privacy.html">privacy policy</a> for detail.</p>
       </details>
       <details>
         <summary>How many players per session?</summary>
@@ -389,7 +416,7 @@
 
     <section id="privacy">
       <h2>Privacy, briefly</h2>
-      <p>Your gameplay data — players, rounds, scores — stays on your device. No account system. Ads are served by Google AdMob, which may collect device identifiers for ad delivery and measurement under Google's policies. See the <a href="./privacy.html">full privacy policy</a>.</p>
+      <p>Your gameplay data — players, rounds, scores — stays on your device by default. Live sharing is opt-in per session; when you tap broadcast, only player names, rounds, and timestamps sync to a temporary session that anyone with the code can watch. No account system. Ads are served by Google AdMob, which may use device identifiers for ad delivery and measurement under Google's policies. See the <a href="./privacy.html">full privacy policy</a>.</p>
     </section>
   </main>
 

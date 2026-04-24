@@ -55,20 +55,22 @@ flutter run --release
 
 ---
 
-## 3. Shot list (recommended order)
+## 3. Shot list (recommended order for 1.2.0)
 
-Take 5–6 screenshots for a tight, story-driven App Store page:
+Take 6 screenshots. Live share is the new hero — surface it in slot 3 before round entry.
 
 | # | Screen | How to reach it | Why it sells |
 |---|---|---|---|
-| 1 | **Home** | Launch app after seeding | Establishes brand + shows resume-card pattern |
-| 2 | **Scoreboard** (live) | Home → Resume | Shows the killer feature — live leaderboard mid-session |
-| 3 | **Round Entry** | Scoreboard → New Round, select bidder + team + bid 700 | The "money screen" — proves round entry is fast |
-| 4 | **Summary** (finish) | Any session → Finish | The celebratory moment — podium + gold numbers |
-| 5 | **Lifetime stats** (History) | Home → History | Shows depth — what you get for sticking with the app |
-| 6 | **Settings / privacy posture** (optional) | Home → Settings | Reinforces the "no tracking, no ads" story |
+| 1 | **Home** (with resume banner) | Launch after seeding with an active session | Establishes brand + shows the persistent-banner pattern |
+| 2 | **Scoreboard** (live, broadcast icon visible) | Home → Resume | Introduces the leaderboard and primes the broadcast affordance |
+| 3 | **Live share sheet** (QR + short code) | Scoreboard → tap broadcast icon | The differentiator — "friends watch in real time" |
+| 4 | **Round Entry** | Scoreboard → New Round, pick bidder + team + bid 700 | Proves round entry is fast |
+| 5 | **Summary** (finish) | Any session → Finish | Celebratory moment — podium + gold numbers |
+| 6 | **Lifetime stats** (History) | Home → History | Shows depth — what you get for sticking with the app |
 
-Skip the session-setup form and the history-list screens for store screenshots — they're less visually distinctive.
+Skip the session-setup form, history-list, and Settings screens for store screenshots — they're less visually distinctive.
+
+**Live-share capture note**: use a fake demo code matching the real format (e.g. `ABCD-2345`), not a real session code. Either end the real session before shooting or substitute the code in post. Code alphabet is `2-9 A-H J-N P-Z` (no `0/O/1/I/L`), grouped 4-4 with a dash — see `lib/core/live/live_code.dart`.
 
 ---
 
@@ -95,14 +97,14 @@ If you want one command to (re)produce all framed screenshots whenever the UI ch
 
 ## 5. Caption copy (ready to use)
 
-These are short, scannable one-liners calibrated for App Store screenshot text:
+Short, scannable one-liners calibrated for App Store screenshot text:
 
-1. **Home** — *"Score card nights, not paperwork."*
+1. **Home** — *"One tap, right back in the game."*
 2. **Scoreboard** — *"Live leaderboard, zero spreadsheet."*
-3. **Round Entry** — *"Bidder, team, bid, done — in under 10 seconds."*
-4. **Summary** — *"Finish with a podium and a shareable card."*
-5. **Lifetime stats** — *"See who really owns the table."*
-6. **Settings** — *"Offline. No account. No tracking."*
+3. **Live share** — *"Friends watch your card night in real time."*
+4. **Round Entry** — *"Bidder, team, bid, done — in under 10 seconds."*
+5. **Summary** — *"Finish with a podium and a shareable card."*
+6. **Lifetime stats** — *"See who really owns the table."*
 
 ---
 
@@ -116,7 +118,10 @@ store/screenshots/
 │   ├── 6.9inch/
 │   │   ├── 01_home.png
 │   │   ├── 02_scoreboard.png
-│   │   ├── ...
+│   │   ├── 03_live_share.png
+│   │   ├── 04_round_entry.png
+│   │   ├── 05_summary.png
+│   │   └── 06_lifetime_stats.png
 │   └── 6.5inch/
 │       └── ... (optional)
 └── android/
@@ -124,5 +129,7 @@ store/screenshots/
         ├── 01_home.png
         └── ...
 ```
+
+> Previous 1.1.0 shots renamed: `03_round_entry` → `04_round_entry`, `04_summary` → `05_summary`, `05_lifetime_stats` → `06_lifetime_stats`. Old `06_settings.png` dropped from the store set (keep in repo if useful elsewhere).
 
 Upload via App Store Connect → **App Store → iOS App → Screenshots** and Play Console → **Main store listing → Graphics**.

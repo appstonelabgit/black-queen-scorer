@@ -126,35 +126,21 @@ ls -lh build/app/outputs/flutter-apk/
 
 ### 4. Play Console metadata
 
-- Category: **Games → Card**
-- Content rating: Everyone (no ads, no violence, no gambling — tracks scores only).
-- Data safety:
-  - Data collection: **None**
-  - Data sharing: **None**
-  - Data encrypted in transit: **N/A, no network traffic**
-  - Users can request data deletion: **N/A, all data is local; "Delete all history" in Settings clears everything.**
+- Category: **Apps → Tools** (matches `store/metadata/play-store.md`).
+- Content rating: Everyone (no violence, no gambling — tracks scores only). Ads are present via Google AdMob.
+- Data safety: see `store/SUBMISSION.md` § "Data safety form". Summary: advertising ID (AdMob), app interactions, crash + performance diagnostics, and optional live-session content (player names / rounds / timestamps) when broadcasting.
 - Target API level: 34 (already set).
+
+> **Source of truth for all store copy is `store/metadata/play-store.md` and `store/metadata/app-store.md`.** The blocks below are historical.
 
 ---
 
-## Store listing copy
+## Store listing copy (historical — see `store/metadata/` for current)
 
 **Short description (80 char max):**
-> Fast offline scorer for bidding card games. No signup, no ads, no cloud.
+> Live-share your card night. Fast offline scorer for Court Piece, Rang, 29.
 
-**Full description:**
-> Black Queen Scorer is a fast, offline score tracker for bidding-based team card games (Court Piece, Rang, 29, and similar variants). Designed so the scorekeeper never holds up the game:
->
-> • Start a session with 4–12 players in seconds
-> • Enter a round — bidder, team, bid, result — in under 10 seconds
-> • Optional bidder bonus, fully transparent math
-> • Live leaderboard with trophy badge and score-change pulse
-> • Rounds history, edit any round, auto-recalculated totals
-> • Finish-screen podium, fun stats, and WhatsApp-friendly share card
-> • Lifetime stats across all your sessions
-> • 100% offline — no account, no ads, no cloud sync, no tracking
->
-> Built for in-person card nights.
+**Full description:** see `store/metadata/play-store.md`.
 
 ---
 
