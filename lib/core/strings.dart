@@ -8,7 +8,7 @@ class Strings {
   static const discardSession = 'Discard session';
   static const history = 'History';
   static const settings = 'Settings';
-  static const version = 'v1.0.0';
+  static const version = 'v1.2.0';
 
   static const newRound = '+ New Round';
   static const finishSession = 'Finish Session';
