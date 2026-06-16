@@ -1,5 +1,14 @@
 import 'dart:math' as math;
 
+/// Host serving the live-share landing page + verified deep-link
+/// association files (`.well-known/`). Vercel — it serves `.well-known`
+/// at the domain root and rewrites `/l/:code`, neither of which GitHub
+/// Pages project sites can do. Change in ONE place if the domain moves.
+const liveLinkHost = 'black-queen-scorer.vercel.app';
+
+/// Public URL for a live session — encoded in the QR + share text.
+String liveLinkUrl(String code) => 'https://$liveLinkHost/l/$code';
+
 /// URL-friendly alphabet without visually ambiguous characters (0/O/I/1/L).
 const _alphabet = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 final _rng = math.Random.secure();

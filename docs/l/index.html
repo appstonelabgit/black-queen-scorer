@@ -64,26 +64,24 @@
     }
     .store-row {
       display: flex;
-      flex-direction: column;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
       gap: 0.75rem;
       margin-top: 2rem;
     }
-    .btn {
+    .store-badge {
+      display: inline-flex;
+      align-items: center;
+    }
+    .store-badge img {
+      width: auto;
       display: block;
-      padding: 0.9rem 1rem;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 600;
     }
-    .btn-primary {
-      background: var(--gold);
-      color: var(--emerald-deep);
-    }
-    .btn-secondary {
-      background: rgba(255,255,255,0.1);
-      color: var(--cream);
-      border: 1px solid rgba(255,255,255,0.2);
-    }
+    /* Google's badge ships with ~12% internal padding — size it taller so
+       the visible artwork matches Apple's edge-to-edge badge. */
+    #androidLink img { height: 60px; }
+    #iosLink img { height: 44px; }
     footer {
       padding: 1.5rem;
       opacity: 0.6;
@@ -103,9 +101,15 @@
     <div class="code" id="code">—</div>
     <p class="muted">Install the app, open it, tap <strong>Watch a live game</strong> on the home screen, and enter the code above.</p>
     <div class="store-row">
-      <a class="btn btn-primary" id="androidLink" href="https://play.google.com/store/apps/details?id=com.blackqueenscorer.app&referrer=utm_source%3Dlive_share%26utm_medium%3Dqr%26utm_campaign%3Dv1">Get it on Google Play</a>
+      <a class="store-badge" id="androidLink" href="https://play.google.com/store/apps/details?id=com.blackqueenscorer.app&referrer=utm_source%3Dlive_share%26utm_medium%3Dqr%26utm_campaign%3Dv1">
+        <img alt="Get it on Google Play"
+             src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" />
+      </a>
       <!-- TODO: replace APPLE_PROVIDER_ID with the ASC Provider ID from App Store Connect → Payments and Financial Reports → Provider ID. Without it, pt+ct are ignored by Apple and the live-share install funnel can't be attributed. -->
-      <a class="btn btn-secondary" id="iosLink" href="https://apps.apple.com/app/black-queen-scorer/id6762565568?pt=APPLE_PROVIDER_ID&ct=live_share_v1">Get it on the App Store</a>
+      <a class="store-badge" id="iosLink" href="https://apps.apple.com/app/black-queen-scorer/id6762565568?pt=APPLE_PROVIDER_ID&ct=live_share_v1">
+        <img alt="Download on the App Store"
+             src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" />
+      </a>
     </div>
   </main>
   <footer>
@@ -113,8 +117,12 @@
   </footer>
   <script>
     (function () {
-      var params = new URLSearchParams(location.search);
-      var code = (params.get('code') || '').toUpperCase();
+      // Code lives in the path: /l/XXXX-XXXX (Vercel rewrites it to this
+      // page). Fall back to ?code= for older query-style links.
+      var segs = location.pathname.split('/').filter(Boolean);
+      var fromPath = segs.length > 1 && segs[0] === 'l' ? segs[1] : '';
+      var fromQuery = new URLSearchParams(location.search).get('code') || '';
+      var code = (fromPath || fromQuery).toUpperCase();
       if (code) document.getElementById('code').textContent = code;
       // Try to open the native app via the App Link the moment the
       // page loads. If the app is installed, iOS/Android usually

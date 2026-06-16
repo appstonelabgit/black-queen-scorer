@@ -4,6 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/live/live_code.dart';
 import '../../core/theme/tokens.dart';
 import '../../shared/widgets/app_toast.dart';
 
@@ -14,8 +15,7 @@ class LiveShareSheet extends StatelessWidget {
 
   const LiveShareSheet({super.key, required this.code});
 
-  String get _shareUrl =>
-      'https://appstonelabgit.github.io/black-queen-scorer/l/$code';
+  String get _shareUrl => liveLinkUrl(code);
   String get _shareText =>
       'Watch our card night live on Black Queen Scorer:\n$_shareUrl\nOr enter code $code in the app.';
 
