@@ -98,10 +98,13 @@ class HomeScreen extends ConsumerWidget {
       ),
       bottomNavigationBar: _GlassActionBar(
         onShareApp: () {
-          Share.share(
-            'Black Queen Scorer — fast offline scorer for Court Piece, Rang, 29, Partner 29. Live-share your card night.\n'
-            'Get it: https://appstonelabgit.github.io/black-queen-scorer/',
-            subject: 'Black Queen Scorer',
+          SharePlus.instance.share(
+            ShareParams(
+              text:
+                  'Black Queen Scorer — fast offline scorer for Court Piece, Rang, 29, Partner 29. Live-share your card night.\n'
+                  'Get it: https://appstonelabgit.github.io/black-queen-scorer/',
+              subject: 'Black Queen Scorer',
+            ),
           );
         },
         onWatchLive: () => showWatchLiveSheet(context),

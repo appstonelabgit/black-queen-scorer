@@ -116,10 +116,12 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
       final file = File(
           '${dir.path}/black_queen_${DateTime.now().millisecondsSinceEpoch}.png');
       await file.writeAsBytes(bytes);
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text:
-            '${Strings.appName} — ${stats.ranked.firstOrNull?.name ?? 'Winner'} won!',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text:
+              '${Strings.appName} — ${stats.ranked.firstOrNull?.name ?? 'Winner'} won!',
+        ),
       );
     } catch (e) {
       if (mounted) {

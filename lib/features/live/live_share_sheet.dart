@@ -104,7 +104,7 @@ class LiveShareSheet extends StatelessWidget {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () {
-                      Share.share(_shareText);
+                      SharePlus.instance.share(ShareParams(text: _shareText));
                     },
                     icon: const Icon(PhosphorIconsRegular.shareNetwork,
                         size: 18),
