@@ -290,22 +290,33 @@ class _SponsoredAd extends StatelessWidget {
       valueListenable: AdService.readyNotifier,
       builder: (_, ready, __) {
         if (!ready) return const SizedBox.shrink();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: Spacing.xs, bottom: 6),
-              child: Text(
-                'Sponsored',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      letterSpacing: 0.6,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-            AdService.nativeMedium(),
-          ],
+        return ValueListenableBuilder<bool>(
+          valueListenable: AdService.nativeExhausted,
+          builder: (_, exhausted, __) {
+            // Hide the whole block only once the native ad has exhausted its
+            // retries — not on a transient failure mid-retry, which would
+            // unmount the slot and kill the retry loop.
+            if (exhausted) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: Spacing.xs, bottom: 6),
+                  child: Text(
+                    'Sponsored',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                          letterSpacing: 0.6,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ),
+                AdService.nativeMedium(),
+              ],
+            );
+          },
         );
       },
     );

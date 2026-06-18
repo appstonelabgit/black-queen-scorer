@@ -14,6 +14,7 @@ import '../../data/models/session.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
+import '../../shared/widgets/error_state.dart';
 import 'widgets/bid_keypad.dart';
 import 'widgets/player_selector.dart';
 import 'widgets/result_toggle.dart';
@@ -113,14 +114,15 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
   }
 
   Future<void> _commit(bool won, Session session) async {
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
     if (_bidder == null) {
       Haptics.warning();
-      _shakeBidder.forward(from: 0);
+      if (!reduceMotion) _shakeBidder.forward(from: 0);
       return;
     }
     if (_bidValue <= 0) {
       Haptics.warning();
-      _shakeBid.forward(from: 0);
+      if (!reduceMotion) _shakeBid.forward(from: 0);
       return;
     }
     Haptics.medium();
@@ -170,7 +172,7 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
   }
 
   Future<bool> _onWillPop() async {
-    if (widget.roundId == null || !_dirty) return true;
+    if (!_dirty) return true;
     final ok = await ConfirmDialog.show(
       context,
       title: 'Discard changes?',
@@ -185,11 +187,14 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
   Widget build(BuildContext context) {
     final sessionAsync = ref.watch(sessionByIdProvider(widget.sessionId));
     return sessionAsync.when(
-      loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator())),
+      loading: () => const Scaffold(body: BrandedLoader()),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text('Error: $e')),
+        body: ErrorState(
+          title: 'Couldn\'t load this session',
+          message: 'Something went wrong reading the round.',
+          onRetry: () => ref.invalidate(sessionByIdProvider(widget.sessionId)),
+        ),
       ),
       data: (session) {
         if (session == null) {
@@ -268,7 +273,7 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
             padding: const EdgeInsets.all(Spacing.md),
             children: [
               _section(
-                'Who bid?',
+                'Who called?',
                 _shakeBidder,
                 PlayerSelector(
                   players: session.players,
@@ -289,7 +294,7 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
               ),
               const SizedBox(height: Spacing.lg),
               _section(
-                'Who\'s with the bidder?',
+                'Who\'s with the caller?',
                 _shakeTeam,
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,7 +302,7 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
                     Text(
                       _bidder == null
                           ? Strings.pickBidderFirst
-                          : 'Tap to add teammates. The bidder is always on the team.',
+                          : 'Tap to add teammates. The caller is always on the team.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context)
                                 .colorScheme
@@ -329,7 +334,7 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
               ),
               const SizedBox(height: Spacing.lg),
               _section(
-                'Bid amount',
+                'Target score',
                 _shakeBid,
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

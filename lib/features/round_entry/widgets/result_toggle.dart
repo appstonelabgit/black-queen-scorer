@@ -89,45 +89,58 @@ class _BtnState extends State<_Btn>
   @override
   Widget build(BuildContext context) {
     final enabled = widget.onTap != null;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: enabled ? (_) => _c.forward() : null,
-      onTapUp: enabled ? (_) => _c.reverse() : null,
-      onTapCancel: enabled ? () => _c.reverse() : null,
-      onTap: enabled
-          ? () {
-              Haptics.medium();
-              widget.onTap!();
-            }
-          : null,
-      child: AnimatedBuilder(
-        animation: _c,
-        builder: (_, child) => Transform.scale(
-          scale: 1 - _c.value,
-          child: child,
-        ),
-        child: Opacity(
-          opacity: enabled ? 1 : 0.4,
-          child: Container(
-            height: 72,
-            decoration: BoxDecoration(
-              color: widget.color,
-              borderRadius: BorderRadius.circular(Radii.md),
-            ),
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(widget.icon, color: Colors.white, size: 22),
-                const SizedBox(width: Spacing.sm),
-                Text(
-                  widget.label,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700),
-                ),
-              ],
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    final pressable = enabled && !reduceMotion;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: widget.label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: pressable ? (_) => _c.forward() : null,
+        onTapUp: pressable ? (_) => _c.reverse() : null,
+        onTapCancel: pressable ? () => _c.reverse() : null,
+        onTap: enabled
+            ? () {
+                Haptics.medium();
+                widget.onTap!();
+              }
+            : null,
+        child: AnimatedBuilder(
+          animation: _c,
+          builder: (_, child) => Transform.scale(
+            scale: 1 - _c.value,
+            child: child,
+          ),
+          child: Opacity(
+            opacity: enabled ? 1 : 0.4,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 72),
+              padding: const EdgeInsets.symmetric(
+                horizontal: Spacing.sm,
+                vertical: Spacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: widget.color,
+                borderRadius: BorderRadius.circular(Radii.md),
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(widget.icon, color: Colors.white, size: 22),
+                  const SizedBox(width: Spacing.sm),
+                  Flexible(
+                    child: Text(
+                      widget.label,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

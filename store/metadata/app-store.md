@@ -64,7 +64,7 @@ court,piece,rang,29,partner,trump,bid,kot,sar,bidding,leaderboard,offline,live,s
 ```
 Black Queen Scorer — fast offline scorer for Court Piece, Rang, 29, and Partner 29. Now with live-share: friends watch your scoreboard update in real time.
 
-Tracks scores across rounds for team card games like Court Piece, Rang, 29, Partner 29, and similar bidding variants. Built for the one friend who always ends up keeping score — so the game never has to pause.
+Tracks scores across rounds for team card games like Court Piece, Rang, 29, Partner 29, and similar trick-taking variants. Built for the one friend who always ends up keeping score — so the game never has to pause.
 
 NEW IN 1.2
 
@@ -72,7 +72,7 @@ NEW IN 1.2
   Tap the broadcast icon on any session. A QR code and short code appear. Friends open the link or scan the QR and watch every round land in real time. No sign-up. No app install required for viewers — it works in any browser.
 
 • Seating order
-  Lock the player order you actually sit in around the table. Scoreboard and round entry follow it, so "bidder + left + right" always matches the room.
+  Lock the player order you actually sit in around the table. Scoreboard and round entry follow it, so "caller + left + right" always matches the room.
 
 • Persistent session banner
   Leave the app, take a call, answer a text. Come back and one tap resumes your active session. No lost rounds.
@@ -83,13 +83,13 @@ NEW IN 1.2
 KEY FEATURES
 
 • Start a session in seconds — 4 to 12 players, names remembered from past sessions.
-• Enter a round in under 10 seconds — pick bidder, tap team, enter bid on a custom keypad, tap Won or Lost.
+• Enter a round in under 10 seconds — pick caller, tap team, enter target score on a custom keypad, tap Won or Lost.
 • Always-correct math — scores recompute from scratch after every edit or delete.
-• Optional bidder bonus — configure a ±bonus that applies only to the bidder.
+• Optional caller bonus — configure a ±bonus that applies only to the caller.
 • Live leaderboard — rows reorder smoothly; scores pulse green on gain, red on loss.
 • Round history — edit or delete any round, leaderboard recalculates instantly.
-• Celebratory finish — podium, fun stats (biggest single win, boldest bidder, longest streak), shareable summary card.
-• Lifetime stats — top winner, top earner, cold streak, most bids won across every session you play.
+• Celebratory finish — podium, fun stats (biggest single win, boldest call, longest streak), shareable summary card.
+• Lifetime stats — top winner, top earner, cold streak, most contracts won across every session you play.
 
 WHO IT'S FOR
 
@@ -97,7 +97,7 @@ Groups of 4 to 12 friends playing in person. One person enters scores while ever
 
 SUPPORTED GAMES
 
-Any bidding-based team card game: one player bids, a team tries to make the bid, opposition wins if they fail. Court Piece, Rang (Trump), 29, Partner 29, Black Queen, and regional variants.
+Classic trick-taking team card games: one player calls a target score, their team tries to reach it, the opposing team wins if they fall short. Court Piece, Rang (Trump), 29, Partner 29, Black Queen, and regional variants. Scores are points only — no money, no wagers, no stakes.
 
 ALSO KNOWN AS
 
@@ -138,7 +138,7 @@ Target order for 1.2.0 (6 shots — scoreboard leads because it answers "what do
 
 1. **Scoreboard** with broadcast icon visible
 2. **Live share sheet** (QR + demo code `ABCD-2345`) — hero differentiator
-3. Round entry mid-bid
+3. Round entry mid-round
 4. Summary podium
 5. Home with active-session resume banner
 6. Lifetime stats

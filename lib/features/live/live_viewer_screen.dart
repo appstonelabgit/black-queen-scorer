@@ -4,7 +4,9 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../core/firebase/firebase_bootstrap.dart';
 import '../../core/live/live_models.dart';
 import '../../core/live/live_session_viewer.dart';
+import '../../core/live/live_view_history.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/formatters.dart';
 import '../../shared/widgets/shell_back_button.dart';
 
 class LiveViewerScreen extends StatefulWidget {
@@ -18,6 +20,11 @@ class LiveViewerScreen extends StatefulWidget {
 class _LiveViewerScreenState extends State<LiveViewerScreen> {
   Future<bool>? _bootstrap;
 
+  /// Signature of the last snapshot written to view history. Lets us record
+  /// the game once and refresh only when the players or finished state
+  /// actually change, instead of on every RTDB tick.
+  String? _recordedSig;
+
   @override
   void initState() {
     super.initState();
@@ -25,6 +32,19 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     // user opened this screen via a deep-link cold start, Firebase may
     // not have finished initializing yet.
     _bootstrap = FirebaseBootstrap.init();
+  }
+
+  /// Persists this game to "recently watched" so the user can re-open it
+  /// later without the code. Idempotent per unchanged snapshot.
+  void _recordView(LiveSessionState state) {
+    final sig = '${state.finished}|${state.players.join(',')}';
+    if (sig == _recordedSig) return;
+    _recordedSig = sig;
+    LiveViewHistory.instance.record(
+      code: widget.code,
+      players: state.players,
+      finished: state.finished,
+    );
   }
 
   @override
@@ -66,6 +86,7 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
                 if (state == null) {
                   return _EmptyState(code: widget.code);
                 }
+                _recordView(state);
                 return _LiveScoreboard(state: state);
               },
             );
@@ -197,7 +218,7 @@ class _HeadlineCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${state.players.length} players · '
+                  '${plural(state.players.length, 'player')} · '
                   '${state.bonus > 0 ? "+${state.bonus} bonus" : "no bonus"}',
                   style:
                       text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
@@ -286,7 +307,7 @@ class _LastRoundCard extends StatelessWidget {
               ),
               const SizedBox(width: Spacing.sm),
               Text(
-                '${round.bidder} bid ${round.bid}',
+                '${round.bidder} called ${round.bid}',
                 style: text.titleSmall?.copyWith(fontWeight: FontWeight.w700),
               ),
               const Spacer(),

@@ -12,7 +12,7 @@ One file, one tab open while submitting. Paste from here into App Store Connect 
 |---|---|
 | App name | Black Queen Scorer |
 | Version | 1.2.0 |
-| Build number | 1 (bump for every re-upload) |
+| Build number | 4 (bump for every re-upload) |
 | iOS bundle id | `com.blackqueenscorer.app` |
 | Android application id | `com.blackqueenscorer.app` |
 | Primary category | iOS: Utilities · Play: Apps → Tools |
@@ -115,7 +115,7 @@ Live-share your card night. Fast offline scorer for Court Piece, Rang, 29.
 - Data encrypted in transit: **Yes** (HTTPS).
 - User can request deletion: **Yes** — "Settings → Data → Delete all history" plus uninstall clears the anonymous Firebase UID.
 
-**Content rating**: answer **No** to every content question → result **Everyone**.
+**Content rating**: pick the **Utility/Tools/Productivity** branch (NOT Game — this is a scorekeeper). Answer **No** to every content question, including both gambling questions (real-money AND simulated). Result **Everyone**. Full rationale + exact answers in `store/metadata/play-store.md` § Content rating. (1.2.0 build 4 reframes "bid" → "call a target score" across listing + app to clear the gambling-perception rejection.)
 
 **Contains ads**: **Yes**.
 

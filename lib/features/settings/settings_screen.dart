@@ -278,11 +278,11 @@ class _ActionRow extends StatelessWidget {
   }
 }
 
-class _AboutCard extends StatelessWidget {
+class _AboutCard extends ConsumerWidget {
   const _AboutCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     return Column(
@@ -322,7 +322,7 @@ class _AboutCard extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          Strings.version,
+          ref.watch(appVersionProvider).value ?? '',
           style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
         ),
         const SizedBox(height: Spacing.sm),

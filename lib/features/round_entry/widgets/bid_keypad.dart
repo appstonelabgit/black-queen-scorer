@@ -104,11 +104,12 @@ class _KeypadButtonState extends State<_KeypadButton>
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTapDown: (_) => _c.forward(),
-      onTapCancel: () => _c.reverse(),
-      onTapUp: (_) => _c.reverse(),
+      onTapDown: reduceMotion ? null : (_) => _c.forward(),
+      onTapCancel: reduceMotion ? null : () => _c.reverse(),
+      onTapUp: reduceMotion ? null : (_) => _c.reverse(),
       onTap: () {
         Haptics.light();
         widget.onTap();

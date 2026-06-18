@@ -63,7 +63,7 @@ class RoundTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$teamLabel · bid $bidStr · $resultStr',
+                      '$teamLabel · target $bidStr · $resultStr',
                       style: text.bodyLarge,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

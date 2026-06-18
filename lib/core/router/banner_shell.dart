@@ -15,7 +15,18 @@ class BannerShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(child: child),
+        // The banner (below) owns the real bottom edge and applies the
+        // home-indicator inset via its own SafeArea. Strip the bottom inset
+        // from the wrapped screen so its SafeArea/bottomNavigationBar doesn't
+        // reserve that space a second time — otherwise a phantom gap appears
+        // between the screen's bottom content and the banner.
+        Expanded(
+          child: MediaQuery.removePadding(
+            context: context,
+            removeBottom: true,
+            child: child,
+          ),
+        ),
         const _PersistentBanner(),
       ],
     );

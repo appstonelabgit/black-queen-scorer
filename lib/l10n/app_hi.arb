@@ -1,0 +1,14 @@
+{
+  "@@locale": "hi",
+  "tagline": "ताश की रातों के लिए तेज़ स्कोरिंग",
+  "resume": "जारी रखें",
+  "history": "इतिहास",
+  "settings": "सेटिंग्स",
+  "finishSession": "सत्र समाप्त करें",
+  "resultWon": "जीते",
+  "resultLost": "हारे",
+  "shareButton": "साझा करें",
+  "backToHome": "होम पर वापस",
+  "teamLabel": "टीम",
+  "oppositionLabel": "विपक्ष"
+}

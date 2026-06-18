@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'models/session.dart';
 import 'storage/players_repository.dart';
@@ -6,6 +7,12 @@ import 'storage/session_repository.dart';
 
 final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
   return SessionRepository();
+});
+
+/// App version string ("v1.2.0") read from build metadata at runtime.
+final appVersionProvider = FutureProvider<String>((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  return 'v${info.version}';
 });
 
 final playersRepositoryProvider = Provider<PlayersRepository>((ref) {
@@ -51,6 +58,11 @@ class RecentPlayersController extends StateNotifier<List<String>> {
 
   Future<void> add(String name) async {
     await _repo.addMany([name]);
+    state = _repo.getRecent();
+  }
+
+  Future<void> rename(String oldName, String newName) async {
+    await _repo.rename(oldName, newName);
     state = _repo.getRecent();
   }
 

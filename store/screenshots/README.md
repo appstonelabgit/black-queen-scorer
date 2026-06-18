@@ -63,7 +63,7 @@ Take 6 screenshots. **Scoreboard leads** — it answers "what does this app do" 
 |---|---|---|---|
 | 1 | **Scoreboard** (live, broadcast icon visible) | Home → Resume | *Live leaderboard. Zero spreadsheet.* |
 | 2 | **Live share sheet** (QR + short code) | Scoreboard → tap broadcast icon | *Friends watch in real time. No app needed for viewers.* |
-| 3 | **Round Entry** | Scoreboard → New Round, pick bidder + team + bid 700 | *Bidder, team, bid — under 10 seconds.* |
+| 3 | **Round Entry** | Scoreboard → New Round, pick caller + team + target 700 | *Caller, team, target — under 10 seconds.* |
 | 4 | **Summary** (finish) | Any session → Finish | *Finish with a shareable podium.* |
 | 5 | **Home** (with resume banner) | Launch after seeding with an active session | *One tap, back in the game.* |
 | 6 | **Lifetime stats** (History) | Home → History | *See who really owns the table.* |
@@ -103,7 +103,7 @@ Short, scannable one-liners calibrated for App Store screenshot text:
 
 1. **Scoreboard** — *"Live leaderboard. Zero spreadsheet."*
 2. **Live share** — *"Friends watch in real time. No app needed for viewers."*
-3. **Round Entry** — *"Bidder, team, bid — under 10 seconds."*
+3. **Round Entry** — *"Caller, team, target — under 10 seconds."*
 4. **Summary** — *"Finish with a shareable podium."*
 5. **Home** — *"One tap, back in the game."*
 6. **Lifetime stats** — *"See who really owns the table."*

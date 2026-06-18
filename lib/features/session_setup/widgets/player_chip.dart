@@ -22,6 +22,7 @@ class PlayerChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
 
     final avatarColor = _colorFor(name, scheme.brightness);
     final bg = selected
@@ -33,10 +34,11 @@ class PlayerChip extends StatelessWidget {
 
     return Semantics(
       button: true,
+      enabled: enabled,
       selected: selected,
       label: name,
       child: AnimatedContainer(
-        duration: AppDurations.fast,
+        duration: reduceMotion ? Duration.zero : AppDurations.fast,
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
           color: bg,
@@ -59,7 +61,7 @@ class PlayerChip extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: Spacing.sm + 2,
-                vertical: Spacing.sm,
+                vertical: Spacing.sm + 2,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
