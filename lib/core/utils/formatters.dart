@@ -12,14 +12,23 @@ String formatScore(int n) {
 String formatBid(int n) => NumberFormat('#,###').format(n);
 
 String formatDuration(Duration d) {
+  if (d.inDays >= 1) {
+    final days = d.inDays;
+    final h = d.inHours.remainder(24);
+    return h > 0 ? '${days}d ${h}h' : '${days}d';
+  }
   if (d.inHours >= 1) {
     final h = d.inHours;
     final m = d.inMinutes.remainder(60);
-    return '${h}h ${m}m';
+    return m > 0 ? '${h}h ${m}m' : '${h}h';
   }
   if (d.inMinutes >= 1) return '${d.inMinutes} min';
   return '${d.inSeconds}s';
 }
+
+/// "1 player", "3 players" — count + correctly pluralized noun.
+String plural(int n, String singular, [String? pluralForm]) =>
+    '$n ${n == 1 ? singular : (pluralForm ?? '${singular}s')}';
 
 String formatRelativeDate(DateTime dt) {
   final now = DateTime.now();

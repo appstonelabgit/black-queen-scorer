@@ -185,7 +185,7 @@ class _HistoryTile extends ConsumerWidget {
                       Text(
                         '${formatRelativeDate(session.finishedAt ?? session.startedAt)} '
                         '· ${DateFormat.jm().format(session.finishedAt ?? session.startedAt)} '
-                        '· ${session.players.length} players · ${session.rounds.length} rounds',
+                        '· ${plural(session.players.length, 'player')} · ${plural(session.rounds.length, 'round')}',
                         style: text.bodySmall?.copyWith(
                             color: scheme.onSurfaceVariant),
                         maxLines: 1,
@@ -264,14 +264,14 @@ class _LifetimeStatsBlock extends StatelessWidget {
       final count = stats.mostBidsWon!.count;
       cards.add(StatsCard(
         emoji: '🎯',
-        title: 'Most bids won',
+        title: 'Most targets won',
         value: stats.mostBidsWon!.name,
-        subtitle: '$count ${count == 1 ? 'bid' : 'bids'}',
+        subtitle: '$count ${count == 1 ? 'target' : 'targets'}',
       ));
     }
     if (stats.biggestSingleGain != null) {
       cards.add(StatsCard(
-        emoji: '💰',
+        emoji: '📈',
         title: 'Biggest single win',
         value:
             '${stats.biggestSingleGain!.name} ${formatScore(stats.biggestSingleGain!.amount)}',
@@ -289,8 +289,8 @@ class _LifetimeStatsBlock extends StatelessWidget {
     }
     if (stats.boldestBidder != null) {
       cards.add(StatsCard(
-        emoji: '🎲',
-        title: 'Boldest bidder',
+        emoji: '🃏',
+        title: 'Boldest caller',
         value: stats.boldestBidder!.name,
         subtitle: 'avg ${stats.boldestBidder!.avg.toStringAsFixed(0)}',
       ));

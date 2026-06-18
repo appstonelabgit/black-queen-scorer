@@ -19,6 +19,8 @@ import '../../data/scoring.dart';
 import '../../features/live/live_share_sheet.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
+import '../../shared/widgets/empty_state.dart';
+import '../../shared/widgets/error_state.dart';
 import 'widgets/player_row.dart';
 import 'widgets/round_list.dart';
 
@@ -44,17 +46,24 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
   Widget build(BuildContext context) {
     final asyncSession = ref.watch(sessionByIdProvider(widget.sessionId));
     return asyncSession.when(
-      loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator())),
+      loading: () => const Scaffold(body: BrandedLoader()),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text('Error: $e')),
+        body: ErrorState(
+          title: 'Couldn\'t load this session',
+          message: 'Something went wrong reading the scores.',
+          onRetry: () => ref.invalidate(sessionByIdProvider(widget.sessionId)),
+        ),
       ),
       data: (session) {
         if (session == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: const Center(child: Text('Session not found')),
+            body: const EmptyState(
+              icon: PhosphorIconsDuotone.cardsThree,
+              title: 'Session not found',
+              subtitle: 'It may have been finished or removed.',
+            ),
           );
         }
         return _build(session);
@@ -99,8 +108,8 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
               style: text.titleLarge,
             ),
             Text(
-              '${session.players.length} players · '
-              '${widget.readOnly ? '${session.rounds.length} rounds' : formatDuration(session.duration)}',
+              '${plural(session.players.length, 'player')} · '
+              '${widget.readOnly ? plural(session.rounds.length, 'round') : formatDuration(session.duration)}',
               style: text.bodySmall
                   ?.copyWith(color: scheme.onSurfaceVariant),
             ),
@@ -111,20 +120,15 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
         actions: widget.readOnly
             ? []
             : [
-                IconButton(
-                  tooltip: 'Share live',
-                  icon: const Icon(PhosphorIconsRegular.broadcast),
+                TextButton.icon(
                   onPressed: () => _onShareLive(session),
+                  icon: const Icon(PhosphorIconsRegular.broadcast, size: 18),
+                  label: const Text('Share live'),
                 ),
                 IconButton(
                   tooltip: 'Session options',
                   icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
                   onPressed: () => _showSessionOptions(session),
-                ),
-                IconButton(
-                  tooltip: 'Finish session',
-                  icon: const Icon(PhosphorIconsRegular.flagCheckered),
-                  onPressed: () => _onFinish(session),
                 ),
               ],
       ),
@@ -178,7 +182,6 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                     ? null
                     : (i) => _showRoundOptions(session, i),
               ),
-              const SizedBox(height: 96),
             ],
           ),
         ),
@@ -197,29 +200,28 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                       child: const Text(Strings.finishSession),
                     ),
                     const SizedBox(height: Spacing.xs),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 64,
-                      child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(Radii.md),
-                          ),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(64),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(Radii.md),
                         ),
-                        onPressed: () async {
-                          Haptics.medium();
-                          await _openNewRound(session);
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(PhosphorIconsRegular.plus),
-                            const SizedBox(width: Spacing.sm),
-                            Text('New Round',
+                      ),
+                      onPressed: () async {
+                        Haptics.medium();
+                        await _openNewRound(session);
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(PhosphorIconsRegular.plus),
+                          const SizedBox(width: Spacing.sm),
+                          Flexible(
+                            child: Text('New Round',
                                 style: text.titleMedium
                                     ?.copyWith(color: Colors.white)),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

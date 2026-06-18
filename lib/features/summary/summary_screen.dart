@@ -198,7 +198,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                     ),
                     const SizedBox(height: Spacing.xs),
                     Text(
-                      '${session.players.length} players · ${stats.totalRounds} rounds · ${formatDuration(stats.totalDuration)}',
+                      '${plural(session.players.length, 'player')} · ${plural(stats.totalRounds, 'round')} · ${formatDuration(stats.totalDuration)}',
                       style: text.bodyMedium?.copyWith(
                           color: scheme.onSurfaceVariant),
                       textAlign: TextAlign.center,
@@ -272,19 +272,30 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
   }
 
   List<Widget> _buildStatCards(SessionStats stats) {
+    // Lead with the headline achievements (target wins, streaks), then the
+    // big single-round swings, with flavour stats last — so the grid scans
+    // top-down from most to least useful.
     final cards = <Widget>[];
     if (stats.mostBidsWon != null) {
       final count = stats.mostBidsWon!.count;
       cards.add(StatsCard(
         emoji: '🎯',
-        title: 'Most bids won',
+        title: 'Most targets won',
         value: stats.mostBidsWon!.name,
-        subtitle: '$count ${count == 1 ? 'bid' : 'bids'}',
+        subtitle: '$count ${count == 1 ? 'target' : 'targets'}',
+      ));
+    }
+    if (stats.longestWinStreak != null) {
+      cards.add(StatsCard(
+        emoji: '🔥',
+        title: 'Longest win streak',
+        value: stats.longestWinStreak!.name,
+        subtitle: '${stats.longestWinStreak!.streak} in a row',
       ));
     }
     if (stats.biggestSingleGain != null) {
       cards.add(StatsCard(
-        emoji: '💰',
+        emoji: '📈',
         title: 'Biggest single win',
         value:
             '${stats.biggestSingleGain!.name} ${formatScore(stats.biggestSingleGain!.amount)}',
@@ -300,18 +311,10 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
         subtitle: 'Round ${stats.biggestSingleLoss!.round}',
       ));
     }
-    if (stats.longestWinStreak != null) {
-      cards.add(StatsCard(
-        emoji: '🔥',
-        title: 'Longest win streak',
-        value: stats.longestWinStreak!.name,
-        subtitle: '${stats.longestWinStreak!.streak} in a row',
-      ));
-    }
     if (stats.boldestBidder != null) {
       cards.add(StatsCard(
-        emoji: '🎲',
-        title: 'Boldest bidder',
+        emoji: '🃏',
+        title: 'Boldest caller',
         value: stats.boldestBidder!.name,
         subtitle:
             'avg ${stats.boldestBidder!.avg.toStringAsFixed(0)}',

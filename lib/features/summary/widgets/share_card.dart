@@ -85,7 +85,7 @@ class ShareCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '${session.players.length} players · ${stats.totalRounds} rounds · ${formatDuration(stats.totalDuration)}',
+                    '${plural(session.players.length, 'player')} · ${plural(stats.totalRounds, 'round')} · ${formatDuration(stats.totalDuration)}',
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 22,
