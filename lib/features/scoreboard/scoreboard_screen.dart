@@ -274,6 +274,7 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
     );
     if (!ok) return;
     if (!mounted) return;
+    Haptics.medium();
     AdService.onSessionFinished();
     context.go('/session/${s.id}/summary');
   }

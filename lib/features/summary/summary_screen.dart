@@ -98,6 +98,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
 
   Future<void> _share(Session session, SessionStats stats) async {
     if (_sharing) return;
+    Haptics.medium();
     setState(() => _sharing = true);
     try {
       final Uint8List bytes = await _screenshotController.captureFromWidget(
@@ -215,6 +216,15 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                     ),
                   ],
                 ),
+                if (stats.ranked.isNotEmpty) ...[
+                  const SizedBox(height: Spacing.lg),
+                  _WinnerBanner(
+                    name: stats.ranked.first.name,
+                    score: stats.ranked.first.score,
+                    tie: stats.ranked.length >= 2 &&
+                        stats.ranked[0].score == stats.ranked[1].score,
+                  ),
+                ],
                 const SizedBox(height: Spacing.lg),
                 if (stats.ranked.length >= 3)
                   Podium(top: stats.ranked.take(3).toList()),
@@ -367,4 +377,74 @@ class _ConfettiPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ConfettiPainter old) => old.t != t;
+}
+
+/// The emotional peak of the summary — a gold-accented banner naming the
+/// winner (or declaring a tie). Shown for every game, including 2-player
+/// ones that don't qualify for the 3-step podium.
+class _WinnerBanner extends StatelessWidget {
+  final String name;
+  final int score;
+  final bool tie;
+  const _WinnerBanner(
+      {required this.name, required this.score, required this.tie});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.lg, vertical: Spacing.md),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            scheme.secondary.withValues(alpha: 0.22),
+            scheme.secondary.withValues(alpha: 0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(Radii.lg),
+        border: Border.all(color: scheme.secondary.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            tie ? PhosphorIconsFill.handshake : PhosphorIconsFill.trophy,
+            size: 34,
+            color: scheme.secondary,
+          ),
+          const SizedBox(width: Spacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  tie ? 'It\'s a tie!' : '$name wins!',
+                  style: text.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: scheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  tie
+                      ? 'Top score ${formatScore(score)}'
+                      : 'Final score ${formatScore(score)}',
+                  style: text.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
