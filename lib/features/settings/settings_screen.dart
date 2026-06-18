@@ -237,7 +237,10 @@ class _ActionRow extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(Radii.md),
         onTap: onTap,
-        child: Container(
+        child: Semantics(
+          button: true,
+          label: '$title. $subtitle',
+          child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Radii.md),
             border: Border.all(color: border),
@@ -272,6 +275,7 @@ class _ActionRow extends StatelessWidget {
                   size: 16, color: scheme.onSurfaceVariant),
             ],
           ),
+        ),
         ),
       ),
     );

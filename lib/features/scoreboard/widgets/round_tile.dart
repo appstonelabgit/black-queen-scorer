@@ -27,18 +27,17 @@ class RoundTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final brightness = Theme.of(context).brightness;
     final won = round.won;
-    final posColor = brightness == Brightness.light
-        ? const Color(0xFF2E7D32)
-        : const Color(0xFF66BB6A);
-    final negColor = brightness == Brightness.light
-        ? const Color(0xFFC62828)
-        : const Color(0xFFEF5350);
+    final posColor = successColor(brightness);
+    final negColor = dangerColor(brightness);
 
     final teamLabel = _summarizeTeam(round);
     final bidStr = formatBid(round.bidAmount);
     final resultStr = won ? 'Won' : 'Lost';
     final deltaLabel =
         '${won ? '+' : '\u2212'}$bidStr / ${won ? '\u2212' : '+'}$bidStr';
+
+    final semanticsLabel =
+        'Round $index, $teamLabel, target $bidStr, $resultStr, $deltaLabel';
 
     return Material(
       color: scheme.surfaceContainerHighest,
@@ -47,7 +46,11 @@ class RoundTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(Radii.md),
         onTap: onTap,
         onLongPress: onLongPress,
-        child: Padding(
+        child: Semantics(
+          button: true,
+          label: semanticsLabel,
+          onLongPressHint: 'Round options',
+          child: Padding(
           padding: const EdgeInsets.symmetric(
               horizontal: Spacing.md, vertical: Spacing.sm + 2),
           child: Row(
@@ -82,6 +85,7 @@ class RoundTile extends StatelessWidget {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

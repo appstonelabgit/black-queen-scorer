@@ -396,15 +396,18 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
                   Text('Result',
                       style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(width: Spacing.sm),
-                  Text(
-                    _canCommit
-                        ? 'Tap to save the round'
-                        : 'Fill the fields above',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: _canCommit
-                              ? Theme.of(context).colorScheme.onSurfaceVariant
-                              : Theme.of(context).colorScheme.error,
-                        ),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      _canCommit
+                          ? 'Tap to save the round'
+                          : 'Fill the fields above',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: _canCommit
+                                ? Theme.of(context).colorScheme.onSurfaceVariant
+                                : Theme.of(context).colorScheme.error,
+                          ),
+                    ),
                   ),
                 ],
               ),
@@ -448,12 +451,9 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
     final brightness = Theme.of(context).brightness;
     final teamBg = scheme.primary.withValues(alpha: 0.14);
     final teamBorder = scheme.primary.withValues(alpha: 0.35);
-    final oppBg = brightness == Brightness.light
-        ? const Color(0xFFC62828).withValues(alpha: 0.12)
-        : const Color(0xFFEF5350).withValues(alpha: 0.14);
-    final oppBorder = brightness == Brightness.light
-        ? const Color(0xFFC62828).withValues(alpha: 0.30)
-        : const Color(0xFFEF5350).withValues(alpha: 0.30);
+    final oppBg = dangerColor(brightness)
+        .withValues(alpha: brightness == Brightness.light ? 0.12 : 0.14);
+    final oppBorder = dangerColor(brightness).withValues(alpha: 0.30);
     final text = Theme.of(context).textTheme;
     Widget pill(String label, int count, String list, Color bg, Color border) {
       return Container(

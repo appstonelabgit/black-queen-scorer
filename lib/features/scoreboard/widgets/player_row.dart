@@ -65,23 +65,15 @@ class _PlayerRowState extends State<PlayerRow>
     final avatar = playerColor(widget.name, brightness);
     final isGold = widget.rank == 1;
     final pulseColor = (widget.pulseDelta ?? 0) > 0
-        ? (brightness == Brightness.light
-            ? const Color(0xFF2E7D32)
-            : const Color(0xFF66BB6A))
-        : (brightness == Brightness.light
-            ? const Color(0xFFC62828)
-            : const Color(0xFFEF5350));
+        ? successColor(brightness)
+        : dangerColor(brightness);
 
     Color baseColor() {
       if (widget.score == 0) return scheme.onSurfaceVariant;
       if (widget.score > 0) {
-        return brightness == Brightness.light
-            ? const Color(0xFF2E7D32)
-            : const Color(0xFF66BB6A);
+        return successColor(brightness);
       }
-      return brightness == Brightness.light
-          ? const Color(0xFFC62828)
-          : const Color(0xFFEF5350);
+      return dangerColor(brightness);
     }
 
     return Material(

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +12,7 @@ import '../../data/providers.dart';
 import '../../data/scoring.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/empty_state.dart';
+import '../../shared/widgets/error_state.dart';
 import '../../shared/widgets/shell_back_button.dart';
 import '../session_setup/widgets/player_chip.dart';
 import '../summary/widgets/stats_card.dart';
@@ -30,8 +29,12 @@ class HistoryScreen extends ConsumerWidget {
         title: const Text(Strings.history),
       ),
       body: sessionsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const BrandedLoader(),
+        error: (e, _) => ErrorState(
+          title: 'Couldn\'t load history',
+          message: 'Something went wrong reading your past sessions.',
+          onRetry: () => ref.invalidate(allSessionsStreamProvider),
+        ),
         data: (sessions) {
           final finished = sessions.where((s) => s.finishedAt != null).toList();
           if (finished.isEmpty) {
@@ -86,6 +89,14 @@ class _HistoryTile extends ConsumerWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
     final winner = ranked.isNotEmpty ? ranked.first : null;
 
+    final semanticsLabel = winner != null
+        ? '${winner.key} won, ${formatScore(winner.value)}, '
+            '${formatRelativeDate(session.finishedAt ?? session.startedAt)}, '
+            '${plural(session.players.length, 'player')}, ${plural(session.rounds.length, 'round')}'
+        : 'Session, '
+            '${formatRelativeDate(session.finishedAt ?? session.startedAt)}, '
+            '${plural(session.players.length, 'player')}, ${plural(session.rounds.length, 'round')}';
+
     return Dismissible(
       key: ValueKey(session.id),
       direction: DismissDirection.endToStart,
@@ -107,12 +118,17 @@ class _HistoryTile extends ConsumerWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(Radii.md),
           onTap: () => context.push('/history/${session.id}'),
-          child: Padding(
+          child: Semantics(
+            button: true,
+            label: semanticsLabel,
+            onTapHint: 'View summary',
+            child: Padding(
             padding: const EdgeInsets.all(Spacing.md),
             child: Row(
               children: [
                 if (winner != null)
-                  Stack(
+                  ExcludeSemantics(
+                    child: Stack(
                     clipBehavior: Clip.none,
                     children: [
                       Container(
@@ -149,6 +165,7 @@ class _HistoryTile extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  ),
                 const SizedBox(width: Spacing.md),
                 Expanded(
                   child: Column(
@@ -169,9 +186,7 @@ class _HistoryTile extends ConsumerWidget {
                               formatScore(winner.value),
                               style: text.labelLarge?.copyWith(
                                 color: winner.value >= 0
-                                    ? (brightness == Brightness.light
-                                        ? const Color(0xFF2E7D32)
-                                        : const Color(0xFF66BB6A))
+                                    ? successColor(brightness)
                                     : scheme.error,
                                 fontFeatures: const [
                                   FontFeature.tabularFigures()
@@ -198,6 +213,7 @@ class _HistoryTile extends ConsumerWidget {
                     size: 18, color: scheme.onSurfaceVariant),
               ],
             ),
+          ),
           ),
         ),
       ),

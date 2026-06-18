@@ -125,6 +125,10 @@ class ManagePlayersScreen extends ConsumerWidget {
     required String name,
   }) async {
     Haptics.selection();
+    final existingLower = ref
+        .read(recentPlayersProvider)
+        .map((e) => e.toLowerCase())
+        .toSet();
     final controller = TextEditingController(text: name);
     final newName = await showDialog<String>(
       context: context,
@@ -156,6 +160,12 @@ class ManagePlayersScreen extends ConsumerWidget {
                   final v = controller.text.trim();
                   if (v.isEmpty) {
                     setState(() => error = 'Enter a name');
+                    return;
+                  }
+                  if (v.toLowerCase() != name.toLowerCase() &&
+                      existingLower.contains(v.toLowerCase())) {
+                    setState(() =>
+                        error = 'A player with that name already exists');
                     return;
                   }
                   Navigator.of(ctx).pop(v);

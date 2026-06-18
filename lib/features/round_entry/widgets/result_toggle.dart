@@ -133,10 +133,10 @@ class _BtnState extends State<_Btn>
                   Flexible(
                     child: Text(
                       widget.label,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
                   ),
                 ],

@@ -411,6 +411,7 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
       showDragHandle: true,
       isScrollControlled: true,
       builder: (ctx) {
+        final brightness = Theme.of(ctx).colorScheme.brightness;
         final deltas = <({int roundNum, int delta})>[];
         for (var i = 0; i < session.rounds.length; i++) {
           final d = computeRoundDelta(session.rounds[i], session);
@@ -463,9 +464,9 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                             ],
                             color: d.delta == 0
                                 ? Theme.of(ctx).colorScheme.onSurfaceVariant
-                                : d.delta > 0
-                                    ? const Color(0xFF2E7D32)
-                                    : const Color(0xFFC62828),
+                                : d.delta >= 0
+                                    ? successColor(brightness)
+                                    : dangerColor(brightness),
                           ),
                         ),
                       ],

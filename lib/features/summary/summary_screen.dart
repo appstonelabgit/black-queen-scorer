@@ -20,6 +20,8 @@ import '../../data/scoring.dart';
 import '../../shared/widgets/app_button.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
+import '../../shared/widgets/empty_state.dart';
+import '../../shared/widgets/error_state.dart';
 import '../scoreboard/widgets/player_row.dart';
 import 'widgets/podium.dart';
 import 'widgets/share_card.dart';
@@ -135,17 +137,24 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
   Widget build(BuildContext context) {
     final asyncSession = ref.watch(sessionByIdProvider(widget.sessionId));
     return asyncSession.when(
-      loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator())),
+      loading: () => const Scaffold(body: BrandedLoader()),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text('Error: $e')),
+        body: ErrorState(
+          title: 'Couldn\'t load the summary',
+          message: 'Something went wrong reading this session.',
+          onRetry: () => ref.invalidate(sessionByIdProvider(widget.sessionId)),
+        ),
       ),
       data: (session) {
         if (session == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: const Center(child: Text('Session not found')),
+            body: const EmptyState(
+              icon: PhosphorIconsDuotone.cardsThree,
+              title: 'Session not found',
+              subtitle: 'It may have been removed.',
+            ),
           );
         }
         return _buildSummary(session);
@@ -155,6 +164,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
 
   Widget _buildSummary(Session session) {
     final stats = computeStats(session);
+    final statCards = _buildStatCards(stats);
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
 
@@ -220,7 +230,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                   const SizedBox(height: Spacing.sm),
                 ],
                 const SizedBox(height: Spacing.lg),
-                if (_buildStatCards(stats).isNotEmpty) ...[
+                if (statCards.isNotEmpty) ...[
                   Text('Fun Stats', style: text.titleMedium),
                   const SizedBox(height: Spacing.sm),
                   GridView.count(
@@ -230,7 +240,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                     crossAxisSpacing: Spacing.sm,
                     mainAxisSpacing: Spacing.sm,
                     childAspectRatio: 1.7,
-                    children: _buildStatCards(stats),
+                    children: statCards,
                   ),
                 ],
                 const SizedBox(height: Spacing.lg),
