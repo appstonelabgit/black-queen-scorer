@@ -21,6 +21,7 @@ import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/error_state.dart';
+import '../../shared/widgets/shell_back_button.dart';
 import 'widgets/player_row.dart';
 import 'widgets/round_list.dart';
 
@@ -98,6 +99,11 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        // The active board is reached via `go` (no back stack), so add an
+        // explicit back: it returns Home, leaving the session saved and
+        // resumable from the "Session in progress" card. Read-only past games
+        // are pushed, so this pops back to the summary.
+        leading: const ShellBackButton(),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
