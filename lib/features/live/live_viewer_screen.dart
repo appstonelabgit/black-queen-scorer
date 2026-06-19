@@ -7,7 +7,10 @@ import '../../core/live/live_session_viewer.dart';
 import '../../core/live/live_view_history.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
+import '../../shared/widgets/empty_state.dart';
+import '../../shared/widgets/error_state.dart';
 import '../../shared/widgets/shell_back_button.dart';
+import '../scoreboard/widgets/player_row.dart';
 
 class LiveViewerScreen extends StatefulWidget {
   final String code;
@@ -52,39 +55,59 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: const ShellBackButton(),
-        title: Text(widget.code),
         centerTitle: true,
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Watch live'),
+            Text(
+              widget.code,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    letterSpacing: 2,
+                  ),
+            ),
+          ],
+        ),
       ),
       body: SafeArea(
         child: FutureBuilder<bool>(
           future: _bootstrap,
           builder: (context, bootSnap) {
             if (bootSnap.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator());
+              return const BrandedLoader();
             }
             if (bootSnap.data != true) {
-              return _ErrorState(
+              return ErrorState(
                 title: 'Can\'t connect',
                 message:
-                    'Live viewing needs a signed-in Firebase session. Check your internet, then open the link again.',
+                    'Live viewing needs a signed-in session. Check your internet, then open the link again.',
+                onRetry: () => setState(() {
+                  _bootstrap = FirebaseBootstrap.init();
+                }),
               );
             }
             return StreamBuilder<LiveSessionState?>(
               stream: LiveSessionViewer.watch(widget.code),
               builder: (context, snap) {
                 if (snap.hasError) {
-                  return _ErrorState(
+                  return const ErrorState(
                     title: 'Can\'t read this session',
                     message:
                         'The host may have signed out, or the session was blocked. Ask them to re-share the code.',
                   );
                 }
                 if (snap.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const BrandedLoader();
                 }
                 final state = snap.data;
                 if (state == null) {
-                  return _EmptyState(code: widget.code);
+                  return EmptyState(
+                    icon: PhosphorIconsDuotone.magnifyingGlass,
+                    title: 'No live game with code ${widget.code}',
+                    subtitle:
+                        'Check the code with whoever invited you, or ask them to start a new session.',
+                  );
                 }
                 _recordView(state);
                 return _LiveScoreboard(state: state);
@@ -121,7 +144,10 @@ class _LiveScoreboard extends StatelessWidget {
           final rank = entry.key + 1;
           final name = entry.value;
           final score = state.scores[name] ?? 0;
-          return _LeaderRow(rank: rank, name: name, score: score);
+          return Padding(
+            padding: const EdgeInsets.only(bottom: Spacing.sm),
+            child: PlayerRow(rank: rank, name: name, score: score),
+          );
         }),
         if (state.lastRound != null) ...[
           const SizedBox(height: Spacing.lg),
@@ -148,16 +174,17 @@ class _StatusStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isLive = !state.finished;
+    final liveColor = successColor(scheme.brightness);
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: (isLive ? Colors.green : scheme.outline)
+            color: (isLive ? liveColor : scheme.outline)
                 .withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(Radii.pill),
             border: Border.all(
-              color: (isLive ? Colors.green : scheme.outline)
+              color: (isLive ? liveColor : scheme.outline)
                   .withValues(alpha: 0.4),
             ),
           ),
@@ -169,7 +196,7 @@ class _StatusStrip extends StatelessWidget {
                     ? PhosphorIconsFill.circle
                     : PhosphorIconsRegular.checkCircle,
                 size: 12,
-                color: isLive ? Colors.green : scheme.onSurfaceVariant,
+                color: isLive ? liveColor : scheme.onSurfaceVariant,
               ),
               const SizedBox(width: 6),
               Text(isLive ? 'Live' : 'Finished'),
@@ -228,50 +255,13 @@ class _HeadlineCard extends StatelessWidget {
           ),
           if (leader != null)
             Text(
-              '${leader.value}',
+              formatScore(leader.value),
               style: text.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: scheme.secondary,
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LeaderRow extends StatelessWidget {
-  final int rank;
-  final String name;
-  final int score;
-  const _LeaderRow(
-      {required this.rank, required this.name, required this.score});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 28,
-            child: Text(
-              '$rank.',
-              style: text.titleMedium?.copyWith(color: scheme.onSurfaceVariant),
-            ),
-          ),
-          Expanded(
-            child: Text(name, style: text.titleMedium),
-          ),
-          Text(
-            '$score',
-            style: text.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: score >= 0 ? scheme.primary : scheme.error,
-            ),
-          ),
         ],
       ),
     );
@@ -286,6 +276,8 @@ class _LastRoundCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final resultColor =
+        round.won ? successColor(scheme.brightness) : dangerColor(scheme.brightness);
     return Container(
       padding: const EdgeInsets.all(Spacing.md),
       decoration: BoxDecoration(
@@ -302,7 +294,7 @@ class _LastRoundCard extends StatelessWidget {
                 round.won
                     ? PhosphorIconsFill.checkCircle
                     : PhosphorIconsFill.xCircle,
-                color: round.won ? scheme.primary : scheme.error,
+                color: resultColor,
                 size: 20,
               ),
               const SizedBox(width: Spacing.sm),
@@ -314,7 +306,7 @@ class _LastRoundCard extends StatelessWidget {
               Text(
                 round.won ? 'Won' : 'Lost',
                 style: text.titleSmall?.copyWith(
-                  color: round.won ? scheme.primary : scheme.error,
+                  color: resultColor,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -324,67 +316,6 @@ class _LastRoundCard extends StatelessWidget {
           Text(
             'Team: ${round.bidTeam.join(" + ")}',
             style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  final String title;
-  final String message;
-  const _ErrorState({required this.title, required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.all(Spacing.xl),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(PhosphorIconsRegular.warningCircle,
-              size: 64, color: scheme.error),
-          const SizedBox(height: Spacing.md),
-          Text(title,
-              style: text.titleMedium, textAlign: TextAlign.center),
-          const SizedBox(height: Spacing.sm),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  final String code;
-  const _EmptyState({required this.code});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.all(Spacing.xl),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(PhosphorIconsRegular.magnifyingGlass,
-              size: 64, color: scheme.onSurfaceVariant),
-          const SizedBox(height: Spacing.md),
-          Text('No live session with code $code',
-              style: text.titleMedium, textAlign: TextAlign.center),
-          const SizedBox(height: Spacing.sm),
-          Text(
-            'Check the code with whoever invited you, or ask them to start a new session.',
-            textAlign: TextAlign.center,
-            style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ),
