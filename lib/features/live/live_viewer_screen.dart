@@ -11,6 +11,7 @@ import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/error_state.dart';
 import '../../shared/widgets/shell_back_button.dart';
 import '../session_setup/widgets/player_chip.dart';
+import '../summary/widgets/stats_card.dart';
 
 class LiveViewerScreen extends StatefulWidget {
   final String code;
@@ -171,7 +172,20 @@ class _LiveScoreboard extends StatelessWidget {
             leading: started,
           ),
         ],
-        if (state.lastRound != null) ...[
+        // When the game has ended, surface the same fun-stats analytics the
+        // host sees on their summary — the watcher gets a complete recap.
+        if (state.finished) ...[
+          ...(() {
+            final cards = _liveFunStats(context, state);
+            if (cards.isEmpty) return <Widget>[];
+            return [
+              const SizedBox(height: Spacing.lg),
+              Text('Final stats', style: text.titleMedium),
+              const SizedBox(height: Spacing.sm),
+              StatsGrid(cards: cards),
+            ];
+          })(),
+        ] else if (state.lastRound != null) ...[
           const SizedBox(height: Spacing.lg),
           Text('Last round', style: text.titleMedium),
           const SizedBox(height: Spacing.sm),
@@ -179,7 +193,9 @@ class _LiveScoreboard extends StatelessWidget {
         ],
         const SizedBox(height: Spacing.lg),
         Text(
-          'Updates live. Close anytime.',
+          state.finished
+              ? 'This game has ended.'
+              : 'Updates live. Close anytime.',
           style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
@@ -251,6 +267,89 @@ class _LeaderRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Fun-stat cards computed from a finished live session's rounds — mirrors
+/// the host's summary "Fun Stats" so a watcher gets the full recap.
+List<Widget> _liveFunStats(BuildContext context, LiveSessionState state) {
+  final rounds = state.rounds;
+  if (rounds.isEmpty) return const [];
+  final scheme = Theme.of(context).colorScheme;
+  final success = successColor(scheme.brightness);
+  final danger = dangerColor(scheme.brightness);
+
+  final wonBy = <String, int>{};
+  final bidTotals = <String, int>{};
+  final bidCounts = <String, int>{};
+  String? gainName;
+  var gain = -1 << 62;
+  var gainRound = 0;
+  String? lossName;
+  var loss = 1 << 62;
+  var lossRound = 0;
+
+  for (var i = 0; i < rounds.length; i++) {
+    final r = rounds[i];
+    if (r.won) wonBy[r.bidder] = (wonBy[r.bidder] ?? 0) + 1;
+    bidTotals[r.bidder] = (bidTotals[r.bidder] ?? 0) + r.bid;
+    bidCounts[r.bidder] = (bidCounts[r.bidder] ?? 0) + 1;
+    r.delta.forEach((name, v) {
+      if (v > gain) {
+        gain = v;
+        gainName = name;
+        gainRound = i + 1;
+      }
+      if (v < loss) {
+        loss = v;
+        lossName = name;
+        lossRound = i + 1;
+      }
+    });
+  }
+
+  final cards = <Widget>[];
+  if (wonBy.isNotEmpty) {
+    final top = wonBy.entries.reduce((a, b) => b.value > a.value ? b : a);
+    cards.add(StatsCard(
+      icon: PhosphorIconsFill.target,
+      title: 'Most targets won',
+      value: top.key,
+      avatarName: top.key,
+      subtitle: plural(top.value, 'target'),
+    ));
+  }
+  if (bidCounts.isNotEmpty) {
+    final avgs = bidCounts.entries
+        .map((e) => MapEntry(e.key, (bidTotals[e.key] ?? 0) / e.value))
+        .toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    cards.add(StatsCard(
+      icon: PhosphorIconsFill.cardsThree,
+      title: 'Boldest caller',
+      value: avgs.first.key,
+      avatarName: avgs.first.key,
+      subtitle: 'avg ${avgs.first.value.toStringAsFixed(0)}',
+    ));
+  }
+  if (gainName != null && gain > 0) {
+    cards.add(StatsCard(
+      icon: PhosphorIconsFill.trendUp,
+      accent: success,
+      title: 'Biggest single win',
+      value: '$gainName ${formatScore(gain)}',
+      subtitle: 'Round $gainRound',
+    ));
+  }
+  if (lossName != null && loss < 0) {
+    cards.add(StatsCard(
+      icon: PhosphorIconsFill.trendDown,
+      accent: danger,
+      title: 'Biggest single loss',
+      value: '$lossName ${formatScore(loss)}',
+      subtitle: 'Round $lossRound',
+    ));
+  }
+  return cards;
 }
 
 class _StatusStrip extends StatelessWidget {

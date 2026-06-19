@@ -23,7 +23,9 @@ class StatsGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: Spacing.sm,
         mainAxisSpacing: Spacing.sm,
-        mainAxisExtent: 80 * scale,
+        // Fits the 3-line card (icon row + value + subtitle) with breathing
+        // room, and grows with the text scale.
+        mainAxisExtent: 100 * scale,
       ),
       children: cards,
     );
