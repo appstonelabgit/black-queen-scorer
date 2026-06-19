@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
+import '../../data/models/session.dart';
 import '../../data/providers.dart';
 import '../../data/scoring.dart';
 import '../../shared/widgets/empty_state.dart';
@@ -44,7 +46,14 @@ class PlayerStatsScreen extends ConsumerWidget {
               subtitle: 'This player has no finished sessions.',
             );
           }
-          return _Body(player: p);
+          final attended = sessions
+              .where((s) =>
+                  s.finishedAt != null &&
+                  s.players.any((pl) => pl.toLowerCase() == lower))
+              .toList()
+            ..sort((a, b) => (b.finishedAt ?? b.startedAt)
+                .compareTo(a.finishedAt ?? a.startedAt));
+          return _Body(player: p, attended: attended);
         },
       ),
     );
@@ -53,7 +62,8 @@ class PlayerStatsScreen extends ConsumerWidget {
 
 class _Body extends StatelessWidget {
   final PlayerLifetime player;
-  const _Body({required this.player});
+  final List<Session> attended;
+  const _Body({required this.player, required this.attended});
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +183,94 @@ class _Body extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: Spacing.lg),
+          Row(
+            children: [
+              Icon(PhosphorIconsRegular.calendarCheck,
+                  size: 18, color: scheme.primary),
+              const SizedBox(width: Spacing.sm),
+              Text('Attendance', style: text.titleMedium),
+              const SizedBox(width: Spacing.sm),
+              Text('${attended.length} ${attended.length == 1 ? 'game' : 'games'}',
+                  style: text.bodySmall
+                      ?.copyWith(color: scheme.onSurfaceVariant)),
+            ],
+          ),
+          const SizedBox(height: Spacing.sm),
+          ...attended.map((s) => _AttendanceRow(session: s, player: player.name)),
         ],
+      ),
+    );
+  }
+}
+
+/// One session the player attended: date, their score that night, a trophy if
+/// they topped it. Taps through to the session summary.
+class _AttendanceRow extends StatelessWidget {
+  final Session session;
+  final String player;
+  const _AttendanceRow({required this.session, required this.player});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final brightness = scheme.brightness;
+    final scores = computeScores(session);
+    final lower = player.toLowerCase();
+    final key = scores.keys.firstWhere(
+        (k) => k.toLowerCase() == lower,
+        orElse: () => player);
+    final myScore = scores[key] ?? 0;
+    final topScore =
+        scores.values.isEmpty ? 0 : scores.values.reduce((a, b) => a > b ? a : b);
+    final won = scores.isNotEmpty && myScore == topScore && myScore != 0;
+    final date = session.finishedAt ?? session.startedAt;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(Radii.md),
+        onTap: () => context.push('/history/${session.id}'),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.sm, vertical: Spacing.sm),
+          child: Row(
+            children: [
+              Icon(
+                won ? PhosphorIconsFill.trophy : PhosphorIconsRegular.calendarBlank,
+                size: 18,
+                color: won ? scheme.secondary : scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(formatRelativeDate(date), style: text.titleMedium),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${plural(session.players.length, 'player')} · ${plural(session.rounds.length, 'round')}',
+                      style: text.bodySmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                formatScore(myScore),
+                style: text.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: myScore >= 0
+                      ? successColor(brightness)
+                      : dangerColor(brightness),
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
