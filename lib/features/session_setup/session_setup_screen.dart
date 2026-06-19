@@ -263,12 +263,16 @@ class _PlayersSection extends StatelessWidget {
       unselected.add(p);
     }
 
+    final atMax = selected.length >= 12;
+
     return _Section(
       icon: PhosphorIconsRegular.users,
       title: 'Players (${selected.length})',
-      subtitle: selected.isEmpty
-          ? 'Add 4–12 players. Order them to match real-life seating.'
-          : 'Drag to match real-life seating — makes picking teammates faster.',
+      subtitle: atMax
+          ? 'That\'s the max of 12. Remove someone to swap in another.'
+          : selected.isEmpty
+              ? 'Add 4–12 players. Order them to match real-life seating.'
+              : 'Drag to match real-life seating — makes picking teammates faster.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -312,6 +316,7 @@ class _PlayersSection extends StatelessWidget {
                   PlayerChip(
                     name: p,
                     selected: false,
+                    enabled: !atMax,
                     onTap: () => onToggle(p),
                   ),
               ],
@@ -321,19 +326,20 @@ class _PlayersSection extends StatelessWidget {
           TextField(
             controller: controller,
             focusNode: focusNode,
+            enabled: !atMax,
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.done,
             decoration: InputDecoration(
-              hintText: Strings.addNewPlayer,
+              hintText: atMax ? 'Maximum 12 players' : Strings.addNewPlayer,
               prefixIcon:
                   const Icon(PhosphorIconsRegular.userPlus, size: 18),
               suffixIcon: IconButton(
                 tooltip: 'Add',
                 icon: const Icon(PhosphorIconsRegular.plus),
-                onPressed: onSubmitNew,
+                onPressed: atMax ? null : onSubmitNew,
               ),
             ),
-            onSubmitted: (_) => onSubmitNew(),
+            onSubmitted: atMax ? null : (_) => onSubmitNew(),
           ),
         ],
       ),

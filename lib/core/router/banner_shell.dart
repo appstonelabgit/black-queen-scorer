@@ -41,11 +41,17 @@ class _PersistentBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: RepaintBoundary(
-        key: const ValueKey('persistent-banner'),
-        child: AdService.banner(),
+    // Paint the banner strip + the home-indicator inset in the app surface
+    // colour so a loading/empty/short ad never exposes the black root behind
+    // the shell.
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surface,
+      child: SafeArea(
+        top: false,
+        child: RepaintBoundary(
+          key: const ValueKey('persistent-banner'),
+          child: AdService.banner(),
+        ),
       ),
     );
   }
