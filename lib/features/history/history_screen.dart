@@ -44,6 +44,7 @@ class HistoryScreen extends ConsumerWidget {
             );
           }
           final stats = computeLifetimeStats(finished);
+          final players = computePlayerLifetimes(finished);
           return ListView.builder(
             padding: const EdgeInsets.all(Spacing.md),
             itemCount: finished.length + 2,
@@ -51,7 +52,7 @@ class HistoryScreen extends ConsumerWidget {
               if (i == 0) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: Spacing.md),
-                  child: _LifetimeStatsBlock(stats: stats),
+                  child: _LifetimeStatsBlock(stats: stats, players: players),
                 );
               }
               if (i == 1) {
@@ -243,7 +244,11 @@ class _HistoryTile extends ConsumerWidget {
 
 class _LifetimeStatsBlock extends StatelessWidget {
   final LifetimeStats stats;
-  const _LifetimeStatsBlock({required this.stats});
+  final List<PlayerLifetime> players;
+  const _LifetimeStatsBlock({required this.stats, required this.players});
+
+  void _openPlayer(BuildContext context, String name) =>
+      context.push('/history/player/${Uri.encodeComponent(name)}');
 
   @override
   Widget build(BuildContext context) {
@@ -251,9 +256,8 @@ class _LifetimeStatsBlock extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final cards = <Widget>[];
 
-    final scheme0 = Theme.of(context).colorScheme;
-    final danger = dangerColor(scheme0.brightness);
-    final success = successColor(scheme0.brightness);
+    final danger = dangerColor(scheme.brightness);
+    final success = successColor(scheme.brightness);
 
     if (stats.mostSessionsWon != null) {
       final count = stats.mostSessionsWon!.wins;
@@ -263,6 +267,7 @@ class _LifetimeStatsBlock extends StatelessWidget {
         value: stats.mostSessionsWon!.name,
         avatarName: stats.mostSessionsWon!.name,
         subtitle: '$count session${count == 1 ? '' : 's'}',
+        onTap: () => _openPlayer(context, stats.mostSessionsWon!.name),
       ));
     }
     if (stats.topEarner != null) {
@@ -273,6 +278,7 @@ class _LifetimeStatsBlock extends StatelessWidget {
         avatarName: stats.topEarner!.name,
         accent: success,
         subtitle: formatScore(stats.topEarner!.total),
+        onTap: () => _openPlayer(context, stats.topEarner!.name),
       ));
     }
     if (stats.biggestLoser != null) {
@@ -283,6 +289,7 @@ class _LifetimeStatsBlock extends StatelessWidget {
         avatarName: stats.biggestLoser!.name,
         accent: danger,
         subtitle: formatScore(stats.biggestLoser!.total),
+        onTap: () => _openPlayer(context, stats.biggestLoser!.name),
       ));
     }
     if (stats.mostBidsWon != null) {
@@ -293,6 +300,50 @@ class _LifetimeStatsBlock extends StatelessWidget {
         value: stats.mostBidsWon!.name,
         avatarName: stats.mostBidsWon!.name,
         subtitle: '$count ${count == 1 ? 'target' : 'targets'}',
+        onTap: () => _openPlayer(context, stats.mostBidsWon!.name),
+      ));
+    }
+    // Derived aggregate cards from the per-player records.
+    final mostActive = players.isEmpty
+        ? null
+        : players.reduce((a, b) =>
+            b.sessionsPlayed > a.sessionsPlayed ? b : a);
+    if (mostActive != null && mostActive.sessionsPlayed > 0) {
+      cards.add(StatsCard(
+        icon: PhosphorIconsFill.fire,
+        title: 'Most active',
+        value: mostActive.name,
+        avatarName: mostActive.name,
+        subtitle: plural(mostActive.sessionsPlayed, 'session'),
+        onTap: () => _openPlayer(context, mostActive.name),
+      ));
+    }
+    // Best win rate among players with at least 2 sessions (avoids 1/1=100%).
+    final rateEligible =
+        players.where((p) => p.sessionsPlayed >= 2).toList();
+    if (rateEligible.isNotEmpty) {
+      final best = rateEligible
+          .reduce((a, b) => b.winRate > a.winRate ? b : a);
+      cards.add(StatsCard(
+        icon: PhosphorIconsFill.chartLineUp,
+        title: 'Best win rate',
+        value: '${best.name} ${(best.winRate * 100).round()}%',
+        accent: success,
+        subtitle: '${best.sessionsWon}/${best.sessionsPlayed} sessions',
+        onTap: () => _openPlayer(context, best.name),
+      ));
+    }
+    // Sharpest caller among players with at least 3 calls.
+    final callEligible = players.where((p) => p.callsMade >= 3).toList();
+    if (callEligible.isNotEmpty) {
+      final sharp = callEligible
+          .reduce((a, b) => b.callerSuccess > a.callerSuccess ? b : a);
+      cards.add(StatsCard(
+        icon: PhosphorIconsFill.crosshair,
+        title: 'Sharpest caller',
+        value: '${sharp.name} ${(sharp.callerSuccess * 100).round()}%',
+        subtitle: '${sharp.callsWon}/${sharp.callsMade} calls',
+        onTap: () => _openPlayer(context, sharp.name),
       ));
     }
     if (stats.biggestSingleGain != null) {
@@ -322,6 +373,7 @@ class _LifetimeStatsBlock extends StatelessWidget {
         value: stats.boldestBidder!.name,
         avatarName: stats.boldestBidder!.name,
         subtitle: 'avg ${stats.boldestBidder!.avg.toStringAsFixed(0)}',
+        onTap: () => _openPlayer(context, stats.boldestBidder!.name),
       ));
     }
 

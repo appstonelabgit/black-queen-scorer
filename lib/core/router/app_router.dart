@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/history/history_screen.dart';
+import '../../features/history/player_stats_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/live/live_viewer_screen.dart';
 import '../../features/live/watch_history_screen.dart';
@@ -79,6 +80,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/history',
             builder: (_, __) => const HistoryScreen(),
+          ),
+          GoRoute(
+            path: '/history/player/:name',
+            builder: (_, state) => PlayerStatsScreen(
+              name: Uri.decodeComponent(state.pathParameters['name']!),
+            ),
           ),
           GoRoute(
             path: '/history/:id',
