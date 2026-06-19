@@ -296,41 +296,52 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
               _section(
                 'Who\'s with the caller?',
                 _shakeTeam,
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _bidder == null
-                          ? Strings.pickBidderFirst
-                          : 'Tap to add teammates. The caller is always on the team.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                _bidder == null
+                    // Collapsed until a caller is picked — no point showing
+                    // (and dimming) the whole roster a second time.
+                    ? Text(
+                        Strings.pickBidderFirst,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Tap to add teammates. The caller is always on the team.',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
                           ),
-                    ),
-                    const SizedBox(height: Spacing.sm),
-                    PlayerSelector(
-                      players: session.players,
-                      multiSelect: true,
-                      selected: _teammates,
-                      excludeName: _bidder,
-                      enabled: _bidder != null,
-                      onToggle: (p) {
-                        setState(() {
-                          if (_teammates.contains(p)) {
-                            _teammates.remove(p);
-                          } else {
-                            _teammates.add(p);
-                          }
-                          _dirty = true;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: Spacing.sm),
-                    if (_bidder != null) _teamSplitLine(session),
-                  ],
-                ),
+                          const SizedBox(height: Spacing.sm),
+                          PlayerSelector(
+                            players: session.players,
+                            multiSelect: true,
+                            selected: _teammates,
+                            excludeName: _bidder,
+                            onToggle: (p) {
+                              setState(() {
+                                if (_teammates.contains(p)) {
+                                  _teammates.remove(p);
+                                } else {
+                                  _teammates.add(p);
+                                }
+                                _dirty = true;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: Spacing.sm),
+                          _teamSplitLine(session),
+                        ],
+                      ),
               ),
               const SizedBox(height: Spacing.lg),
               _section(

@@ -171,8 +171,11 @@ void main() {
     await tester.tap(chipsA.first);
     await tester.pump(const Duration(milliseconds: 200));
 
-    // There are now two B chips — one in the bidder section (first) and one
-    // in the team section (second). We want the team-section one.
+    // The team section appears once a caller is picked. There are now two B
+    // chips — one in the bidder section (first) and one in the team section
+    // (second). We want the team-section one.
+    await tester.ensureVisible(chipsB.at(1));
+    await tester.pump(const Duration(milliseconds: 100));
     await tester.tap(chipsB.at(1));
     await tester.pump(const Duration(milliseconds: 200));
 
