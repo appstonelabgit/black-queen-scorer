@@ -95,6 +95,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
+            path: '/history/:id/rounds',
+            builder: (_, state) => ScoreboardScreen(
+              sessionId: state.pathParameters['id']!,
+              readOnly: true,
+            ),
+          ),
+          GoRoute(
             path: '/settings',
             builder: (_, __) => const SettingsScreen(),
           ),

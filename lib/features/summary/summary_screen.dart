@@ -263,6 +263,16 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                       ? null
                       : () => _share(session, stats),
                 ),
+                const SizedBox(height: Spacing.sm),
+                AppButton(
+                  label: 'View all rounds',
+                  kind: AppButtonKind.outlined,
+                  icon: PhosphorIconsRegular.listNumbers,
+                  onPressed: () {
+                    Haptics.selection();
+                    context.push('/history/${session.id}/rounds');
+                  },
+                ),
                 if (!widget.fromHistory) ...[
                   const SizedBox(height: Spacing.sm),
                   AppButton(

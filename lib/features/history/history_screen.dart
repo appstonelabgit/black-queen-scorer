@@ -207,6 +207,13 @@ class _HistoryTile extends ConsumerWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      if (ranked.length > 1) ...[
+                        const SizedBox(height: Spacing.sm),
+                        _FinisherStrip(
+                          names: ranked.map((e) => e.key).toList(),
+                          brightness: brightness,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -239,6 +246,70 @@ class _HistoryTile extends ConsumerWidget {
       );
     }
     return true;
+  }
+}
+
+/// A compact row of overlapping finisher avatars (ranked order) shown on a
+/// history tile, so the field at a glance — not just the winner. Caps at five
+/// with a "+N" overflow bubble.
+class _FinisherStrip extends StatelessWidget {
+  final List<String> names;
+  final Brightness brightness;
+  const _FinisherStrip({required this.names, required this.brightness});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    const max = 5;
+    const size = 22.0;
+    const step = 15.0;
+    final shown = names.take(max).toList();
+    final overflow = names.length - shown.length;
+    final count = shown.length + (overflow > 0 ? 1 : 0);
+
+    Widget bubble(Widget child, Color color) => Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: scheme.surfaceContainerHighest, width: 1.5),
+          ),
+          alignment: Alignment.center,
+          child: child,
+        );
+
+    return SizedBox(
+      height: size,
+      width: step * (count - 1) + size,
+      child: Stack(
+        children: [
+          for (var i = 0; i < shown.length; i++)
+            Positioned(
+              left: i * step,
+              child: bubble(
+                Text(
+                  playerInitial(shown[i]),
+                  style: text.labelSmall
+                      ?.copyWith(color: Colors.white, fontSize: 11),
+                ),
+                playerColor(shown[i], brightness),
+              ),
+            ),
+          if (overflow > 0)
+            Positioned(
+              left: shown.length * step,
+              child: bubble(
+                Text('+$overflow',
+                    style: text.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant, fontSize: 10)),
+                scheme.surface,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 
