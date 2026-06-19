@@ -10,7 +10,7 @@ import '../../core/utils/formatters.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/error_state.dart';
 import '../../shared/widgets/shell_back_button.dart';
-import '../scoreboard/widgets/player_row.dart';
+import '../session_setup/widgets/player_chip.dart';
 
 class LiveViewerScreen extends StatefulWidget {
   final String code;
@@ -130,25 +130,47 @@ class _LiveScoreboard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final sortedPlayers = [...state.players]
       ..sort((a, b) => (state.scores[b] ?? 0).compareTo(state.scores[a] ?? 0));
+    final started = state.roundCount > 0;
 
     return ListView(
-      padding: const EdgeInsets.all(Spacing.md),
+      padding: const EdgeInsets.fromLTRB(
+          Spacing.md, Spacing.sm, Spacing.md, Spacing.lg),
       children: [
         _StatusStrip(state: state),
-        const SizedBox(height: Spacing.md),
-        _HeadlineCard(state: state),
-        const SizedBox(height: Spacing.md),
-        Text('Leaderboard', style: text.titleMedium),
         const SizedBox(height: Spacing.sm),
-        ...sortedPlayers.asMap().entries.map((entry) {
-          final rank = entry.key + 1;
-          final name = entry.value;
-          final score = state.scores[name] ?? 0;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: Spacing.sm),
-            child: PlayerRow(rank: rank, name: name, score: score),
-          );
-        }),
+        Text(
+          '${plural(state.players.length, 'player')} · '
+          '${state.bonus > 0 ? "+${state.bonus} bonus" : "no bonus"}',
+          style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: Spacing.lg),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text('Leaderboard', style: text.titleMedium),
+            const Spacer(),
+            if (!started)
+              Text('Waiting for round 1',
+                  style: text.bodySmall
+                      ?.copyWith(color: scheme.onSurfaceVariant)),
+          ],
+        ),
+        const SizedBox(height: Spacing.xs),
+        // Flat, divider-separated rows — lighter than per-row cards for a
+        // potentially long leaderboard.
+        for (var i = 0; i < sortedPlayers.length; i++) ...[
+          if (i > 0)
+            Divider(
+                height: 1,
+                color: scheme.outlineVariant.withValues(alpha: 0.4)),
+          _LeaderRow(
+            rank: i + 1,
+            name: sortedPlayers[i],
+            score: state.scores[sortedPlayers[i]] ?? 0,
+            leading: started,
+          ),
+        ],
         if (state.lastRound != null) ...[
           const SizedBox(height: Spacing.lg),
           Text('Last round', style: text.titleMedium),
@@ -157,11 +179,76 @@ class _LiveScoreboard extends StatelessWidget {
         ],
         const SizedBox(height: Spacing.lg),
         Text(
-          'Updates automatically. Close this screen anytime.',
+          'Updates live. Close anytime.',
           style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
       ],
+    );
+  }
+}
+
+/// Minimal leaderboard row — rank (trophy for the leader once play starts),
+/// avatar, name, signed score. No card chrome, just a hairline between rows.
+class _LeaderRow extends StatelessWidget {
+  final int rank;
+  final String name;
+  final int score;
+  final bool leading;
+  const _LeaderRow({
+    required this.rank,
+    required this.name,
+    required this.score,
+    required this.leading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final isLeader = leading && rank == 1;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Spacing.sm + 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24,
+            child: isLeader
+                ? Icon(PhosphorIconsFill.trophy,
+                    size: 18, color: scheme.secondary)
+                : Text('$rank',
+                    textAlign: TextAlign.center,
+                    style: text.bodyMedium
+                        ?.copyWith(color: scheme.onSurfaceVariant)),
+          ),
+          const SizedBox(width: Spacing.sm),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: playerColor(name, scheme.brightness),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(playerInitial(name),
+                style: text.labelLarge?.copyWith(color: Colors.white)),
+          ),
+          const SizedBox(width: Spacing.md),
+          Expanded(child: Text(name, style: text.titleMedium)),
+          Text(
+            formatScore(score),
+            style: text.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: score == 0
+                  ? scheme.onSurfaceVariant
+                  : (score > 0
+                      ? successColor(scheme.brightness)
+                      : dangerColor(scheme.brightness)),
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -209,61 +296,6 @@ class _StatusStrip extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],
-    );
-  }
-}
-
-class _HeadlineCard extends StatelessWidget {
-  final LiveSessionState state;
-  const _HeadlineCard({required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    final leader = state.scores.entries.isEmpty
-        ? null
-        : state.scores.entries.reduce((a, b) => a.value >= b.value ? a : b);
-    return Container(
-      padding: const EdgeInsets.all(Spacing.md),
-      decoration: BoxDecoration(
-        color: scheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(Radii.lg),
-        border: Border.all(color: scheme.primary.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(PhosphorIconsFill.crown, color: scheme.secondary, size: 32),
-          const SizedBox(width: Spacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  leader == null ? 'No rounds yet' : 'Leading: ${leader.key}',
-                  style: text.titleMedium,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${plural(state.players.length, 'player')} · '
-                  '${state.bonus > 0 ? "+${state.bonus} bonus" : "no bonus"}',
-                  style:
-                      text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-                ),
-              ],
-            ),
-          ),
-          if (leader != null)
-            Text(
-              formatScore(leader.value),
-              style: text.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: scheme.secondary,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-        ],
-      ),
     );
   }
 }
