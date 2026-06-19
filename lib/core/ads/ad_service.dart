@@ -22,6 +22,9 @@ class _BqsAdIdManager extends AdsIdManager {
           bannerId: cfg.bannerId,
           nativeId: cfg.nativeId,
           interstitialId: cfg.interstitialId,
+          // Supplying this makes apsl load an app-open ad at init and show it
+          // on every foreground resume via its AppLifecycleReactor.
+          appOpenId: cfg.appOpenId.isEmpty ? null : cfg.appOpenId,
         ),
       ];
 }
@@ -291,11 +294,38 @@ class _BannerSlot extends StatefulWidget {
 }
 
 class _BannerSlotState extends State<_BannerSlot> {
+  static const _maxAttempts = 3;
+  static const _retryDelay = Duration(seconds: 15);
+
+  int _attempts = 0;
+  int _reloadKey = 0;
+  Timer? _retryTimer;
+
   @override
   void initState() {
     super.initState();
     // Retry on (re)entry: a prior failure shouldn't permanently kill the slot.
     AdService.bannerStatus.value = AdLoadStatus.loading;
+    AdService.bannerStatus.addListener(_onStatus);
+  }
+
+  void _onStatus() {
+    if (AdService.bannerStatus.value != AdLoadStatus.failed) return;
+    if (_attempts >= _maxAttempts) return;
+    if (_retryTimer != null && _retryTimer!.isActive) return;
+    _retryTimer = Timer(_retryDelay, () {
+      if (!mounted) return;
+      _attempts++;
+      AdService.bannerStatus.value = AdLoadStatus.loading;
+      setState(() => _reloadKey++); // fresh banner widget → new load attempt
+    });
+  }
+
+  @override
+  void dispose() {
+    AdService.bannerStatus.removeListener(_onStatus);
+    _retryTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -307,11 +337,15 @@ class _BannerSlotState extends State<_BannerSlot> {
         return ValueListenableBuilder<AdLoadStatus>(
           valueListenable: AdService.bannerStatus,
           builder: (_, status, __) {
-            if (status == AdLoadStatus.failed) return const SizedBox.shrink();
-            return const SizedBox(
+            // Collapse only once retries are exhausted.
+            if (status == AdLoadStatus.failed && _attempts >= _maxAttempts) {
+              return const SizedBox.shrink();
+            }
+            return SizedBox(
               height: 50,
               child: ApslSequenceBannerAd(
-                orderOfAdNetworks: [AdNetwork.admob],
+                key: ValueKey(_reloadKey),
+                orderOfAdNetworks: const [AdNetwork.admob],
               ),
             );
           },

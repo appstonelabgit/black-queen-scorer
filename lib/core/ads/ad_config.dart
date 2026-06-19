@@ -13,9 +13,11 @@ const _testAppIdIos = 'ca-app-pub-3940256099942544~1458002511';
 const _testBannerAndroid = 'ca-app-pub-3940256099942544/6300978111';
 const _testNativeAndroid = 'ca-app-pub-3940256099942544/2247696110';
 const _testInterstitialAndroid = 'ca-app-pub-3940256099942544/1033173712';
+const _testAppOpenAndroid = 'ca-app-pub-3940256099942544/9257395921';
 const _testBannerIos = 'ca-app-pub-3940256099942544/2934735716';
 const _testNativeIos = 'ca-app-pub-3940256099942544/3986624511';
 const _testInterstitialIos = 'ca-app-pub-3940256099942544/4411468910';
+const _testAppOpenIos = 'ca-app-pub-3940256099942544/5575463023';
 
 /// Snapshot of the /ad_config node in Realtime Database. Drives runtime
 /// behavior so ad IDs and frequency can be tuned without releasing an app.
@@ -26,6 +28,7 @@ class AdConfig {
   final String bannerId;
   final String nativeId;
   final String interstitialId;
+  final String appOpenId;
 
   const AdConfig({
     required this.showAds,
@@ -34,6 +37,7 @@ class AdConfig {
     required this.bannerId,
     required this.nativeId,
     required this.interstitialId,
+    this.appOpenId = '',
   });
 
   static const AdConfig empty = AdConfig(
@@ -43,6 +47,7 @@ class AdConfig {
     bannerId: '',
     nativeId: '',
     interstitialId: '',
+    appOpenId: '',
   );
 
   bool get hasUsableIds =>
@@ -76,6 +81,7 @@ class AdConfigLoader {
         bannerId: platform['bannerId'] as String? ?? '',
         nativeId: platform['nativeId'] as String? ?? '',
         interstitialId: platform['interstitialId'] as String? ?? '',
+        appOpenId: platform['appOpenId'] as String? ?? '',
       );
     } catch (e) {
       debugPrint('AdConfigLoader failed: $e');
@@ -93,6 +99,7 @@ class AdConfigLoader {
       nativeId: isIos ? _testNativeIos : _testNativeAndroid,
       interstitialId:
           isIos ? _testInterstitialIos : _testInterstitialAndroid,
+      appOpenId: isIos ? _testAppOpenIos : _testAppOpenAndroid,
     );
   }
 }
