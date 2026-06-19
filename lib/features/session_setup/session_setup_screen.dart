@@ -50,7 +50,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
     super.dispose();
   }
 
-  bool get _canStart => _selected.length >= 4 && _selected.length <= 12;
+  bool get _canStart => _selected.length >= 4;
 
   void _toggle(String name) {
     setState(() {
@@ -59,7 +59,6 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
       if (existing >= 0) {
         _selected.removeAt(existing);
       } else {
-        if (_selected.length >= 12) return;
         _selected.add(name);
       }
     });
@@ -92,7 +91,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
       if (!_available.any((p) => p.toLowerCase() == lower)) {
         _available.insert(0, raw);
       }
-      if (_selected.length < 12) _selected.add(raw);
+      _selected.add(raw);
       _newPlayerCtrl.clear();
     });
     _newPlayerFocus.requestFocus();
@@ -263,16 +262,12 @@ class _PlayersSection extends StatelessWidget {
       unselected.add(p);
     }
 
-    final atMax = selected.length >= 12;
-
     return _Section(
       icon: PhosphorIconsRegular.users,
       title: 'Players (${selected.length})',
-      subtitle: atMax
-          ? 'That\'s the max of 12. Remove someone to swap in another.'
-          : selected.isEmpty
-              ? 'Add 4–12 players. Order them to match real-life seating.'
-              : 'Drag to match real-life seating — makes picking teammates faster.',
+      subtitle: selected.isEmpty
+          ? 'Add 4 or more players. Order them to match real-life seating.'
+          : 'Drag to match real-life seating — makes picking teammates faster.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -316,7 +311,6 @@ class _PlayersSection extends StatelessWidget {
                   PlayerChip(
                     name: p,
                     selected: false,
-                    enabled: !atMax,
                     onTap: () => onToggle(p),
                   ),
               ],
@@ -326,20 +320,19 @@ class _PlayersSection extends StatelessWidget {
           TextField(
             controller: controller,
             focusNode: focusNode,
-            enabled: !atMax,
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.done,
             decoration: InputDecoration(
-              hintText: atMax ? 'Maximum 12 players' : Strings.addNewPlayer,
+              hintText: Strings.addNewPlayer,
               prefixIcon:
                   const Icon(PhosphorIconsRegular.userPlus, size: 18),
               suffixIcon: IconButton(
                 tooltip: 'Add',
                 icon: const Icon(PhosphorIconsRegular.plus),
-                onPressed: atMax ? null : onSubmitNew,
+                onPressed: onSubmitNew,
               ),
             ),
-            onSubmitted: atMax ? null : (_) => onSubmitNew(),
+            onSubmitted: (_) => onSubmitNew(),
           ),
         ],
       ),
@@ -647,11 +640,8 @@ class _Footer extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    final hint = count < 4
-        ? 'Pick at least ${4 - count} more'
-        : count > 12
-            ? 'Max 12 players'
-            : 'Ready to start';
+    final hint =
+        count < 4 ? 'Pick at least ${4 - count} more' : 'Ready to start';
 
     return Container(
       padding: const EdgeInsets.fromLTRB(

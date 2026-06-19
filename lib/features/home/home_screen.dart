@@ -533,7 +533,7 @@ class _WelcomeHint extends StatelessWidget {
                         color: scheme.onSurface)),
                 const SizedBox(height: 2),
                 Text(
-                  'Add 4–12 players, pick a bonus, start tallying rounds.',
+                  'Add 4 or more players, pick a bonus, start tallying rounds.',
                   style: text.bodySmall
                       ?.copyWith(color: scheme.onSurfaceVariant),
                 ),
