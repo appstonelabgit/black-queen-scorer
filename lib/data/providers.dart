@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'models/session.dart';
+import 'scoring.dart';
 import 'storage/players_repository.dart';
 import 'storage/session_repository.dart';
 
@@ -34,6 +35,21 @@ final activeSessionProvider = Provider<Session?>((ref) {
 final sessionByIdProvider =
     StreamProvider.family<Session?, String>((ref, id) {
   return ref.watch(sessionRepositoryProvider).watch(id);
+});
+
+/// Aggregate lifetime stats, computed once per sessions change and cached —
+/// the underlying pass is O(sessions × rounds), so we don't want it on every
+/// History rebuild.
+final lifetimeStatsProvider = Provider<LifetimeStats>((ref) {
+  final sessions = ref.watch(allSessionsStreamProvider).value ?? const [];
+  return computeLifetimeStats(sessions);
+});
+
+/// Per-player lifetime records, memoized the same way. Shared by the History
+/// stats and the per-player breakdown screen.
+final playerLifetimesProvider = Provider<List<PlayerLifetime>>((ref) {
+  final sessions = ref.watch(allSessionsStreamProvider).value ?? const [];
+  return computePlayerLifetimes(sessions);
 });
 
 class RecentPlayersController extends StateNotifier<List<String>> {

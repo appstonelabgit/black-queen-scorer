@@ -43,8 +43,8 @@ class HistoryScreen extends ConsumerWidget {
               title: Strings.emptyHistory,
             );
           }
-          final stats = computeLifetimeStats(finished);
-          final players = computePlayerLifetimes(finished);
+          final stats = ref.watch(lifetimeStatsProvider);
+          final players = ref.watch(playerLifetimesProvider);
           return ListView.builder(
             padding: const EdgeInsets.all(Spacing.md),
             itemCount: finished.length + 2,

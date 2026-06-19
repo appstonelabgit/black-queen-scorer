@@ -37,7 +37,7 @@ class PlayerStatsScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(allSessionsStreamProvider),
         ),
         data: (sessions) {
-          final all = computePlayerLifetimes(sessions);
+          final all = ref.watch(playerLifetimesProvider);
           final lower = name.toLowerCase();
           final p = all.where((e) => e.name.toLowerCase() == lower).firstOrNull;
           if (p == null || p.sessionsPlayed == 0) {

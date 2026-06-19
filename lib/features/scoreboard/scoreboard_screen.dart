@@ -86,11 +86,13 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
       final old = _previousScores[e.key] ?? 0;
       pulseDeltas[e.key] = e.value - old;
     }
-    // Schedule update after frame.
+    // Snapshot the current scores after this frame so the next score change
+    // pulses against them. No setState — the next provider emission rebuilds;
+    // calling setState here forced a redundant second build per change.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (!_mapEq(_previousScores, scores)) {
-        setState(() => _previousScores = Map.of(scores));
+        _previousScores = Map.of(scores);
       }
     });
 
