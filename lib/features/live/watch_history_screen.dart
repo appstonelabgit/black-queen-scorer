@@ -113,8 +113,7 @@ class LiveGameTile extends StatelessWidget {
         onTap: () => onPick(game.code),
         child: Semantics(
           button: true,
-          label:
-              '$_title, ${game.code}, ${game.finished ? "ended" : "live"}',
+          label: '$_title, ${game.code}',
           child: Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: Spacing.sm, vertical: Spacing.sm),
@@ -128,13 +127,13 @@ class LiveGameTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(Radii.md),
                 ),
                 alignment: Alignment.center,
+                // Neutral icon — the recorded live/ended status is a stale
+                // snapshot, so don't assert it here; the viewer shows the
+                // real state on open.
                 child: Icon(
-                  game.finished
-                      ? PhosphorIconsFill.checkCircle
-                      : PhosphorIconsFill.broadcast,
+                  PhosphorIconsFill.broadcast,
                   size: 20,
-                  color:
-                      game.finished ? scheme.onSurfaceVariant : scheme.primary,
+                  color: scheme.primary,
                 ),
               ),
               const SizedBox(width: Spacing.md),
@@ -150,7 +149,7 @@ class LiveGameTile extends StatelessWidget {
                             ?.copyWith(color: scheme.onSurface)),
                     const SizedBox(height: 2),
                     Text(
-                      '${game.code} · ${game.finished ? 'Ended' : 'Live'} · ${formatRelativeDate(game.lastViewedAt)}',
+                      '${game.code} · watched ${formatRelativeDate(game.lastViewedAt)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: text.bodySmall
