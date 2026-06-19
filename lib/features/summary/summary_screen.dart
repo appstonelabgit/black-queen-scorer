@@ -297,28 +297,34 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
     // Lead with the headline achievements (target wins, streaks), then the
     // big single-round swings, with flavour stats last — so the grid scans
     // top-down from most to least useful.
+    final scheme = Theme.of(context).colorScheme;
+    final danger = dangerColor(scheme.brightness);
+    final success = successColor(scheme.brightness);
     final cards = <Widget>[];
     if (stats.mostBidsWon != null) {
       final count = stats.mostBidsWon!.count;
       cards.add(StatsCard(
-        emoji: '🎯',
+        icon: PhosphorIconsFill.target,
         title: 'Most targets won',
         value: stats.mostBidsWon!.name,
+        avatarName: stats.mostBidsWon!.name,
         subtitle: '$count ${count == 1 ? 'target' : 'targets'}',
       ));
     }
     if (stats.longestWinStreak != null) {
       cards.add(StatsCard(
-        emoji: '🔥',
+        icon: PhosphorIconsFill.flame,
         title: 'Longest win streak',
         value: stats.longestWinStreak!.name,
+        avatarName: stats.longestWinStreak!.name,
         subtitle: '${stats.longestWinStreak!.streak} in a row',
       ));
     }
     if (stats.biggestSingleGain != null) {
       cards.add(StatsCard(
-        emoji: '📈',
+        icon: PhosphorIconsFill.trendUp,
         title: 'Biggest single win',
+        accent: success,
         value:
             '${stats.biggestSingleGain!.name} ${formatScore(stats.biggestSingleGain!.amount)}',
         subtitle: 'Round ${stats.biggestSingleGain!.round}',
@@ -326,8 +332,9 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
     }
     if (stats.biggestSingleLoss != null) {
       cards.add(StatsCard(
-        emoji: '💣',
+        icon: PhosphorIconsFill.trendDown,
         title: 'Biggest single loss',
+        accent: danger,
         value:
             '${stats.biggestSingleLoss!.name} ${formatScore(stats.biggestSingleLoss!.amount)}',
         subtitle: 'Round ${stats.biggestSingleLoss!.round}',
@@ -335,9 +342,10 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
     }
     if (stats.boldestBidder != null) {
       cards.add(StatsCard(
-        emoji: '🃏',
+        icon: PhosphorIconsFill.cardsThree,
         title: 'Boldest caller',
         value: stats.boldestBidder!.name,
+        avatarName: stats.boldestBidder!.name,
         subtitle:
             'avg ${stats.boldestBidder!.avg.toStringAsFixed(0)}',
       ));

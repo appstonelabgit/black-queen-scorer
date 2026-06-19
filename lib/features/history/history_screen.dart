@@ -251,44 +251,55 @@ class _LifetimeStatsBlock extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final cards = <Widget>[];
 
+    final scheme0 = Theme.of(context).colorScheme;
+    final danger = dangerColor(scheme0.brightness);
+    final success = successColor(scheme0.brightness);
+
     if (stats.mostSessionsWon != null) {
       final count = stats.mostSessionsWon!.wins;
       cards.add(StatsCard(
-        emoji: '👑',
+        icon: PhosphorIconsFill.crown,
         title: 'Top winner',
         value: stats.mostSessionsWon!.name,
+        avatarName: stats.mostSessionsWon!.name,
         subtitle: '$count session${count == 1 ? '' : 's'}',
       ));
     }
     if (stats.topEarner != null) {
       cards.add(StatsCard(
-        emoji: '💸',
+        icon: PhosphorIconsFill.coins,
         title: 'Top earner',
         value: stats.topEarner!.name,
+        avatarName: stats.topEarner!.name,
+        accent: success,
         subtitle: formatScore(stats.topEarner!.total),
       ));
     }
     if (stats.biggestLoser != null) {
       cards.add(StatsCard(
-        emoji: '🧊',
+        icon: PhosphorIconsFill.snowflake,
         title: 'Cold streak',
         value: stats.biggestLoser!.name,
+        avatarName: stats.biggestLoser!.name,
+        accent: danger,
         subtitle: formatScore(stats.biggestLoser!.total),
       ));
     }
     if (stats.mostBidsWon != null) {
       final count = stats.mostBidsWon!.count;
       cards.add(StatsCard(
-        emoji: '🎯',
+        icon: PhosphorIconsFill.target,
         title: 'Most targets won',
         value: stats.mostBidsWon!.name,
+        avatarName: stats.mostBidsWon!.name,
         subtitle: '$count ${count == 1 ? 'target' : 'targets'}',
       ));
     }
     if (stats.biggestSingleGain != null) {
       cards.add(StatsCard(
-        emoji: '📈',
+        icon: PhosphorIconsFill.trendUp,
         title: 'Biggest single win',
+        accent: success,
         value:
             '${stats.biggestSingleGain!.name} ${formatScore(stats.biggestSingleGain!.amount)}',
         subtitle: 'Round ${stats.biggestSingleGain!.round}',
@@ -296,8 +307,9 @@ class _LifetimeStatsBlock extends StatelessWidget {
     }
     if (stats.biggestSingleLoss != null) {
       cards.add(StatsCard(
-        emoji: '💣',
+        icon: PhosphorIconsFill.trendDown,
         title: 'Biggest single loss',
+        accent: danger,
         value:
             '${stats.biggestSingleLoss!.name} ${formatScore(stats.biggestSingleLoss!.amount)}',
         subtitle: 'Round ${stats.biggestSingleLoss!.round}',
@@ -305,9 +317,10 @@ class _LifetimeStatsBlock extends StatelessWidget {
     }
     if (stats.boldestBidder != null) {
       cards.add(StatsCard(
-        emoji: '🃏',
+        icon: PhosphorIconsFill.cardsThree,
         title: 'Boldest caller',
         value: stats.boldestBidder!.name,
+        avatarName: stats.boldestBidder!.name,
         subtitle: 'avg ${stats.boldestBidder!.avg.toStringAsFixed(0)}',
       ));
     }
