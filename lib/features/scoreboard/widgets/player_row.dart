@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/haptics.dart';
 import '../../session_setup/widgets/player_chip.dart' show playerColor;
 
 class PlayerRow extends StatefulWidget {
@@ -76,12 +77,22 @@ class _PlayerRowState extends State<PlayerRow>
       return dangerColor(brightness);
     }
 
-    return Material(
+    return Semantics(
+      button: widget.onTap != null,
+      excludeSemantics: true,
+      label:
+          'Rank ${widget.rank}, ${widget.name}, ${formatScore(widget.score)}',
+      child: Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(Radii.md),
       child: InkWell(
         borderRadius: BorderRadius.circular(Radii.md),
-        onTap: widget.onTap,
+        onTap: widget.onTap == null
+            ? null
+            : () {
+                Haptics.selection();
+                widget.onTap!();
+              },
         child: Padding(
           padding: const EdgeInsets.symmetric(
               horizontal: Spacing.xs, vertical: Spacing.sm + 2),
@@ -133,6 +144,7 @@ class _PlayerRowState extends State<PlayerRow>
             ],
           ),
         ),
+      ),
       ),
     );
   }

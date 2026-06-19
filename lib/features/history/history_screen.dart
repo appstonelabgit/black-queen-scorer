@@ -481,15 +481,7 @@ class _LifetimeStatsBlock extends StatelessWidget {
           ),
           if (cards.isNotEmpty) ...[
             const SizedBox(height: Spacing.md),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: Spacing.sm,
-              mainAxisSpacing: Spacing.sm,
-              childAspectRatio: 1.7,
-              children: cards,
-            ),
+            StatsGrid(cards: cards),
           ],
         ],
       ),

@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/haptics.dart';
 import '../../data/models/session.dart';
 import '../../data/providers.dart';
 import '../../data/scoring.dart';
@@ -132,14 +133,7 @@ class _Body extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Spacing.md),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: Spacing.sm,
-            mainAxisSpacing: Spacing.sm,
-            childAspectRatio: 1.7,
-            children: [
+          StatsGrid(cards: [
               StatsCard(
                 icon: PhosphorIconsFill.crown,
                 title: 'Win rate',
@@ -231,44 +225,55 @@ class _AttendanceRow extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(Radii.md),
-        onTap: () => context.push('/history/${session.id}'),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: Spacing.sm, vertical: Spacing.sm),
-          child: Row(
-            children: [
-              Icon(
-                won ? PhosphorIconsFill.trophy : PhosphorIconsRegular.calendarBlank,
-                size: 18,
-                color: won ? scheme.secondary : scheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(formatRelativeDate(date), style: text.titleMedium),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${plural(session.players.length, 'player')} · ${plural(session.rounds.length, 'round')}',
-                      style: text.bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant),
-                    ),
-                  ],
+        onTap: () {
+          Haptics.selection();
+          context.push('/history/${session.id}');
+        },
+        child: Semantics(
+          button: true,
+          label:
+              '${formatRelativeDate(date)}, ${plural(session.players.length, 'player')} · ${plural(session.rounds.length, 'round')}, ${formatScore(myScore)}',
+          onTapHint: 'View summary',
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: Spacing.sm, vertical: Spacing.sm),
+            child: Row(
+              children: [
+                Icon(
+                  won
+                      ? PhosphorIconsFill.trophy
+                      : PhosphorIconsRegular.calendarBlank,
+                  size: 18,
+                  color: won ? scheme.secondary : scheme.onSurfaceVariant,
                 ),
-              ),
-              Text(
-                formatScore(myScore),
-                style: text.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: myScore >= 0
-                      ? successColor(brightness)
-                      : dangerColor(brightness),
-                  fontFeatures: const [FontFeature.tabularFigures()],
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(formatRelativeDate(date), style: text.titleMedium),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${plural(session.players.length, 'player')} · ${plural(session.rounds.length, 'round')}',
+                        style: text.bodySmall
+                            ?.copyWith(color: scheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                Text(
+                  formatScore(myScore),
+                  style: text.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: myScore >= 0
+                        ? successColor(brightness)
+                        : dangerColor(brightness),
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

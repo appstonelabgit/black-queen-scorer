@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../core/live/live_view_history.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/haptics.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 import '../../shared/widgets/shell_back_button.dart';
 
@@ -110,12 +111,16 @@ class LiveGameTile extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(Radii.md),
         onTap: () => onPick(game.code),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: Spacing.sm, vertical: Spacing.sm),
-          child: Row(
-            children: [
-              Container(
+        child: Semantics(
+          button: true,
+          label:
+              '$_title, ${game.code}, ${game.finished ? "ended" : "live"}',
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: Spacing.sm, vertical: Spacing.sm),
+            child: Row(
+              children: [
+                Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
@@ -154,14 +159,18 @@ class LiveGameTile extends StatelessWidget {
                   ],
                 ),
               ),
-              IconButton(
-                tooltip: 'Remove',
-                iconSize: 18,
-                icon:
-                    Icon(PhosphorIconsRegular.x, color: scheme.onSurfaceVariant),
-                onPressed: () => LiveViewHistory.instance.remove(game.code),
-              ),
-            ],
+                IconButton(
+                  tooltip: 'Remove ${game.code}',
+                  iconSize: 18,
+                  icon: Icon(PhosphorIconsRegular.x,
+                      color: scheme.onSurfaceVariant),
+                  onPressed: () {
+                    Haptics.selection();
+                    LiveViewHistory.instance.remove(game.code);
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

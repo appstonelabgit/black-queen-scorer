@@ -1,8 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../session_setup/widgets/player_chip.dart';
+
+/// Two-column grid of [StatsCard]s whose row height scales with the user's
+/// text size, so cards don't clip their value/subtitle at large accessibility
+/// text scales (the old fixed childAspectRatio overflowed).
+class StatsGrid extends StatelessWidget {
+  final List<Widget> cards;
+  const StatsGrid({super.key, required this.cards});
+
+  @override
+  Widget build(BuildContext context) {
+    final scale =
+        MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 2.0);
+    return GridView(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: Spacing.sm,
+        mainAxisSpacing: Spacing.sm,
+        mainAxisExtent: 80 * scale,
+      ),
+      children: cards,
+    );
+  }
+}
 
 /// A compact stat tile. Leads with either a player's colored avatar (when
 /// [avatarName] is set) or a brand-tinted Phosphor [icon]. Optionally tappable
@@ -87,7 +113,7 @@ class StatsCard extends StatelessWidget {
                 ),
               ),
               if (onTap != null)
-                Icon(Icons.chevron_right,
+                Icon(PhosphorIconsRegular.caretRight,
                     size: 16, color: scheme.onSurfaceVariant),
             ],
           ),

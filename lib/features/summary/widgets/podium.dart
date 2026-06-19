@@ -140,7 +140,9 @@ class _Step extends StatelessWidget {
           child: Text(
             '$place',
             style: text.headlineMedium?.copyWith(
-              color: Colors.white,
+              // Dark numeral on the bright medal fills — white failed AA
+              // (≈1.4:1 on gold). Reads like an engraved medal number.
+              color: const Color(0xFF1A1A1A),
               fontWeight: FontWeight.w800,
               fontSize: highlight ? 32 : 26,
             ),

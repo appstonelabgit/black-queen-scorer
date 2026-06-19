@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/tokens.dart';
+import '../../../core/utils/haptics.dart';
 import '../../../data/models/session.dart';
 import '../../../shared/widgets/empty_state.dart';
 import 'round_tile.dart';
@@ -49,7 +50,12 @@ class RoundList extends StatelessWidget {
           button: true,
           label: 'Rounds, ${collapsed ? 'collapsed' : 'expanded'}',
           child: InkWell(
-            onTap: onToggleCollapsed,
+            onTap: onToggleCollapsed == null
+                ? null
+                : () {
+                    Haptics.selection();
+                    onToggleCollapsed!();
+                  },
             borderRadius: BorderRadius.circular(Radii.sm),
             child: Padding(
               padding: const EdgeInsets.symmetric(

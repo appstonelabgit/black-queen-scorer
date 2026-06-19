@@ -248,15 +248,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                 if (statCards.isNotEmpty) ...[
                   Text('Fun Stats', style: text.titleMedium),
                   const SizedBox(height: Spacing.sm),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: Spacing.sm,
-                    mainAxisSpacing: Spacing.sm,
-                    childAspectRatio: 1.7,
-                    children: statCards,
-                  ),
+                  StatsGrid(cards: statCards),
                 ],
                 const SizedBox(height: Spacing.lg),
                 AppButton(

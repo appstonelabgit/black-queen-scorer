@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/haptics.dart';
 import '../../../data/models/round.dart';
 import '../../../data/models/session.dart';
 
@@ -45,7 +46,12 @@ class RoundTile extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(Radii.md),
         onTap: onTap,
-        onLongPress: onLongPress,
+        onLongPress: onLongPress == null
+            ? null
+            : () {
+                Haptics.selection();
+                onLongPress!();
+              },
         child: Semantics(
           button: true,
           label: semanticsLabel,

@@ -152,40 +152,42 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                             height: 1,
                             color: scheme.outlineVariant
                                 .withValues(alpha: 0.4)),
-                      AnimatedSwitcher(
-                        duration: AppDurations.slow,
-                        switchInCurve: Curves.easeOutCubic,
-                        child: PlayerRow(
-                          key: ValueKey(ranked[i].key),
-                          rank: i + 1,
-                          name: ranked[i].key,
-                          score: ranked[i].value,
-                          pulseDelta: pulseDeltas[ranked[i].key],
-                          onTap: () =>
-                              _showPlayerDetail(session, ranked[i].key),
-                        ),
+                      // No AnimatedSwitcher: keying by name made it cross-fade
+                      // between two different players on a rank swap (flicker).
+                      // The in-row score pulse already signals changes.
+                      PlayerRow(
+                        key: ValueKey(ranked[i].key),
+                        rank: i + 1,
+                        name: ranked[i].key,
+                        score: ranked[i].value,
+                        pulseDelta: pulseDeltas[ranked[i].key],
+                        onTap: () => _showPlayerDetail(session, ranked[i].key),
                       ),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(height: Spacing.sm),
-              RoundList(
-                session: session,
-                collapsed: _roundsCollapsed,
-                onToggleCollapsed: () => setState(
-                    () => _roundsCollapsed = !_roundsCollapsed),
-                onTap: widget.readOnly
-                    ? null
-                    : (i) {
-                        context.push(
-                          '/session/${session.id}/round/${session.rounds[i].id}',
-                        );
-                      },
-                onLongPress: widget.readOnly
-                    ? null
-                    : (i) => _showRoundOptions(session, i),
-              ),
+              // Skip the round list (and its own empty state) for an empty
+              // active session — the banner above already prompts "New Round".
+              if (!(session.rounds.isEmpty && !widget.readOnly)) ...[
+                const SizedBox(height: Spacing.sm),
+                RoundList(
+                  session: session,
+                  collapsed: _roundsCollapsed,
+                  onToggleCollapsed: () => setState(
+                      () => _roundsCollapsed = !_roundsCollapsed),
+                  onTap: widget.readOnly
+                      ? null
+                      : (i) {
+                          context.push(
+                            '/session/${session.id}/round/${session.rounds[i].id}',
+                          );
+                        },
+                  onLongPress: widget.readOnly
+                      ? null
+                      : (i) => _showRoundOptions(session, i),
+                ),
+              ],
             ],
           ),
         ),
