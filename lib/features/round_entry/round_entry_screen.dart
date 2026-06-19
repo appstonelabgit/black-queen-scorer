@@ -113,6 +113,74 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
     });
   }
 
+  /// Opens the themed numeric keypad in a bottom sheet, keyed off the target
+  /// box, so the keypad never permanently occupies the screen. Keypresses
+  /// update [_bidStr] live (parent setState) and refresh the sheet's display.
+  void _openKeypadSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      // Grow to fit the keypad + Done instead of clipping at the default half
+      // height; scrolls if it ever exceeds the screen (large text scale).
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheet) {
+            final text = Theme.of(ctx).textTheme;
+            final scheme = Theme.of(ctx).colorScheme;
+            final n = int.tryParse(_bidStr) ?? 0;
+            void wrap(VoidCallback f) {
+              f();
+              setSheet(() {});
+            }
+
+            return SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      Spacing.lg, 0, Spacing.lg, Spacing.lg),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                    Text('Target score', style: text.titleMedium),
+                    const SizedBox(height: Spacing.sm),
+                    Text(
+                      _bidStr.isEmpty ? '0' : formatBid(n),
+                      style: text.displayMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                        color: _bidStr.isEmpty
+                            ? scheme.onSurfaceVariant
+                            : scheme.secondary,
+                      ),
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    BidKeypad(
+                      onDigit: (d) => wrap(() => _pushDigit(d)),
+                      onDoubleZero: () => wrap(_pushDoubleZero),
+                      onBackspace: () => wrap(_backspace),
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text('Done'),
+                      ),
+                    ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _commit(bool won, Session session) async {
     final reduceMotion = MediaQuery.of(context).disableAnimations;
     if (_bidder == null) {
@@ -272,6 +340,73 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
           child: ListView(
             padding: const EdgeInsets.all(Spacing.md),
             children: [
+              // Target score sits first as a compact tappable box; tapping it
+              // opens the keypad in a bottom sheet, so the keypad never
+              // permanently eats the screen.
+              _section(
+                'Target score',
+                _shakeBid,
+                Material(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(Radii.md),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(Radii.md),
+                    onTap: () {
+                      Haptics.selection();
+                      _openKeypadSheet();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: Spacing.md, vertical: Spacing.md),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(Radii.md),
+                        border: Border.all(
+                          color: _bidStr.isEmpty
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .outlineVariant
+                                  .withValues(alpha: 0.4)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .secondary
+                                  .withValues(alpha: 0.4),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _bidStr.isEmpty ? 'Tap to set' : formatBid(bidNum),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    fontFeatures: const [
+                                      FontFeature.tabularFigures()
+                                    ],
+                                    color: _bidStr.isEmpty
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
+                                  ),
+                            ),
+                          ),
+                          Icon(PhosphorIconsRegular.pencilSimple,
+                              size: 20,
+                              color:
+                                  Theme.of(context).colorScheme.onSurfaceVariant),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: Spacing.lg),
               _section(
                 'Who called?',
                 _shakeBidder,
@@ -342,64 +477,6 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
                           _teamSplitLine(session),
                         ],
                       ),
-              ),
-              const SizedBox(height: Spacing.lg),
-              _section(
-                'Target score',
-                _shakeBid,
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: Spacing.md),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(Radii.md),
-                        border: Border.all(
-                          color: _bidStr.isEmpty
-                              ? Theme.of(context)
-                                  .colorScheme
-                                  .outlineVariant
-                                  .withValues(alpha: 0.4)
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .secondary
-                                  .withValues(alpha: 0.4),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Text(
-                        _bidStr.isEmpty ? '0' : formatBid(bidNum),
-                        style: Theme.of(context)
-                            .textTheme
-                            .displayMedium
-                            ?.copyWith(
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                              fontWeight: FontWeight.w800,
-                              color: _bidStr.isEmpty
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .secondary,
-                            ),
-                      ),
-                    ),
-                    const SizedBox(height: Spacing.sm),
-                    BidKeypad(
-                      onDigit: _pushDigit,
-                      onDoubleZero: _pushDoubleZero,
-                      onBackspace: _backspace,
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: Spacing.lg),
               Row(

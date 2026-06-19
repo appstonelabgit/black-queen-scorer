@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:black_queen_scorer/data/models/round.dart';
 import 'package:black_queen_scorer/data/models/session.dart';
 import 'package:black_queen_scorer/data/models/session_settings.dart';
@@ -179,10 +180,16 @@ void main() {
     await tester.tap(chipsB.at(1));
     await tester.pump(const Duration(milliseconds: 200));
 
+    // The keypad now lives in a bottom sheet opened by tapping the target
+    // box (shows "Tap to set" when empty).
+    await tester.tap(find.text('Tap to set'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('7'));
     await tester.pump(const Duration(milliseconds: 150));
     await tester.tap(find.text('00'));
     await tester.pump(const Duration(milliseconds: 150));
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
 
     final resultToggle = find.byType(ResultToggle);
     await tester.scrollUntilVisible(resultToggle, 200,
@@ -253,9 +260,13 @@ void main() {
     );
     final repo = await pumpRoundEntry(tester, session: session);
 
-    // Make the draft dirty by entering a bid digit.
+    // Make the draft dirty by entering a bid digit via the keypad sheet.
+    await tester.tap(find.byIcon(PhosphorIconsRegular.pencilSimple));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('7'));
     await tester.pump(const Duration(milliseconds: 150));
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
 
     // Simulate a system back gesture.
     await tester.binding.handlePopRoute();
@@ -296,9 +307,13 @@ void main() {
     final repo =
         await pumpRoundEntry(tester, session: session, roundId: round.id);
 
-    // Change the bid to dirty the edit.
+    // Change the bid to dirty the edit (via the keypad sheet).
+    await tester.tap(find.byIcon(PhosphorIconsRegular.pencilSimple));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('5'));
     await tester.pump(const Duration(milliseconds: 150));
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
