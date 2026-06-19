@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'models/round.dart';
 import 'models/session.dart';
 
@@ -359,4 +361,108 @@ LifetimeStats computeLifetimeStats(List<Session> sessions) {
     biggestSingleLoss: biggestLoss,
     boldestBidder: boldestBidder,
   );
+}
+
+/// A single player's lifetime record across all finished sessions. Powers the
+/// History aggregate cards (win rate, caller success, most active) and the
+/// per-player breakdown screen.
+class PlayerLifetime {
+  final String name;
+  final int sessionsPlayed;
+  final int sessionsWon;
+  final int net;
+  final int callsMade;
+  final int callsWon;
+  final double avgCall;
+  final int bestRound;
+  final int worstRound;
+
+  const PlayerLifetime({
+    required this.name,
+    required this.sessionsPlayed,
+    required this.sessionsWon,
+    required this.net,
+    required this.callsMade,
+    required this.callsWon,
+    required this.avgCall,
+    required this.bestRound,
+    required this.worstRound,
+  });
+
+  /// Share of finished sessions this player topped (0..1).
+  double get winRate => sessionsPlayed == 0 ? 0 : sessionsWon / sessionsPlayed;
+
+  /// Share of called rounds this player won (0..1).
+  double get callerSuccess => callsMade == 0 ? 0 : callsWon / callsMade;
+}
+
+/// Builds a lifetime record per player from all finished sessions, sorted by
+/// net score (highest first).
+List<PlayerLifetime> computePlayerLifetimes(List<Session> sessions) {
+  final finished = sessions.where((s) => s.finishedAt != null).toList();
+  final display = <String, String>{};
+  final played = <String, int>{};
+  final wins = <String, int>{};
+  final net = <String, int>{};
+  final callsMade = <String, int>{};
+  final callsWon = <String, int>{};
+  final bidTotals = <String, int>{};
+  final best = <String, int>{};
+  final worst = <String, int>{};
+
+  for (final s in finished) {
+    final scores = computeScores(s);
+    final seen = <String>{};
+    for (final p in s.players) {
+      final k = p.toLowerCase();
+      display.putIfAbsent(k, () => p);
+      if (seen.add(k)) played[k] = (played[k] ?? 0) + 1;
+    }
+    String? top;
+    var topScore = -1 << 62;
+    for (final e in scores.entries) {
+      final k = e.key.toLowerCase();
+      display.putIfAbsent(k, () => e.key);
+      net[k] = (net[k] ?? 0) + e.value;
+      if (e.value > topScore) {
+        topScore = e.value;
+        top = e.key;
+      }
+    }
+    if (top != null && scores[top]! != 0) {
+      final k = top.toLowerCase();
+      wins[k] = (wins[k] ?? 0) + 1;
+    }
+    for (final r in s.rounds) {
+      final bk = r.bidder.toLowerCase();
+      callsMade[bk] = (callsMade[bk] ?? 0) + 1;
+      bidTotals[bk] = (bidTotals[bk] ?? 0) + r.bidAmount;
+      if (r.won) callsWon[bk] = (callsWon[bk] ?? 0) + 1;
+      final deltas = computeRoundDelta(r, s);
+      for (final e in deltas.entries) {
+        final k = e.key.toLowerCase();
+        best[k] = best.containsKey(k) ? math.max(best[k]!, e.value) : e.value;
+        worst[k] =
+            worst.containsKey(k) ? math.min(worst[k]!, e.value) : e.value;
+      }
+    }
+  }
+
+  final out = <PlayerLifetime>[];
+  for (final k in display.keys) {
+    final made = callsMade[k] ?? 0;
+    out.add(PlayerLifetime(
+      name: display[k]!,
+      sessionsPlayed: played[k] ?? 0,
+      sessionsWon: wins[k] ?? 0,
+      net: net[k] ?? 0,
+      callsMade: made,
+      callsWon: callsWon[k] ?? 0,
+      avgCall: made == 0 ? 0 : (bidTotals[k] ?? 0) / made,
+      bestRound: best[k] ?? 0,
+      worstRound: worst[k] ?? 0,
+    ));
+  }
+  out.sort((a, b) => b.net.compareTo(a.net));
+  return out;
 }

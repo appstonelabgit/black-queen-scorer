@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:black_queen_scorer/data/models/round.dart';
 import 'package:black_queen_scorer/data/models/session.dart';
 import 'package:black_queen_scorer/data/models/session_settings.dart';
 import 'package:black_queen_scorer/data/providers.dart';
@@ -119,8 +121,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.text('Who bid?'), findsOneWidget);
-    expect(find.text('Bid amount'), findsOneWidget);
+    expect(find.text('Who called?'), findsOneWidget);
+    expect(find.text('Target score'), findsOneWidget);
     expect(find.text('Result'), findsOneWidget);
 
     await repo.dispose();
@@ -170,15 +172,24 @@ void main() {
     await tester.tap(chipsA.first);
     await tester.pump(const Duration(milliseconds: 200));
 
-    // There are now two B chips — one in the bidder section (first) and one
-    // in the team section (second). We want the team-section one.
+    // The team section appears once a caller is picked. There are now two B
+    // chips — one in the bidder section (first) and one in the team section
+    // (second). We want the team-section one.
+    await tester.ensureVisible(chipsB.at(1));
+    await tester.pump(const Duration(milliseconds: 100));
     await tester.tap(chipsB.at(1));
     await tester.pump(const Duration(milliseconds: 200));
 
+    // The keypad now lives in a bottom sheet opened by tapping the target
+    // box (shows "Tap to set" when empty).
+    await tester.tap(find.text('Tap to set'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('7'));
     await tester.pump(const Duration(milliseconds: 150));
     await tester.tap(find.text('00'));
     await tester.pump(const Duration(milliseconds: 150));
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
 
     final resultToggle = find.byType(ResultToggle);
     await tester.scrollUntilVisible(resultToggle, 200,
@@ -205,6 +216,109 @@ void main() {
     expect(scores['B'], 700);
     expect(scores['C'], -700);
     expect(scores['D'], -700);
+
+    await repo.dispose();
+  });
+
+  Future<FakeSessionRepository> pumpRoundEntry(
+    WidgetTester tester, {
+    String? roundId,
+    required Session session,
+  }) async {
+    final repo = FakeSessionRepository();
+    await repo.save(session);
+    final router = GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (_, __) => const Scaffold(body: Center(child: Text('home'))),
+        ),
+        GoRoute(
+          path: '/round',
+          builder: (_, __) =>
+              RoundEntryScreen(sessionId: session.id, roundId: roundId),
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [sessionRepositoryProvider.overrideWithValue(repo)],
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pump();
+    router.push('/round');
+    await tester.pumpAndSettle();
+    return repo;
+  }
+
+  testWidgets('New round warns on back when dirty', (tester) async {
+    final session = Session.create(
+      players: ['A', 'B', 'C', 'D'],
+      settings: const SessionSettings.disabled(),
+    );
+    final repo = await pumpRoundEntry(tester, session: session);
+
+    // Make the draft dirty by entering a bid digit via the keypad sheet.
+    await tester.tap(find.byIcon(PhosphorIconsRegular.pencilSimple));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('7'));
+    await tester.pump(const Duration(milliseconds: 150));
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+
+    // Simulate a system back gesture.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Discard changes?'), findsOneWidget);
+
+    await repo.dispose();
+  });
+
+  testWidgets('New round pops freely when clean', (tester) async {
+    final session = Session.create(
+      players: ['A', 'B', 'C', 'D'],
+      settings: const SessionSettings.disabled(),
+    );
+    final repo = await pumpRoundEntry(tester, session: session);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Discard changes?'), findsNothing);
+    expect(find.text('home'), findsOneWidget);
+
+    await repo.dispose();
+  });
+
+  testWidgets('Edit round still warns on back when dirty', (tester) async {
+    final round = Round.create(
+      bidder: 'A',
+      team: ['A', 'B'],
+      bidAmount: 100,
+      won: true,
+    );
+    final session = Session.create(
+      players: ['A', 'B', 'C', 'D'],
+      settings: const SessionSettings.disabled(),
+    ).copyWith(rounds: [round]);
+    final repo =
+        await pumpRoundEntry(tester, session: session, roundId: round.id);
+
+    // Change the bid to dirty the edit (via the keypad sheet).
+    await tester.tap(find.byIcon(PhosphorIconsRegular.pencilSimple));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('5'));
+    await tester.pump(const Duration(milliseconds: 150));
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Discard changes?'), findsOneWidget);
 
     await repo.dispose();
   });

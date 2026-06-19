@@ -41,4 +41,24 @@ class PlayersRepository {
         .toList();
     await _box.put(_key, filtered);
   }
+
+  /// Renames a saved name in place, preserving its position. If the new name
+  /// collides (case-insensitive) with another entry, duplicates are merged
+  /// keeping the first occurrence. Only affects the recent-name list, never
+  /// historical sessions.
+  Future<void> rename(String oldName, String newName) async {
+    final trimmed = newName.trim();
+    if (trimmed.isEmpty) return;
+    final list = getRecent();
+    final lowerOld = oldName.trim().toLowerCase();
+    final idx = list.indexWhere((n) => n.toLowerCase() == lowerOld);
+    if (idx == -1) return;
+    list[idx] = trimmed;
+    final seen = <String>{};
+    final deduped = <String>[];
+    for (final n in list) {
+      if (seen.add(n.toLowerCase())) deduped.add(n);
+    }
+    await _box.put(_key, deduped);
+  }
 }

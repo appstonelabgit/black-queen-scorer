@@ -14,6 +14,7 @@ import '../../data/models/session.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
+import '../../shared/widgets/error_state.dart';
 import 'widgets/bid_keypad.dart';
 import 'widgets/player_selector.dart';
 import 'widgets/result_toggle.dart';
@@ -112,15 +113,84 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
     });
   }
 
+  /// Opens the themed numeric keypad in a bottom sheet, keyed off the target
+  /// box, so the keypad never permanently occupies the screen. Keypresses
+  /// update [_bidStr] live (parent setState) and refresh the sheet's display.
+  void _openKeypadSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      // Grow to fit the keypad + Done instead of clipping at the default half
+      // height; scrolls if it ever exceeds the screen (large text scale).
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheet) {
+            final text = Theme.of(ctx).textTheme;
+            final scheme = Theme.of(ctx).colorScheme;
+            final n = int.tryParse(_bidStr) ?? 0;
+            void wrap(VoidCallback f) {
+              f();
+              setSheet(() {});
+            }
+
+            return SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      Spacing.lg, 0, Spacing.lg, Spacing.lg),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                    Text('Target score', style: text.titleMedium),
+                    const SizedBox(height: Spacing.sm),
+                    Text(
+                      _bidStr.isEmpty ? '0' : formatBid(n),
+                      style: text.displayMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                        color: _bidStr.isEmpty
+                            ? scheme.onSurfaceVariant
+                            : scheme.secondary,
+                      ),
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    BidKeypad(
+                      onDigit: (d) => wrap(() => _pushDigit(d)),
+                      onDoubleZero: () => wrap(_pushDoubleZero),
+                      onBackspace: () => wrap(_backspace),
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text('Done'),
+                      ),
+                    ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _commit(bool won, Session session) async {
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
     if (_bidder == null) {
       Haptics.warning();
-      _shakeBidder.forward(from: 0);
+      if (!reduceMotion) _shakeBidder.forward(from: 0);
       return;
     }
     if (_bidValue <= 0) {
       Haptics.warning();
-      _shakeBid.forward(from: 0);
+      if (!reduceMotion) _shakeBid.forward(from: 0);
       return;
     }
     Haptics.medium();
@@ -170,7 +240,7 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
   }
 
   Future<bool> _onWillPop() async {
-    if (widget.roundId == null || !_dirty) return true;
+    if (!_dirty) return true;
     final ok = await ConfirmDialog.show(
       context,
       title: 'Discard changes?',
@@ -185,11 +255,14 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
   Widget build(BuildContext context) {
     final sessionAsync = ref.watch(sessionByIdProvider(widget.sessionId));
     return sessionAsync.when(
-      loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator())),
+      loading: () => const Scaffold(body: BrandedLoader()),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text('Error: $e')),
+        body: ErrorState(
+          title: 'Couldn\'t load this session',
+          message: 'Something went wrong reading the round.',
+          onRetry: () => ref.invalidate(sessionByIdProvider(widget.sessionId)),
+        ),
       ),
       data: (session) {
         if (session == null) {
@@ -267,8 +340,75 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
           child: ListView(
             padding: const EdgeInsets.all(Spacing.md),
             children: [
+              // Target score sits first as a compact tappable box; tapping it
+              // opens the keypad in a bottom sheet, so the keypad never
+              // permanently eats the screen.
               _section(
-                'Who bid?',
+                'Target score',
+                _shakeBid,
+                Material(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(Radii.md),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(Radii.md),
+                    onTap: () {
+                      Haptics.selection();
+                      _openKeypadSheet();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: Spacing.md, vertical: Spacing.md),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(Radii.md),
+                        border: Border.all(
+                          color: _bidStr.isEmpty
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .outlineVariant
+                                  .withValues(alpha: 0.4)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .secondary
+                                  .withValues(alpha: 0.4),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _bidStr.isEmpty ? 'Tap to set' : formatBid(bidNum),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    fontFeatures: const [
+                                      FontFeature.tabularFigures()
+                                    ],
+                                    color: _bidStr.isEmpty
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
+                                  ),
+                            ),
+                          ),
+                          Icon(PhosphorIconsRegular.pencilSimple,
+                              size: 20,
+                              color:
+                                  Theme.of(context).colorScheme.onSurfaceVariant),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: Spacing.lg),
+              _section(
+                'Who called?',
                 _shakeBidder,
                 PlayerSelector(
                   players: session.players,
@@ -289,101 +429,54 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
               ),
               const SizedBox(height: Spacing.lg),
               _section(
-                'Who\'s with the bidder?',
+                'Who\'s with the caller?',
                 _shakeTeam,
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _bidder == null
-                          ? Strings.pickBidderFirst
-                          : 'Tap to add teammates. The bidder is always on the team.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                          ),
-                    ),
-                    const SizedBox(height: Spacing.sm),
-                    PlayerSelector(
-                      players: session.players,
-                      multiSelect: true,
-                      selected: _teammates,
-                      excludeName: _bidder,
-                      enabled: _bidder != null,
-                      onToggle: (p) {
-                        setState(() {
-                          if (_teammates.contains(p)) {
-                            _teammates.remove(p);
-                          } else {
-                            _teammates.add(p);
-                          }
-                          _dirty = true;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: Spacing.sm),
-                    if (_bidder != null) _teamSplitLine(session),
-                  ],
-                ),
-              ),
-              const SizedBox(height: Spacing.lg),
-              _section(
-                'Bid amount',
-                _shakeBid,
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: Spacing.md),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(Radii.md),
-                        border: Border.all(
-                          color: _bidStr.isEmpty
-                              ? Theme.of(context)
+                _bidder == null
+                    // Collapsed until a caller is picked — no point showing
+                    // (and dimming) the whole roster a second time.
+                    ? Text(
+                        Strings.pickBidderFirst,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
                                   .colorScheme
-                                  .outlineVariant
-                                  .withValues(alpha: 0.4)
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .secondary
-                                  .withValues(alpha: 0.4),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Text(
-                        _bidStr.isEmpty ? '0' : formatBid(bidNum),
-                        style: Theme.of(context)
-                            .textTheme
-                            .displayMedium
-                            ?.copyWith(
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                              fontWeight: FontWeight.w800,
-                              color: _bidStr.isEmpty
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .secondary,
+                                  .onSurfaceVariant,
                             ),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Tap to add teammates. The caller is always on the team.',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                          ),
+                          const SizedBox(height: Spacing.sm),
+                          PlayerSelector(
+                            players: session.players,
+                            multiSelect: true,
+                            selected: _teammates,
+                            excludeName: _bidder,
+                            onToggle: (p) {
+                              setState(() {
+                                if (_teammates.contains(p)) {
+                                  _teammates.remove(p);
+                                } else {
+                                  _teammates.add(p);
+                                }
+                                _dirty = true;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: Spacing.sm),
+                          _teamSplitLine(session),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: Spacing.sm),
-                    BidKeypad(
-                      onDigit: _pushDigit,
-                      onDoubleZero: _pushDoubleZero,
-                      onBackspace: _backspace,
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: Spacing.lg),
               Row(
@@ -391,15 +484,18 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
                   Text('Result',
                       style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(width: Spacing.sm),
-                  Text(
-                    _canCommit
-                        ? 'Tap to save the round'
-                        : 'Fill the fields above',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: _canCommit
-                              ? Theme.of(context).colorScheme.onSurfaceVariant
-                              : Theme.of(context).colorScheme.error,
-                        ),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      _canCommit
+                          ? 'Tap to save the round'
+                          : 'Fill the fields above',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: _canCommit
+                                ? Theme.of(context).colorScheme.onSurfaceVariant
+                                : Theme.of(context).colorScheme.error,
+                          ),
+                    ),
                   ),
                 ],
               ),
@@ -443,12 +539,9 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
     final brightness = Theme.of(context).brightness;
     final teamBg = scheme.primary.withValues(alpha: 0.14);
     final teamBorder = scheme.primary.withValues(alpha: 0.35);
-    final oppBg = brightness == Brightness.light
-        ? const Color(0xFFC62828).withValues(alpha: 0.12)
-        : const Color(0xFFEF5350).withValues(alpha: 0.14);
-    final oppBorder = brightness == Brightness.light
-        ? const Color(0xFFC62828).withValues(alpha: 0.30)
-        : const Color(0xFFEF5350).withValues(alpha: 0.30);
+    final oppBg = dangerColor(brightness)
+        .withValues(alpha: brightness == Brightness.light ? 0.12 : 0.14);
+    final oppBorder = dangerColor(brightness).withValues(alpha: 0.30);
     final text = Theme.of(context).textTheme;
     Widget pill(String label, int count, String list, Color bg, Color border) {
       return Container(

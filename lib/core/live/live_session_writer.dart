@@ -68,6 +68,22 @@ class LiveSessionWriter {
     }
   }
 
+  /// Stamps `finishedAt` on a shared session's live record so watchers stop
+  /// seeing it as "Live" once the host discards/deletes it without finishing.
+  /// No-op if the session was never shared.
+  Future<void> markEnded(String sessionId) async {
+    if (!FirebaseBootstrap.initialized) return;
+    final code = _codes?.get(sessionId);
+    if (code == null) return;
+    try {
+      await FirebaseBootstrap.db.ref('live_sessions/$code').update({
+        'finishedAt': DateTime.now().millisecondsSinceEpoch,
+      });
+    } catch (e) {
+      debugPrint('LiveSessionWriter.markEnded failed: $e');
+    }
+  }
+
   Map<String, dynamic> _roundToLiveJson(Round r, Session s) {
     final delta = computeRoundDelta(r, s);
     return {

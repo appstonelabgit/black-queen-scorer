@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/haptics.dart';
 import '../../../data/models/round.dart';
 import '../../../data/models/session.dart';
 
@@ -27,12 +28,8 @@ class RoundTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final brightness = Theme.of(context).brightness;
     final won = round.won;
-    final posColor = brightness == Brightness.light
-        ? const Color(0xFF2E7D32)
-        : const Color(0xFF66BB6A);
-    final negColor = brightness == Brightness.light
-        ? const Color(0xFFC62828)
-        : const Color(0xFFEF5350);
+    final posColor = successColor(brightness);
+    final negColor = dangerColor(brightness);
 
     final teamLabel = _summarizeTeam(round);
     final bidStr = formatBid(round.bidAmount);
@@ -40,14 +37,26 @@ class RoundTile extends StatelessWidget {
     final deltaLabel =
         '${won ? '+' : '\u2212'}$bidStr / ${won ? '\u2212' : '+'}$bidStr';
 
+    final semanticsLabel =
+        'Round $index, $teamLabel, target $bidStr, $resultStr, $deltaLabel';
+
     return Material(
       color: scheme.surfaceContainerHighest,
       borderRadius: BorderRadius.circular(Radii.md),
       child: InkWell(
         borderRadius: BorderRadius.circular(Radii.md),
         onTap: onTap,
-        onLongPress: onLongPress,
-        child: Padding(
+        onLongPress: onLongPress == null
+            ? null
+            : () {
+                Haptics.selection();
+                onLongPress!();
+              },
+        child: Semantics(
+          button: true,
+          label: semanticsLabel,
+          onLongPressHint: 'Round options',
+          child: Padding(
           padding: const EdgeInsets.symmetric(
               horizontal: Spacing.md, vertical: Spacing.sm + 2),
           child: Row(
@@ -63,7 +72,7 @@ class RoundTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$teamLabel · bid $bidStr · $resultStr',
+                      '$teamLabel · target $bidStr · $resultStr',
                       style: text.bodyLarge,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -82,6 +91,7 @@ class RoundTile extends StatelessWidget {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

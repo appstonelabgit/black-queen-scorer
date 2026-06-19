@@ -202,12 +202,12 @@ class AppTheme {
   }
 }
 
-/// Score/number style: DM Sans-like tabular. We don't bundle the font here
-/// (to keep install size under 30MB per section 15), so we use the system
-/// default with tabular figures feature.
+/// Score/number style: bundled Inter with tabular figures so columns of
+/// numerals stay aligned.
 TextStyle scoreTextStyle(BuildContext context, {double size = 18}) {
   final scheme = Theme.of(context).colorScheme;
   return TextStyle(
+    fontFamily: 'Inter',
     fontSize: size,
     fontWeight: FontWeight.w700,
     fontFeatures: const [FontFeature.tabularFigures()],

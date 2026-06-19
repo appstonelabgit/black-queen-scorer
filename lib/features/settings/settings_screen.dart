@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,7 +10,6 @@ import '../../data/providers.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 import '../../shared/widgets/shell_back_button.dart';
-import 'demo_data.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -102,44 +100,6 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            if (kDebugMode &&
-                !const bool.fromEnvironment('MARKETING',
-                    defaultValue: false)) ...[
-              const SizedBox(height: Spacing.md),
-              _SettingsCard(
-                icon: PhosphorIconsRegular.flask,
-                title: 'Developer',
-                subtitle: 'Debug-only. Hidden in release builds.',
-                child: _ActionRow(
-                  icon: PhosphorIconsRegular.sparkle,
-                  title: 'Seed demo data',
-                  subtitle:
-                      'Populate 2 finished sessions + 1 active session + 8 recent players, for marketing screenshots.',
-                  onTap: () async {
-                    final ok = await ConfirmDialog.show(
-                      context,
-                      title: 'Seed demo data?',
-                      body:
-                          'Any existing sessions with ids demo-a / demo-b / demo-active will be overwritten.',
-                      confirmLabel: 'Seed',
-                    );
-                    if (!ok) return;
-                    await seedDemoData(
-                      sessions: ref.read(sessionRepositoryProvider),
-                      players: ref.read(playersRepositoryProvider),
-                    );
-                    ref.read(recentPlayersProvider.notifier).refresh();
-                    if (!context.mounted) return;
-                    AppToast.show(
-                      context,
-                      'Demo data seeded',
-                      style: ToastStyle.success,
-                      duration: const Duration(seconds: 2),
-                    );
-                  },
-                ),
-              ),
-            ],
             const SizedBox(height: Spacing.lg),
             const _AboutCard(),
             const SizedBox(height: Spacing.lg),
@@ -237,7 +197,10 @@ class _ActionRow extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(Radii.md),
         onTap: onTap,
-        child: Container(
+        child: Semantics(
+          button: true,
+          label: '$title. $subtitle',
+          child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Radii.md),
             border: Border.all(color: border),
@@ -273,16 +236,17 @@ class _ActionRow extends StatelessWidget {
             ],
           ),
         ),
+        ),
       ),
     );
   }
 }
 
-class _AboutCard extends StatelessWidget {
+class _AboutCard extends ConsumerWidget {
   const _AboutCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     return Column(
@@ -322,7 +286,7 @@ class _AboutCard extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          Strings.version,
+          ref.watch(appVersionProvider).value ?? '',
           style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
         ),
         const SizedBox(height: Spacing.sm),

@@ -86,6 +86,11 @@ class ManagePlayersScreen extends ConsumerWidget {
                     ),
                     child: _PlayerRow(
                       name: name,
+                      onRename: () => _showRename(
+                        context: context,
+                        ref: ref,
+                        name: name,
+                      ),
                       onDelete: () => _confirmRemove(
                         context: context,
                         ref: ref,
@@ -104,13 +109,83 @@ class ManagePlayersScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(
                     Spacing.md, 0, Spacing.md, Spacing.md),
                 child: Text(
-                  '${players.length} saved · swipe or tap the trash to remove one',
+                  '${players.length} saved · tap the pencil to rename, swipe or tap the trash to remove',
                   textAlign: TextAlign.center,
                   style: text.bodySmall
                       ?.copyWith(color: scheme.onSurfaceVariant),
                 ),
               ),
             ),
+    );
+  }
+
+  Future<void> _showRename({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String name,
+  }) async {
+    Haptics.selection();
+    final existingLower = ref
+        .read(recentPlayersProvider)
+        .map((e) => e.toLowerCase())
+        .toSet();
+    final controller = TextEditingController(text: name);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        String? error;
+        return StatefulBuilder(
+          builder: (ctx, setState) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Radii.lg),
+            ),
+            title: const Text('Rename player'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: 'Name',
+                errorText: error,
+              ),
+              onSubmitted: (_) => Navigator.of(ctx).pop(controller.text.trim()),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final v = controller.text.trim();
+                  if (v.isEmpty) {
+                    setState(() => error = 'Enter a name');
+                    return;
+                  }
+                  if (v.toLowerCase() != name.toLowerCase() &&
+                      existingLower.contains(v.toLowerCase())) {
+                    setState(() =>
+                        error = 'A player with that name already exists');
+                    return;
+                  }
+                  Navigator.of(ctx).pop(v);
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    controller.dispose();
+    if (newName == null || newName.isEmpty || newName == name) return;
+    await ref.read(recentPlayersProvider.notifier).rename(name, newName);
+    if (!context.mounted) return;
+    AppToast.show(
+      context,
+      'Renamed to $newName',
+      style: ToastStyle.success,
+      duration: const Duration(seconds: 2),
     );
   }
 
@@ -136,8 +211,13 @@ class ManagePlayersScreen extends ConsumerWidget {
 
 class _PlayerRow extends StatelessWidget {
   final String name;
+  final VoidCallback onRename;
   final VoidCallback onDelete;
-  const _PlayerRow({required this.name, required this.onDelete});
+  const _PlayerRow({
+    required this.name,
+    required this.onRename,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -170,6 +250,12 @@ class _PlayerRow extends StatelessWidget {
           const SizedBox(width: Spacing.md),
           Expanded(
             child: Text(name, style: text.bodyLarge),
+          ),
+          IconButton(
+            tooltip: 'Rename',
+            icon: Icon(PhosphorIconsRegular.pencilSimple,
+                color: scheme.onSurfaceVariant),
+            onPressed: onRename,
           ),
           IconButton(
             tooltip: 'Remove',

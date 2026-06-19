@@ -4,7 +4,7 @@
     "details": [
       {
         "appID": "B9BQ52QVC9.com.blackqueenscorer.app",
-        "paths": ["/black-queen-scorer/l/*"]
+        "paths": ["/l/*"]
       }
     ]
   }

@@ -4,6 +4,8 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
+import 'live_code.dart';
+
 /// Listens for incoming universal / app links and custom `bqs://` URIs
 /// and forwards them to the GoRouter instance. Initialise once from main.
 class DeepLinkHandler {
@@ -33,13 +35,11 @@ class DeepLinkHandler {
   }
 
   String? _resolveRoute(Uri uri) {
-    // https://appstonelabgit.github.io/black-queen-scorer/l/<code>
-    if (uri.host == 'appstonelabgit.github.io') {
+    // https://black-queen-scorer.vercel.app/l/<code>
+    if (uri.host == liveLinkHost) {
       final segs = uri.pathSegments;
-      if (segs.length >= 3 &&
-          segs[0] == 'black-queen-scorer' &&
-          segs[1] == 'l') {
-        return '/live/${segs[2]}';
+      if (segs.length >= 2 && segs[0] == 'l' && segs[1].isNotEmpty) {
+        return '/live/${segs[1]}';
       }
     }
     // bqs://live/<code>

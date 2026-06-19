@@ -23,15 +23,15 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- App Links for live-session deep links from GitHub Pages domain. -->
+            <!-- App Links for live-session deep links (Vercel-hosted domain). -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
                     android:scheme="https"
-                    android:host="appstonelabgit.github.io"
-                    android:pathPrefix="/black-queen-scorer/l"/>
+                    android:host="black-queen-scorer.vercel.app"
+                    android:pathPrefix="/l"/>
             </intent-filter>
         </activity>
 

@@ -10,8 +10,8 @@ Source of truth for 1.2.0. Privacy answers live in `store/SUBMISSION.md` § "App
 
 | Field | Value |
 |---|---|
-| Name | Black Queen Scorer |
-| Subtitle | Fast offline card-night scorer |
+| Name | Black Queen Scorer: 29 Rang |
+| Subtitle | Court Piece card-night scorer |
 | Primary category | Utilities |
 | Subcategory | — |
 | Content rights | Does not use third-party content |
@@ -46,23 +46,25 @@ See `store/SUBMISSION.md` § "App Privacy (1.1.0)" for the full data-type matrix
 **Promotional text** (max 170 chars — shown above the description, editable without re-submission):
 
 ```
-New: live-share your card night. Tap broadcast, friends watch the scoreboard update in real time via QR or link. Still the fastest scorer for Court Piece, Rang, 29.
+1.2 is out: seating order, one-tap resume, live-share via QR. Free, offline-first, no account. The fastest scorer for Court Piece, Rang, and 29.
 ```
 
 **Keywords** (max 100 chars, comma-separated, no spaces around commas):
 
 ```
-card,score,scorer,bid,court,piece,rang,29,partner,trump,kot,sar,tracker,leaderboard,live,offline
+court,piece,rang,29,partner,trump,bid,kot,sar,bidding,leaderboard,offline,live,share,tracker,night
 ```
 
-> Swap candidates before committing: verify `kot` / `sar` volume in Sensor Tower or AppTweak. If unclear, revert to `card,score,scorer,bid,court,piece,rang,tracker,offline,29,partner,night,game,team,leaderboard`.
+> Drops `card,score,scorer` — already in title+subtitle so ASC gives them weight automatically; reusing them in the keyword field is wasted budget. Frees chars for long-tail (`bidding`, `share`, `night`).
+>
+> VERIFY before submit: `kot` and `sar` volume in AppTweak. If unclear, fallback: `court,piece,rang,29,partner,trump,bid,bidding,leaderboard,offline,live,share,tracker,night,game,team`.
 
 **Description** (max 4000 chars):
 
 ```
-The fastest scorer for bidding card games — now with live sharing.
+Black Queen Scorer — fast offline scorer for Court Piece, Rang, 29, and Partner 29. Now with live-share: friends watch your scoreboard update in real time.
 
-Black Queen Scorer tracks scores across rounds for team card games like Court Piece, Rang, 29, and similar bidding variants. Built for the one friend who always ends up keeping score — so the game never has to pause.
+Tracks scores across rounds for team card games like Court Piece, Rang, 29, Partner 29, and similar trick-taking variants. Built for the one friend who always ends up keeping score — so the game never has to pause.
 
 NEW IN 1.2
 
@@ -70,7 +72,7 @@ NEW IN 1.2
   Tap the broadcast icon on any session. A QR code and short code appear. Friends open the link or scan the QR and watch every round land in real time. No sign-up. No app install required for viewers — it works in any browser.
 
 • Seating order
-  Lock the player order you actually sit in around the table. Scoreboard and round entry follow it, so "bidder + left + right" always matches the room.
+  Lock the player order you actually sit in around the table. Scoreboard and round entry follow it, so "caller + left + right" always matches the room.
 
 • Persistent session banner
   Leave the app, take a call, answer a text. Come back and one tap resumes your active session. No lost rounds.
@@ -81,13 +83,13 @@ NEW IN 1.2
 KEY FEATURES
 
 • Start a session in seconds — 4 to 12 players, names remembered from past sessions.
-• Enter a round in under 10 seconds — pick bidder, tap team, enter bid on a custom keypad, tap Won or Lost.
+• Enter a round in under 10 seconds — pick caller, tap team, enter target score on a custom keypad, tap Won or Lost.
 • Always-correct math — scores recompute from scratch after every edit or delete.
-• Optional bidder bonus — configure a ±bonus that applies only to the bidder.
+• Optional caller bonus — configure a ±bonus that applies only to the caller.
 • Live leaderboard — rows reorder smoothly; scores pulse green on gain, red on loss.
 • Round history — edit or delete any round, leaderboard recalculates instantly.
-• Celebratory finish — podium, fun stats (biggest single win, boldest bidder, longest streak), shareable summary card.
-• Lifetime stats — top winner, top earner, cold streak, most bids won across every session you play.
+• Celebratory finish — podium, fun stats (biggest single win, boldest call, longest streak), shareable summary card.
+• Lifetime stats — top winner, top earner, cold streak, most contracts won across every session you play.
 
 WHO IT'S FOR
 
@@ -95,7 +97,11 @@ Groups of 4 to 12 friends playing in person. One person enters scores while ever
 
 SUPPORTED GAMES
 
-Any bidding-based team card game: one player bids, a team tries to make the bid, opposition wins if they fail. Court Piece, Rang (Trump), 29, Partner 29, Black Queen, and regional variants.
+Classic trick-taking team card games: one player calls a target score, their team tries to reach it, the opposing team wins if they fall short. Court Piece, Rang (Trump), 29, Partner 29, Black Queen, and regional variants. Scores are points only — no money, no wagers, no stakes.
+
+ALSO KNOWN AS
+
+Court Piece is also called Rang, Rung, Trump, Kot Piece, or Sar Bazi in South Asia. 29 is played as Partner 29 or 29 Card Game in Kerala and Nova Scotia.
 
 PRIVACY
 
@@ -128,13 +134,15 @@ Made for card nights.
 | 6.9" iPhone (16/17 Pro Max) | 1290 × 2796 | 3–10 |
 | 6.5" iPhone (11 Pro Max / XS Max) | 1242 × 2688 | 3–10 (optional — Apple auto-generates from 6.9" if missing but quality drops) |
 
-Target order for 1.2.0 (6 shots — live-share shot is the new hero):
+Target order for 1.2.0 (6 shots — scoreboard leads because it answers "what does this app do" in 0.5s; live-share differentiates in slot 2):
 
-1. Home with active-session resume banner
-2. Scoreboard with broadcast icon visible
-3. **Live share sheet** (QR + demo code `ABCD-2345`) — new
-4. Round entry mid-bid
-5. Summary podium
+1. **Scoreboard** with broadcast icon visible
+2. **Live share sheet** (QR + demo code `ABCD-2345`) — hero differentiator
+3. Round entry mid-round
+4. Summary podium
+5. Home with active-session resume banner
 6. Lifetime stats
+
+Post-launch: run ASC Product Page Optimization to A/B-test reversing slots 1 and 2. Hypothesis: live-share differentiation beats generic leaderboard hero.
 
 See `store/screenshots/README.md` for the capture recipe.

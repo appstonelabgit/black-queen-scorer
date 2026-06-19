@@ -46,6 +46,16 @@ class AppColors {
   static const dangerDark = Color(0xFFEF5350);
 }
 
+/// Brightness-aware semantic colors. `danger` already lives on the
+/// ColorScheme as `error`; `success` has no ColorScheme slot, so route all
+/// positive/win greens through these instead of hand-pasting hex (which had
+/// drifted and broke contrast in dark mode).
+Color successColor(Brightness b) =>
+    b == Brightness.light ? AppColors.successLight : AppColors.successDark;
+
+Color dangerColor(Brightness b) =>
+    b == Brightness.light ? AppColors.dangerLight : AppColors.dangerDark;
+
 /// Minimal WCAG contrast helper for dev-time checks.
 double contrastRatio(Color a, Color b) {
   double lum(Color c) {

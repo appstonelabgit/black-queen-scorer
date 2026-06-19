@@ -6,9 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/history/history_screen.dart';
+import '../../features/history/player_stats_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/live/live_viewer_screen.dart';
-import '../../features/live/watch_live_screen.dart';
+import '../../features/live/watch_history_screen.dart';
 import '../../features/round_entry/round_entry_screen.dart';
 import '../../features/scoreboard/scoreboard_screen.dart';
 import '../../features/session_setup/session_setup_screen.dart';
@@ -81,10 +82,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (_, __) => const HistoryScreen(),
           ),
           GoRoute(
+            path: '/history/player/:name',
+            builder: (_, state) => PlayerStatsScreen(
+              name: Uri.decodeComponent(state.pathParameters['name']!),
+            ),
+          ),
+          GoRoute(
             path: '/history/:id',
             builder: (_, state) => SummaryScreen(
               sessionId: state.pathParameters['id']!,
               fromHistory: true,
+            ),
+          ),
+          GoRoute(
+            path: '/history/:id/rounds',
+            builder: (_, state) => ScoreboardScreen(
+              sessionId: state.pathParameters['id']!,
+              readOnly: true,
             ),
           ),
           GoRoute(
@@ -96,14 +110,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (_, __) => const ManagePlayersScreen(),
           ),
           GoRoute(
-            path: '/watch',
-            builder: (_, __) => const WatchLiveScreen(),
-          ),
-          GoRoute(
             path: '/live/:code',
             builder: (_, state) => LiveViewerScreen(
               code: state.pathParameters['code']!,
             ),
+          ),
+          GoRoute(
+            path: '/watch-history',
+            builder: (_, __) => const WatchHistoryScreen(),
           ),
         ],
       ),

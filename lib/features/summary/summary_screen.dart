@@ -20,6 +20,8 @@ import '../../data/scoring.dart';
 import '../../shared/widgets/app_button.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
+import '../../shared/widgets/empty_state.dart';
+import '../../shared/widgets/error_state.dart';
 import '../scoreboard/widgets/player_row.dart';
 import 'widgets/podium.dart';
 import 'widgets/share_card.dart';
@@ -96,6 +98,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
 
   Future<void> _share(Session session, SessionStats stats) async {
     if (_sharing) return;
+    Haptics.medium();
     setState(() => _sharing = true);
     try {
       final Uint8List bytes = await _screenshotController.captureFromWidget(
@@ -113,10 +116,12 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
       final file = File(
           '${dir.path}/black_queen_${DateTime.now().millisecondsSinceEpoch}.png');
       await file.writeAsBytes(bytes);
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text:
-            '${Strings.appName} — ${stats.ranked.firstOrNull?.name ?? 'Winner'} won!',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text:
+              '${Strings.appName} — ${stats.ranked.firstOrNull?.name ?? 'Winner'} won!',
+        ),
       );
     } catch (e) {
       if (mounted) {
@@ -135,17 +140,24 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
   Widget build(BuildContext context) {
     final asyncSession = ref.watch(sessionByIdProvider(widget.sessionId));
     return asyncSession.when(
-      loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator())),
+      loading: () => const Scaffold(body: BrandedLoader()),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text('Error: $e')),
+        body: ErrorState(
+          title: 'Couldn\'t load the summary',
+          message: 'Something went wrong reading this session.',
+          onRetry: () => ref.invalidate(sessionByIdProvider(widget.sessionId)),
+        ),
       ),
       data: (session) {
         if (session == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: const Center(child: Text('Session not found')),
+            body: const EmptyState(
+              icon: PhosphorIconsDuotone.cardsThree,
+              title: 'Session not found',
+              subtitle: 'It may have been removed.',
+            ),
           );
         }
         return _buildSummary(session);
@@ -155,6 +167,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
 
   Widget _buildSummary(Session session) {
     final stats = computeStats(session);
+    final statCards = _buildStatCards(stats);
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
 
@@ -198,13 +211,22 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                     ),
                     const SizedBox(height: Spacing.xs),
                     Text(
-                      '${session.players.length} players · ${stats.totalRounds} rounds · ${formatDuration(stats.totalDuration)}',
+                      '${plural(session.players.length, 'player')} · ${plural(stats.totalRounds, 'round')} · ${formatDuration(stats.totalDuration)}',
                       style: text.bodyMedium?.copyWith(
                           color: scheme.onSurfaceVariant),
                       textAlign: TextAlign.center,
                     ),
                   ],
                 ),
+                if (stats.ranked.isNotEmpty) ...[
+                  const SizedBox(height: Spacing.lg),
+                  _WinnerBanner(
+                    name: stats.ranked.first.name,
+                    score: stats.ranked.first.score,
+                    tie: stats.ranked.length >= 2 &&
+                        stats.ranked[0].score == stats.ranked[1].score,
+                  ),
+                ],
                 const SizedBox(height: Spacing.lg),
                 if (stats.ranked.length >= 3)
                   Podium(top: stats.ranked.take(3).toList()),
@@ -212,26 +234,21 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                 Text('Final Rankings', style: text.titleMedium),
                 const SizedBox(height: Spacing.sm),
                 for (var i = 0; i < stats.ranked.length; i++) ...[
+                  if (i > 0)
+                    Divider(
+                        height: 1,
+                        color: scheme.outlineVariant.withValues(alpha: 0.4)),
                   PlayerRow(
                     rank: i + 1,
                     name: stats.ranked[i].name,
                     score: stats.ranked[i].score,
                   ),
-                  const SizedBox(height: Spacing.sm),
                 ],
                 const SizedBox(height: Spacing.lg),
-                if (_buildStatCards(stats).isNotEmpty) ...[
+                if (statCards.isNotEmpty) ...[
                   Text('Fun Stats', style: text.titleMedium),
                   const SizedBox(height: Spacing.sm),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: Spacing.sm,
-                    mainAxisSpacing: Spacing.sm,
-                    childAspectRatio: 1.7,
-                    children: _buildStatCards(stats),
-                  ),
+                  StatsGrid(cards: statCards),
                 ],
                 const SizedBox(height: Spacing.lg),
                 AppButton(
@@ -240,6 +257,16 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                   onPressed: _sharing
                       ? null
                       : () => _share(session, stats),
+                ),
+                const SizedBox(height: Spacing.sm),
+                AppButton(
+                  label: 'View all rounds',
+                  kind: AppButtonKind.outlined,
+                  icon: PhosphorIconsRegular.listNumbers,
+                  onPressed: () {
+                    Haptics.selection();
+                    context.push('/history/${session.id}/rounds');
+                  },
                 ),
                 if (!widget.fromHistory) ...[
                   const SizedBox(height: Spacing.sm),
@@ -272,20 +299,37 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
   }
 
   List<Widget> _buildStatCards(SessionStats stats) {
+    // Lead with the headline achievements (target wins, streaks), then the
+    // big single-round swings, with flavour stats last — so the grid scans
+    // top-down from most to least useful.
+    final scheme = Theme.of(context).colorScheme;
+    final danger = dangerColor(scheme.brightness);
+    final success = successColor(scheme.brightness);
     final cards = <Widget>[];
     if (stats.mostBidsWon != null) {
       final count = stats.mostBidsWon!.count;
       cards.add(StatsCard(
-        emoji: '🎯',
-        title: 'Most bids won',
+        icon: PhosphorIconsFill.target,
+        title: 'Most targets won',
         value: stats.mostBidsWon!.name,
-        subtitle: '$count ${count == 1 ? 'bid' : 'bids'}',
+        avatarName: stats.mostBidsWon!.name,
+        subtitle: '$count ${count == 1 ? 'target' : 'targets'}',
+      ));
+    }
+    if (stats.longestWinStreak != null) {
+      cards.add(StatsCard(
+        icon: PhosphorIconsFill.flame,
+        title: 'Longest win streak',
+        value: stats.longestWinStreak!.name,
+        avatarName: stats.longestWinStreak!.name,
+        subtitle: '${stats.longestWinStreak!.streak} in a row',
       ));
     }
     if (stats.biggestSingleGain != null) {
       cards.add(StatsCard(
-        emoji: '💰',
+        icon: PhosphorIconsFill.trendUp,
         title: 'Biggest single win',
+        accent: success,
         value:
             '${stats.biggestSingleGain!.name} ${formatScore(stats.biggestSingleGain!.amount)}',
         subtitle: 'Round ${stats.biggestSingleGain!.round}',
@@ -293,26 +337,20 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
     }
     if (stats.biggestSingleLoss != null) {
       cards.add(StatsCard(
-        emoji: '💣',
+        icon: PhosphorIconsFill.trendDown,
         title: 'Biggest single loss',
+        accent: danger,
         value:
             '${stats.biggestSingleLoss!.name} ${formatScore(stats.biggestSingleLoss!.amount)}',
         subtitle: 'Round ${stats.biggestSingleLoss!.round}',
       ));
     }
-    if (stats.longestWinStreak != null) {
-      cards.add(StatsCard(
-        emoji: '🔥',
-        title: 'Longest win streak',
-        value: stats.longestWinStreak!.name,
-        subtitle: '${stats.longestWinStreak!.streak} in a row',
-      ));
-    }
     if (stats.boldestBidder != null) {
       cards.add(StatsCard(
-        emoji: '🎲',
-        title: 'Boldest bidder',
+        icon: PhosphorIconsFill.cardsThree,
+        title: 'Boldest caller',
         value: stats.boldestBidder!.name,
+        avatarName: stats.boldestBidder!.name,
         subtitle:
             'avg ${stats.boldestBidder!.avg.toStringAsFixed(0)}',
       ));
@@ -354,4 +392,74 @@ class _ConfettiPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ConfettiPainter old) => old.t != t;
+}
+
+/// The emotional peak of the summary — a gold-accented banner naming the
+/// winner (or declaring a tie). Shown for every game, including 2-player
+/// ones that don't qualify for the 3-step podium.
+class _WinnerBanner extends StatelessWidget {
+  final String name;
+  final int score;
+  final bool tie;
+  const _WinnerBanner(
+      {required this.name, required this.score, required this.tie});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.lg, vertical: Spacing.md),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            scheme.secondary.withValues(alpha: 0.22),
+            scheme.secondary.withValues(alpha: 0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(Radii.lg),
+        border: Border.all(color: scheme.secondary.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            tie ? PhosphorIconsFill.handshake : PhosphorIconsFill.trophy,
+            size: 34,
+            color: scheme.secondary,
+          ),
+          const SizedBox(width: Spacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  tie ? 'It\'s a tie!' : '$name wins!',
+                  style: text.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: scheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  tie
+                      ? 'Top score ${formatScore(score)}'
+                      : 'Final score ${formatScore(score)}',
+                  style: text.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

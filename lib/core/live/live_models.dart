@@ -10,6 +10,7 @@ class LiveSessionState {
   final int roundCount;
   final int bonus;
   final LiveRound? lastRound;
+  final List<LiveRound> rounds;
 
   const LiveSessionState({
     required this.code,
@@ -22,6 +23,7 @@ class LiveSessionState {
     required this.roundCount,
     required this.bonus,
     required this.lastRound,
+    required this.rounds,
   });
 
   factory LiveSessionState.fromJson(String code, Map<dynamic, dynamic> json) {
@@ -32,6 +34,9 @@ class LiveSessionState {
     final rounds = (json['rounds'] as List?) ?? const [];
     final lastRoundRaw =
         rounds.isEmpty ? null : Map<String, dynamic>.from(rounds.last as Map);
+    final allRounds = rounds
+        .map((r) => LiveRound.fromJson(Map<String, dynamic>.from(r as Map)))
+        .toList();
 
     return LiveSessionState(
       code: code,
@@ -49,6 +54,7 @@ class LiveSessionState {
       roundCount: rounds.length,
       bonus: (json['bonus'] as num?)?.toInt() ?? 0,
       lastRound: lastRoundRaw == null ? null : LiveRound.fromJson(lastRoundRaw),
+      rounds: allRounds,
     );
   }
 }

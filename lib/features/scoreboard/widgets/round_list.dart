@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/tokens.dart';
+import '../../../core/utils/haptics.dart';
 import '../../../data/models/session.dart';
 import '../../../shared/widgets/empty_state.dart';
 import 'round_tile.dart';
@@ -44,25 +46,35 @@ class RoundList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        InkWell(
-          onTap: onToggleCollapsed,
-          borderRadius: BorderRadius.circular(Radii.sm),
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: Spacing.sm, horizontal: 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text('Rounds (${rounds.length})',
-                      style: text.titleMedium),
-                ),
-                Icon(
-                  collapsed
-                      ? Icons.keyboard_arrow_down
-                      : Icons.keyboard_arrow_up,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ],
+        Semantics(
+          button: true,
+          label: 'Rounds, ${collapsed ? 'collapsed' : 'expanded'}',
+          child: InkWell(
+            onTap: onToggleCollapsed == null
+                ? null
+                : () {
+                    Haptics.selection();
+                    onToggleCollapsed!();
+                  },
+            borderRadius: BorderRadius.circular(Radii.sm),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  vertical: Spacing.sm, horizontal: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text('Rounds (${rounds.length})',
+                        style: text.titleMedium),
+                  ),
+                  Icon(
+                    collapsed
+                        ? PhosphorIconsRegular.caretDown
+                        : PhosphorIconsRegular.caretUp,
+                    size: 18,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -28,20 +28,18 @@ class PlayerSelector extends StatelessWidget {
         : players.where((p) => p != excludeName).toList();
     return Opacity(
       opacity: enabled ? 1 : 0.45,
-      child: IgnorePointer(
-        ignoring: !enabled,
-        child: Wrap(
-          spacing: Spacing.sm,
-          runSpacing: Spacing.sm,
-          children: [
-            for (final p in filtered)
-              PlayerChip(
-                name: p,
-                selected: selected.contains(p),
-                onTap: () => onToggle(p),
-              ),
-          ],
-        ),
+      child: Wrap(
+        spacing: Spacing.sm,
+        runSpacing: Spacing.sm,
+        children: [
+          for (final p in filtered)
+            PlayerChip(
+              name: p,
+              selected: selected.contains(p),
+              enabled: enabled,
+              onTap: () => onToggle(p),
+            ),
+        ],
       ),
     );
   }

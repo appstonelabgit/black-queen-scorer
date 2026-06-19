@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +12,7 @@ import '../../data/providers.dart';
 import '../../data/scoring.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/empty_state.dart';
+import '../../shared/widgets/error_state.dart';
 import '../../shared/widgets/shell_back_button.dart';
 import '../session_setup/widgets/player_chip.dart';
 import '../summary/widgets/stats_card.dart';
@@ -30,8 +29,12 @@ class HistoryScreen extends ConsumerWidget {
         title: const Text(Strings.history),
       ),
       body: sessionsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const BrandedLoader(),
+        error: (e, _) => ErrorState(
+          title: 'Couldn\'t load history',
+          message: 'Something went wrong reading your past sessions.',
+          onRetry: () => ref.invalidate(allSessionsStreamProvider),
+        ),
         data: (sessions) {
           final finished = sessions.where((s) => s.finishedAt != null).toList();
           if (finished.isEmpty) {
@@ -40,7 +43,8 @@ class HistoryScreen extends ConsumerWidget {
               title: Strings.emptyHistory,
             );
           }
-          final stats = computeLifetimeStats(finished);
+          final stats = ref.watch(lifetimeStatsProvider);
+          final players = ref.watch(playerLifetimesProvider);
           return ListView.builder(
             padding: const EdgeInsets.all(Spacing.md),
             itemCount: finished.length + 2,
@@ -48,7 +52,7 @@ class HistoryScreen extends ConsumerWidget {
               if (i == 0) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: Spacing.md),
-                  child: _LifetimeStatsBlock(stats: stats),
+                  child: _LifetimeStatsBlock(stats: stats, players: players),
                 );
               }
               if (i == 1) {
@@ -86,6 +90,14 @@ class _HistoryTile extends ConsumerWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
     final winner = ranked.isNotEmpty ? ranked.first : null;
 
+    final semanticsLabel = winner != null
+        ? '${winner.key} won, ${formatScore(winner.value)}, '
+            '${formatRelativeDate(session.finishedAt ?? session.startedAt)}, '
+            '${plural(session.players.length, 'player')}, ${plural(session.rounds.length, 'round')}'
+        : 'Session, '
+            '${formatRelativeDate(session.finishedAt ?? session.startedAt)}, '
+            '${plural(session.players.length, 'player')}, ${plural(session.rounds.length, 'round')}';
+
     return Dismissible(
       key: ValueKey(session.id),
       direction: DismissDirection.endToStart,
@@ -107,12 +119,17 @@ class _HistoryTile extends ConsumerWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(Radii.md),
           onTap: () => context.push('/history/${session.id}'),
-          child: Padding(
+          child: Semantics(
+            button: true,
+            label: semanticsLabel,
+            onTapHint: 'View summary',
+            child: Padding(
             padding: const EdgeInsets.all(Spacing.md),
             child: Row(
               children: [
                 if (winner != null)
-                  Stack(
+                  ExcludeSemantics(
+                    child: Stack(
                     clipBehavior: Clip.none,
                     children: [
                       Container(
@@ -149,6 +166,7 @@ class _HistoryTile extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  ),
                 const SizedBox(width: Spacing.md),
                 Expanded(
                   child: Column(
@@ -169,9 +187,7 @@ class _HistoryTile extends ConsumerWidget {
                               formatScore(winner.value),
                               style: text.labelLarge?.copyWith(
                                 color: winner.value >= 0
-                                    ? (brightness == Brightness.light
-                                        ? const Color(0xFF2E7D32)
-                                        : const Color(0xFF66BB6A))
+                                    ? successColor(brightness)
                                     : scheme.error,
                                 fontFeatures: const [
                                   FontFeature.tabularFigures()
@@ -185,12 +201,19 @@ class _HistoryTile extends ConsumerWidget {
                       Text(
                         '${formatRelativeDate(session.finishedAt ?? session.startedAt)} '
                         '· ${DateFormat.jm().format(session.finishedAt ?? session.startedAt)} '
-                        '· ${session.players.length} players · ${session.rounds.length} rounds',
+                        '· ${plural(session.players.length, 'player')} · ${plural(session.rounds.length, 'round')}',
                         style: text.bodySmall?.copyWith(
                             color: scheme.onSurfaceVariant),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      if (ranked.length > 1) ...[
+                        const SizedBox(height: Spacing.sm),
+                        _FinisherStrip(
+                          names: ranked.map((e) => e.key).toList(),
+                          brightness: brightness,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -198,6 +221,7 @@ class _HistoryTile extends ConsumerWidget {
                     size: 18, color: scheme.onSurfaceVariant),
               ],
             ),
+          ),
           ),
         ),
       ),
@@ -225,9 +249,77 @@ class _HistoryTile extends ConsumerWidget {
   }
 }
 
+/// A compact row of overlapping finisher avatars (ranked order) shown on a
+/// history tile, so the field at a glance — not just the winner. Caps at five
+/// with a "+N" overflow bubble.
+class _FinisherStrip extends StatelessWidget {
+  final List<String> names;
+  final Brightness brightness;
+  const _FinisherStrip({required this.names, required this.brightness});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    const max = 5;
+    const size = 22.0;
+    const step = 15.0;
+    final shown = names.take(max).toList();
+    final overflow = names.length - shown.length;
+    final count = shown.length + (overflow > 0 ? 1 : 0);
+
+    Widget bubble(Widget child, Color color) => Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: scheme.surfaceContainerHighest, width: 1.5),
+          ),
+          alignment: Alignment.center,
+          child: child,
+        );
+
+    return SizedBox(
+      height: size,
+      width: step * (count - 1) + size,
+      child: Stack(
+        children: [
+          for (var i = 0; i < shown.length; i++)
+            Positioned(
+              left: i * step,
+              child: bubble(
+                Text(
+                  playerInitial(shown[i]),
+                  style: text.labelSmall
+                      ?.copyWith(color: Colors.white, fontSize: 11),
+                ),
+                playerColor(shown[i], brightness),
+              ),
+            ),
+          if (overflow > 0)
+            Positioned(
+              left: shown.length * step,
+              child: bubble(
+                Text('+$overflow',
+                    style: text.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant, fontSize: 10)),
+                scheme.surface,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LifetimeStatsBlock extends StatelessWidget {
   final LifetimeStats stats;
-  const _LifetimeStatsBlock({required this.stats});
+  final List<PlayerLifetime> players;
+  const _LifetimeStatsBlock({required this.stats, required this.players});
+
+  void _openPlayer(BuildContext context, String name) =>
+      context.push('/history/player/${Uri.encodeComponent(name)}');
 
   @override
   Widget build(BuildContext context) {
@@ -235,44 +327,101 @@ class _LifetimeStatsBlock extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final cards = <Widget>[];
 
+    final danger = dangerColor(scheme.brightness);
+    final success = successColor(scheme.brightness);
+
     if (stats.mostSessionsWon != null) {
       final count = stats.mostSessionsWon!.wins;
       cards.add(StatsCard(
-        emoji: '👑',
+        icon: PhosphorIconsFill.crown,
         title: 'Top winner',
         value: stats.mostSessionsWon!.name,
+        avatarName: stats.mostSessionsWon!.name,
         subtitle: '$count session${count == 1 ? '' : 's'}',
+        onTap: () => _openPlayer(context, stats.mostSessionsWon!.name),
       ));
     }
     if (stats.topEarner != null) {
       cards.add(StatsCard(
-        emoji: '💸',
+        icon: PhosphorIconsFill.coins,
         title: 'Top earner',
         value: stats.topEarner!.name,
+        avatarName: stats.topEarner!.name,
+        accent: success,
         subtitle: formatScore(stats.topEarner!.total),
+        onTap: () => _openPlayer(context, stats.topEarner!.name),
       ));
     }
     if (stats.biggestLoser != null) {
       cards.add(StatsCard(
-        emoji: '🧊',
+        icon: PhosphorIconsFill.snowflake,
         title: 'Cold streak',
         value: stats.biggestLoser!.name,
+        avatarName: stats.biggestLoser!.name,
+        accent: danger,
         subtitle: formatScore(stats.biggestLoser!.total),
+        onTap: () => _openPlayer(context, stats.biggestLoser!.name),
       ));
     }
     if (stats.mostBidsWon != null) {
       final count = stats.mostBidsWon!.count;
       cards.add(StatsCard(
-        emoji: '🎯',
-        title: 'Most bids won',
+        icon: PhosphorIconsFill.target,
+        title: 'Most targets won',
         value: stats.mostBidsWon!.name,
-        subtitle: '$count ${count == 1 ? 'bid' : 'bids'}',
+        avatarName: stats.mostBidsWon!.name,
+        subtitle: '$count ${count == 1 ? 'target' : 'targets'}',
+        onTap: () => _openPlayer(context, stats.mostBidsWon!.name),
+      ));
+    }
+    // Derived aggregate cards from the per-player records.
+    final mostActive = players.isEmpty
+        ? null
+        : players.reduce((a, b) =>
+            b.sessionsPlayed > a.sessionsPlayed ? b : a);
+    if (mostActive != null && mostActive.sessionsPlayed > 0) {
+      cards.add(StatsCard(
+        icon: PhosphorIconsFill.fire,
+        title: 'Most active',
+        value: mostActive.name,
+        avatarName: mostActive.name,
+        subtitle: plural(mostActive.sessionsPlayed, 'session'),
+        onTap: () => _openPlayer(context, mostActive.name),
+      ));
+    }
+    // Best win rate among players with at least 2 sessions (avoids 1/1=100%).
+    final rateEligible =
+        players.where((p) => p.sessionsPlayed >= 2).toList();
+    if (rateEligible.isNotEmpty) {
+      final best = rateEligible
+          .reduce((a, b) => b.winRate > a.winRate ? b : a);
+      cards.add(StatsCard(
+        icon: PhosphorIconsFill.chartLineUp,
+        title: 'Best win rate',
+        value: '${best.name} ${(best.winRate * 100).round()}%',
+        accent: success,
+        subtitle: '${best.sessionsWon}/${best.sessionsPlayed} sessions',
+        onTap: () => _openPlayer(context, best.name),
+      ));
+    }
+    // Sharpest caller among players with at least 3 calls.
+    final callEligible = players.where((p) => p.callsMade >= 3).toList();
+    if (callEligible.isNotEmpty) {
+      final sharp = callEligible
+          .reduce((a, b) => b.callerSuccess > a.callerSuccess ? b : a);
+      cards.add(StatsCard(
+        icon: PhosphorIconsFill.crosshair,
+        title: 'Sharpest caller',
+        value: '${sharp.name} ${(sharp.callerSuccess * 100).round()}%',
+        subtitle: '${sharp.callsWon}/${sharp.callsMade} calls',
+        onTap: () => _openPlayer(context, sharp.name),
       ));
     }
     if (stats.biggestSingleGain != null) {
       cards.add(StatsCard(
-        emoji: '💰',
+        icon: PhosphorIconsFill.trendUp,
         title: 'Biggest single win',
+        accent: success,
         value:
             '${stats.biggestSingleGain!.name} ${formatScore(stats.biggestSingleGain!.amount)}',
         subtitle: 'Round ${stats.biggestSingleGain!.round}',
@@ -280,8 +429,9 @@ class _LifetimeStatsBlock extends StatelessWidget {
     }
     if (stats.biggestSingleLoss != null) {
       cards.add(StatsCard(
-        emoji: '💣',
+        icon: PhosphorIconsFill.trendDown,
         title: 'Biggest single loss',
+        accent: danger,
         value:
             '${stats.biggestSingleLoss!.name} ${formatScore(stats.biggestSingleLoss!.amount)}',
         subtitle: 'Round ${stats.biggestSingleLoss!.round}',
@@ -289,10 +439,12 @@ class _LifetimeStatsBlock extends StatelessWidget {
     }
     if (stats.boldestBidder != null) {
       cards.add(StatsCard(
-        emoji: '🎲',
-        title: 'Boldest bidder',
+        icon: PhosphorIconsFill.cardsThree,
+        title: 'Boldest caller',
         value: stats.boldestBidder!.name,
+        avatarName: stats.boldestBidder!.name,
         subtitle: 'avg ${stats.boldestBidder!.avg.toStringAsFixed(0)}',
+        onTap: () => _openPlayer(context, stats.boldestBidder!.name),
       ));
     }
 
@@ -329,15 +481,7 @@ class _LifetimeStatsBlock extends StatelessWidget {
           ),
           if (cards.isNotEmpty) ...[
             const SizedBox(height: Spacing.md),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: Spacing.sm,
-              mainAxisSpacing: Spacing.sm,
-              childAspectRatio: 1.7,
-              children: cards,
-            ),
+            StatsGrid(cards: cards),
           ],
         ],
       ),

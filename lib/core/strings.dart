@@ -8,7 +8,6 @@ class Strings {
   static const discardSession = 'Discard session';
   static const history = 'History';
   static const settings = 'Settings';
-  static const version = 'v1.0.0';
 
   static const newRound = '+ New Round';
   static const finishSession = 'Finish Session';
@@ -23,8 +22,8 @@ class Strings {
   static const discardConfirmTitle = 'Discard this session?';
   static const discardConfirmBody = 'All rounds will be permanently lost.';
 
-  static const valPickBidder = 'Pick a bidder';
-  static const valPickBid = 'Enter a bid amount';
+  static const valPickBidder = 'Pick a caller';
+  static const valPickBid = 'Enter a target score';
   static const valPickResult = 'Pick Won or Lost';
 
   static const emptyHistory = 'No past sessions yet.';
@@ -39,11 +38,11 @@ class Strings {
 
   static const enableBonus = 'Enable bonus';
   static const bonusAmount = 'Bonus amount';
-  static const bonusHelper = 'Bidder gets ±bonus on top of the bid.';
+  static const bonusHelper = 'Caller gets ±bonus on top of the target.';
 
   static const howScoringWorks = 'How scoring works';
 
-  static const pickBidderFirst = 'Pick a bidder first';
+  static const pickBidderFirst = 'Pick a caller first';
   static const teamLabel = 'Team';
   static const oppositionLabel = 'Opposition';
 

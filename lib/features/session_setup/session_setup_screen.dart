@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/formatters.dart';
 import '../../core/utils/haptics.dart';
 import '../../data/models/session.dart';
 import '../../data/models/session_settings.dart';
@@ -12,7 +14,6 @@ import '../../data/providers.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/shell_back_button.dart';
 import '../../shared/widgets/app_button.dart';
-import 'widgets/bonus_toggle.dart';
 import 'widgets/player_chip.dart';
 
 class SessionSetupScreen extends ConsumerStatefulWidget {
@@ -28,8 +29,9 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   final _available = <String>[];
   final _newPlayerCtrl = TextEditingController();
   final _newPlayerFocus = FocusNode();
-  bool _bonusEnabled = false;
+  bool _bonusEnabled = true;
   int _bonusAmount = 100;
+  bool _bonusOpen = false;
   bool _guideOpen = false;
 
   @override
@@ -48,7 +50,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
     super.dispose();
   }
 
-  bool get _canStart => _selected.length >= 4 && _selected.length <= 12;
+  bool get _canStart => _selected.length >= 4;
 
   void _toggle(String name) {
     setState(() {
@@ -57,7 +59,6 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
       if (existing >= 0) {
         _selected.removeAt(existing);
       } else {
-        if (_selected.length >= 12) return;
         _selected.add(name);
       }
     });
@@ -90,7 +91,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
       if (!_available.any((p) => p.toLowerCase() == lower)) {
         _available.insert(0, raw);
       }
-      if (_selected.length < 12) _selected.add(raw);
+      _selected.add(raw);
       _newPlayerCtrl.clear();
     });
     _newPlayerFocus.requestFocus();
@@ -127,30 +128,26 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                 padding: const EdgeInsets.fromLTRB(
                     Spacing.md, Spacing.sm, Spacing.md, Spacing.md),
                 children: [
-                  _PlayersSection(
-                    available: _available,
-                    selected: _selected,
-                    onToggle: _toggle,
-                    controller: _newPlayerCtrl,
-                    focusNode: _newPlayerFocus,
-                    onSubmitNew: _addNew,
-                  ),
-                  if (_selected.length >= 2) ...[
-                    const SizedBox(height: Spacing.md),
-                    _SeatingSection(
-                      selected: _selected,
-                      onReorder: _reorder,
-                      onRemove: _toggle,
-                    ),
-                  ],
-                  const SizedBox(height: Spacing.md),
                   _BonusSection(
                     enabled: _bonusEnabled,
                     amount: _bonusAmount,
+                    open: _bonusOpen,
+                    onToggleOpen: () =>
+                        setState(() => _bonusOpen = !_bonusOpen),
                     onEnabledChanged: (v) =>
                         setState(() => _bonusEnabled = v),
                     onAmountChanged: (v) =>
                         setState(() => _bonusAmount = v),
+                  ),
+                  const SizedBox(height: Spacing.md),
+                  _PlayersSection(
+                    available: _available,
+                    selected: _selected,
+                    onToggle: _toggle,
+                    onReorder: _reorder,
+                    controller: _newPlayerCtrl,
+                    focusNode: _newPlayerFocus,
+                    onSubmitNew: _addNew,
                   ),
                   const SizedBox(height: Spacing.md),
                   _QuickGuide(
@@ -230,104 +227,15 @@ class _Section extends StatelessWidget {
   }
 }
 
-class _SeatingSection extends StatelessWidget {
-  final List<String> selected;
-  final void Function(int oldIndex, int newIndex) onReorder;
-  final void Function(String name) onRemove;
-
-  const _SeatingSection({
-    required this.selected,
-    required this.onReorder,
-    required this.onRemove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    return _Section(
-      icon: PhosphorIconsRegular.listNumbers,
-      title: 'Seating order',
-      subtitle:
-          'Drag to match real-life seating. Makes picking teammates faster.',
-      child: ReorderableListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        buildDefaultDragHandles: false,
-        itemCount: selected.length,
-        onReorder: onReorder,
-        proxyDecorator: (child, _, __) => Material(
-          color: Colors.transparent,
-          elevation: 6,
-          shadowColor: Colors.black.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(Radii.md),
-          child: child,
-        ),
-        itemBuilder: (context, i) {
-          final name = selected[i];
-          return Padding(
-            key: ValueKey(name),
-            padding: const EdgeInsets.only(bottom: Spacing.sm),
-            child: Container(
-              decoration: BoxDecoration(
-                color: scheme.surface.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(Radii.md),
-                border: Border.all(
-                  color: scheme.outlineVariant.withValues(alpha: 0.35),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: Spacing.sm, vertical: Spacing.xs),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 28,
-                    child: Text(
-                      '${i + 1}',
-                      style: text.titleSmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(name, style: text.titleMedium),
-                  ),
-                  IconButton(
-                    tooltip: 'Remove',
-                    icon: Icon(
-                      PhosphorIconsRegular.x,
-                      size: 16,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                    onPressed: () => onRemove(name),
-                  ),
-                  ReorderableDragStartListener(
-                    index: i,
-                    child: Padding(
-                      padding: const EdgeInsets.all(Spacing.sm),
-                      child: Icon(
-                        PhosphorIconsRegular.dotsSixVertical,
-                        size: 18,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
+/// Unified players + seating section. The selected players are shown as one
+/// compact, reorderable list (which *is* the seating order), and any recent
+/// names not yet picked appear below as small add-chips. This removes the old
+/// duplicate "Seating order" section that repeated every selected name.
 class _PlayersSection extends StatelessWidget {
   final List<String> available;
   final List<String> selected;
   final void Function(String) onToggle;
+  final void Function(int oldIndex, int newIndex) onReorder;
   final TextEditingController controller;
   final FocusNode focusNode;
   final VoidCallback onSubmitNew;
@@ -336,6 +244,7 @@ class _PlayersSection extends StatelessWidget {
     required this.available,
     required this.selected,
     required this.onToggle,
+    required this.onReorder,
     required this.controller,
     required this.focusNode,
     required this.onSubmitNew,
@@ -343,39 +252,71 @@ class _PlayersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final byName = <String, String>{};
+    final selectedLower = selected.map((s) => s.toLowerCase()).toSet();
+    // Recents not yet in the lineup, shown as add-chips.
+    final unselected = <String>[];
+    final seen = <String>{};
     for (final p in available) {
-      byName[p.toLowerCase()] = p;
+      final lower = p.toLowerCase();
+      if (selectedLower.contains(lower) || !seen.add(lower)) continue;
+      unselected.add(p);
     }
-    for (final p in selected) {
-      byName.putIfAbsent(p.toLowerCase(), () => p);
-    }
-    final ordered = byName.values.toList();
 
     return _Section(
       icon: PhosphorIconsRegular.users,
-      title: 'Players',
-      subtitle: available.isEmpty
-          ? 'Add 4–12 players to start.'
-          : 'Tap to add. New names stay for next time.',
+      title: 'Players (${selected.length})',
+      subtitle: selected.isEmpty
+          ? 'Add 4 or more players. Order them to match real-life seating.'
+          : 'Drag to match real-life seating — makes picking teammates faster.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (ordered.isNotEmpty)
+          if (selected.isNotEmpty) ...[
+            ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              buildDefaultDragHandles: false,
+              itemCount: selected.length,
+              onReorder: onReorder,
+              proxyDecorator: (child, _, __) => Material(
+                color: Colors.transparent,
+                elevation: 6,
+                shadowColor: Colors.black.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(Radii.md),
+                child: child,
+              ),
+              itemBuilder: (context, i) => _SeatRow(
+                key: ValueKey(selected[i]),
+                name: selected[i],
+                position: i + 1,
+                index: i,
+                onRemove: () => onToggle(selected[i]),
+              ),
+            ),
+            const SizedBox(height: Spacing.sm),
+          ],
+          if (unselected.isNotEmpty) ...[
+            Text(
+              selected.isEmpty ? 'Recent players' : 'Add others',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+            const SizedBox(height: Spacing.sm),
             Wrap(
               spacing: Spacing.sm,
               runSpacing: Spacing.sm,
               children: [
-                for (final p in ordered)
+                for (final p in unselected)
                   PlayerChip(
                     name: p,
-                    selected:
-                        selected.any((s) => s.toLowerCase() == p.toLowerCase()),
+                    selected: false,
                     onTap: () => onToggle(p),
                   ),
               ],
             ),
-          if (ordered.isNotEmpty) const SizedBox(height: Spacing.md),
+            const SizedBox(height: Spacing.md),
+          ],
           TextField(
             controller: controller,
             focusNode: focusNode,
@@ -399,30 +340,198 @@ class _PlayersSection extends StatelessWidget {
   }
 }
 
+/// One compact row in the merged players/seating list: position, colored
+/// avatar, name, remove, and a drag handle.
+class _SeatRow extends StatelessWidget {
+  final String name;
+  final int position;
+  final int index;
+  final VoidCallback onRemove;
+
+  const _SeatRow({
+    super.key,
+    required this.name,
+    required this.position,
+    required this.index,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Spacing.sm),
+      child: Container(
+        decoration: BoxDecoration(
+          color: scheme.surface.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(Radii.md),
+          border: Border.all(
+            color: scheme.outlineVariant.withValues(alpha: 0.35),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.sm, vertical: Spacing.xs),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 20,
+              child: Text(
+                '$position',
+                style: text.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(width: Spacing.sm),
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: playerColor(name, scheme.brightness),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                playerInitial(name),
+                style: text.labelLarge
+                    ?.copyWith(color: Colors.white, fontSize: 13),
+              ),
+            ),
+            const SizedBox(width: Spacing.sm),
+            Expanded(child: Text(name, style: text.titleMedium)),
+            IconButton(
+              tooltip: 'Remove',
+              visualDensity: VisualDensity.compact,
+              icon: Icon(PhosphorIconsRegular.x,
+                  size: 16, color: scheme.onSurfaceVariant),
+              onPressed: onRemove,
+            ),
+            ReorderableDragStartListener(
+              index: index,
+              child: Semantics(
+                label: 'Reorder $name',
+                hint: 'Double tap and hold, then drag to reorder',
+                child: const SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Icon(PhosphorIconsRegular.dotsSixVertical, size: 18),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact, collapsible bonus card. Defaults to enabled; the header shows the
+/// toggle and current amount at a glance, and only expands to the amount
+/// editor when tapped — keeping it out of the way at the top of setup.
 class _BonusSection extends StatelessWidget {
   final bool enabled;
   final int amount;
+  final bool open;
+  final VoidCallback onToggleOpen;
   final ValueChanged<bool> onEnabledChanged;
   final ValueChanged<int> onAmountChanged;
 
   const _BonusSection({
     required this.enabled,
     required this.amount,
+    required this.open,
+    required this.onToggleOpen,
     required this.onEnabledChanged,
     required this.onAmountChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return _Section(
-      icon: PhosphorIconsRegular.coins,
-      title: 'Bonus for bidder',
-      subtitle: Strings.bonusHelper,
-      child: BonusToggle(
-        enabled: enabled,
-        amount: amount,
-        onEnabledChanged: onEnabledChanged,
-        onAmountChanged: onAmountChanged,
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(Radii.lg),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(Radii.lg),
+            onTap: onToggleOpen,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Spacing.md, vertical: Spacing.sm),
+              child: Row(
+                children: [
+                  Icon(PhosphorIconsRegular.coins,
+                      size: 18, color: scheme.primary),
+                  const SizedBox(width: Spacing.sm),
+                  Expanded(
+                      child: Text('Bonus for caller', style: text.titleMedium)),
+                  // At-a-glance amount when on and collapsed.
+                  if (enabled && !open) ...[
+                    Text('+$amount',
+                        style: text.labelLarge?.copyWith(
+                          color: scheme.secondary,
+                          fontWeight: FontWeight.w700,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        )),
+                    const SizedBox(width: Spacing.sm),
+                  ],
+                  Switch.adaptive(
+                      value: enabled, onChanged: onEnabledChanged),
+                  AnimatedRotation(
+                    duration: AppDurations.fast,
+                    turns: open ? 0.5 : 0,
+                    child: Icon(PhosphorIconsRegular.caretDown,
+                        size: 18, color: scheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: AppDurations.base,
+            curve: Curves.easeOutCubic,
+            child: open
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                        Spacing.md, 0, Spacing.md, Spacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (enabled)
+                          TextFormField(
+                            initialValue: amount.toString(),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(4),
+                            ],
+                            decoration: const InputDecoration(
+                              labelText: Strings.bonusAmount,
+                              hintText: '100',
+                            ),
+                            onChanged: (v) =>
+                                onAmountChanged((int.tryParse(v) ?? 0).clamp(0, 9999)),
+                          ),
+                        const SizedBox(height: Spacing.sm),
+                        Text(Strings.bonusHelper,
+                            style: text.bodySmall
+                                ?.copyWith(color: scheme.onSurfaceVariant)),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }
@@ -482,7 +591,7 @@ class _QuickGuide extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          'On a win: bidder\'s team gets +bid. Opposition gets −bid. The bidder also gets +bonus (if enabled).\n\nOn a loss: reverse the signs.',
+                          'On a win: caller\'s team gets +target. Opposition gets −target. The caller also gets +bonus (if enabled).\n\nOn a loss: reverse the signs.',
                           style: text.bodyMedium,
                         ),
                         const SizedBox(height: Spacing.sm),
@@ -496,7 +605,7 @@ class _QuickGuide extends StatelessWidget {
                                     .withValues(alpha: 0.4)),
                           ),
                           child: const Text(
-                            'Bid 700, bonus 100\n'
+                            'Target 700, bonus 100\n'
                             'Team = A, B   Opp = C, D, E   Result: Won\n'
                             'A: +800    B: +700    C/D/E: −700',
                             style: TextStyle(
@@ -531,11 +640,8 @@ class _Footer extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    final hint = count < 4
-        ? 'Pick at least ${4 - count} more'
-        : count > 12
-            ? 'Max 12 players'
-            : 'Ready to start';
+    final hint =
+        count < 4 ? 'Pick at least ${4 - count} more' : 'Ready to start';
 
     return Container(
       padding: const EdgeInsets.fromLTRB(

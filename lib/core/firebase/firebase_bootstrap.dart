@@ -33,20 +33,36 @@ class FirebaseBootstrap {
   /// it previously failed, which is how the Scoreboard's "Share live" flow
   /// recovers from a cold-start auth flake (common on iOS simulator's
   /// keychain).
+  /// Initializes only the Firebase core app + RTDB persistence — no network
+  /// auth. Fast and safe to await at startup so anything that needs a
+  /// [FirebaseDatabase] handle (e.g. ad config) has a live `[DEFAULT]` app.
+  /// Does NOT sign in; live-share features still require [init].
+  static Future<void> initCore() async {
+    if (_coreReady) return;
+    // Firebase may have already been initialized by iOS native auto-init
+    // (GoogleService-Info.plist) or a previous hot restart. Checking
+    // `Firebase.apps.isEmpty` is racy against native init, so just attempt
+    // the explicit init and treat a duplicate as success.
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } on FirebaseException catch (e) {
+      if (e.code != 'duplicate-app') rethrow;
+      // [DEFAULT] already exists — reuse it.
+    }
+    // Persistence can only be set once; a second call (e.g. hot restart)
+    // throws and is safe to ignore.
+    try {
+      db.setPersistenceEnabled(true);
+    } catch (_) {}
+    _coreReady = true;
+  }
+
   static Future<bool> init() async {
     if (_initialized) return true;
     try {
-      if (!_coreReady) {
-        // Firebase may have already been initialized by a native call or
-        // a previous hot-reload — in either case skip the explicit init.
-        if (Firebase.apps.isEmpty) {
-          await Firebase.initializeApp(
-            options: DefaultFirebaseOptions.currentPlatform,
-          );
-        }
-        db.setPersistenceEnabled(true);
-        _coreReady = true;
-      }
+      await initCore();
       final cred = await FirebaseAuth.instance.signInAnonymously();
       _uid = cred.user?.uid;
       _initialized = true;

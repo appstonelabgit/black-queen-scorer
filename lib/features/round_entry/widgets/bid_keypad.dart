@@ -88,7 +88,7 @@ class _KeypadButtonState extends State<_KeypadButton>
     super.initState();
     _c = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 100),
+      duration: AppDurations.fast,
       lowerBound: 0,
       upperBound: 0.05,
     );
@@ -104,16 +104,21 @@ class _KeypadButtonState extends State<_KeypadButton>
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: (_) => _c.forward(),
-      onTapCancel: () => _c.reverse(),
-      onTapUp: (_) => _c.reverse(),
-      onTap: () {
-        Haptics.light();
-        widget.onTap();
-      },
-      child: AnimatedBuilder(
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    return Semantics(
+      button: true,
+      label: widget.label ?? 'Delete',
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: reduceMotion ? null : (_) => _c.forward(),
+        onTapCancel: reduceMotion ? null : () => _c.reverse(),
+        onTapUp: reduceMotion ? null : (_) => _c.reverse(),
+        onTap: () {
+          Haptics.light();
+          widget.onTap();
+        },
+        child: AnimatedBuilder(
         animation: _c,
         builder: (context, child) => Transform.scale(
           scale: 1 - _c.value,
@@ -134,6 +139,7 @@ class _KeypadButtonState extends State<_KeypadButton>
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ))
               : Icon(widget.icon, size: 24),
+          ),
         ),
       ),
     );

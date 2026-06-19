@@ -19,6 +19,9 @@ import '../../data/scoring.dart';
 import '../../features/live/live_share_sheet.dart';
 import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
+import '../../shared/widgets/empty_state.dart';
+import '../../shared/widgets/error_state.dart';
+import '../../shared/widgets/shell_back_button.dart';
 import 'widgets/player_row.dart';
 import 'widgets/round_list.dart';
 
@@ -44,17 +47,24 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
   Widget build(BuildContext context) {
     final asyncSession = ref.watch(sessionByIdProvider(widget.sessionId));
     return asyncSession.when(
-      loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator())),
+      loading: () => const Scaffold(body: BrandedLoader()),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text('Error: $e')),
+        body: ErrorState(
+          title: 'Couldn\'t load this session',
+          message: 'Something went wrong reading the scores.',
+          onRetry: () => ref.invalidate(sessionByIdProvider(widget.sessionId)),
+        ),
       ),
       data: (session) {
         if (session == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: const Center(child: Text('Session not found')),
+            body: const EmptyState(
+              icon: PhosphorIconsDuotone.cardsThree,
+              title: 'Session not found',
+              subtitle: 'It may have been finished or removed.',
+            ),
           );
         }
         return _build(session);
@@ -77,16 +87,23 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
       final old = _previousScores[e.key] ?? 0;
       pulseDeltas[e.key] = e.value - old;
     }
-    // Schedule update after frame.
+    // Snapshot the current scores after this frame so the next score change
+    // pulses against them. No setState — the next provider emission rebuilds;
+    // calling setState here forced a redundant second build per change.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (!_mapEq(_previousScores, scores)) {
-        setState(() => _previousScores = Map.of(scores));
+        _previousScores = Map.of(scores);
       }
     });
 
     return Scaffold(
       appBar: AppBar(
+        // The active board is reached via `go` (no back stack), so add an
+        // explicit back: it returns Home, leaving the session saved and
+        // resumable from the "Session in progress" card. Read-only past games
+        // are pushed, so this pops back to the summary.
+        leading: const ShellBackButton(),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -99,8 +116,8 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
               style: text.titleLarge,
             ),
             Text(
-              '${session.players.length} players · '
-              '${widget.readOnly ? '${session.rounds.length} rounds' : formatDuration(session.duration)}',
+              '${plural(session.players.length, 'player')} · '
+              '${widget.readOnly ? plural(session.rounds.length, 'round') : formatDuration(session.duration)}',
               style: text.bodySmall
                   ?.copyWith(color: scheme.onSurfaceVariant),
             ),
@@ -111,20 +128,15 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
         actions: widget.readOnly
             ? []
             : [
-                IconButton(
-                  tooltip: 'Share live',
-                  icon: const Icon(PhosphorIconsRegular.broadcast),
+                TextButton.icon(
                   onPressed: () => _onShareLive(session),
+                  icon: const Icon(PhosphorIconsRegular.broadcast, size: 18),
+                  label: const Text('Share live'),
                 ),
                 IconButton(
                   tooltip: 'Session options',
                   icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
                   onPressed: () => _showSessionOptions(session),
-                ),
-                IconButton(
-                  tooltip: 'Finish session',
-                  icon: const Icon(PhosphorIconsRegular.flagCheckered),
-                  onPressed: () => _onFinish(session),
                 ),
               ],
       ),
@@ -143,42 +155,47 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                 child: Column(
                   children: [
                     for (var i = 0; i < ranked.length; i++) ...[
-                      AnimatedSwitcher(
-                        duration: AppDurations.slow,
-                        switchInCurve: Curves.easeOutCubic,
-                        child: PlayerRow(
-                          key: ValueKey(ranked[i].key),
-                          rank: i + 1,
-                          name: ranked[i].key,
-                          score: ranked[i].value,
-                          pulseDelta: pulseDeltas[ranked[i].key],
-                          onTap: () =>
-                              _showPlayerDetail(session, ranked[i].key),
-                        ),
+                      if (i > 0)
+                        Divider(
+                            height: 1,
+                            color: scheme.outlineVariant
+                                .withValues(alpha: 0.4)),
+                      // No AnimatedSwitcher: keying by name made it cross-fade
+                      // between two different players on a rank swap (flicker).
+                      // The in-row score pulse already signals changes.
+                      PlayerRow(
+                        key: ValueKey(ranked[i].key),
+                        rank: i + 1,
+                        name: ranked[i].key,
+                        score: ranked[i].value,
+                        pulseDelta: pulseDeltas[ranked[i].key],
+                        onTap: () => _showPlayerDetail(session, ranked[i].key),
                       ),
-                      const SizedBox(height: Spacing.sm),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(height: Spacing.sm),
-              RoundList(
-                session: session,
-                collapsed: _roundsCollapsed,
-                onToggleCollapsed: () => setState(
-                    () => _roundsCollapsed = !_roundsCollapsed),
-                onTap: widget.readOnly
-                    ? null
-                    : (i) {
-                        context.push(
-                          '/session/${session.id}/round/${session.rounds[i].id}',
-                        );
-                      },
-                onLongPress: widget.readOnly
-                    ? null
-                    : (i) => _showRoundOptions(session, i),
-              ),
-              const SizedBox(height: 96),
+              // Skip the round list (and its own empty state) for an empty
+              // active session — the banner above already prompts "New Round".
+              if (!(session.rounds.isEmpty && !widget.readOnly)) ...[
+                const SizedBox(height: Spacing.sm),
+                RoundList(
+                  session: session,
+                  collapsed: _roundsCollapsed,
+                  onToggleCollapsed: () => setState(
+                      () => _roundsCollapsed = !_roundsCollapsed),
+                  onTap: widget.readOnly
+                      ? null
+                      : (i) {
+                          context.push(
+                            '/session/${session.id}/round/${session.rounds[i].id}',
+                          );
+                        },
+                  onLongPress: widget.readOnly
+                      ? null
+                      : (i) => _showRoundOptions(session, i),
+                ),
+              ],
             ],
           ),
         ),
@@ -197,29 +214,28 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                       child: const Text(Strings.finishSession),
                     ),
                     const SizedBox(height: Spacing.xs),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 64,
-                      child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(Radii.md),
-                          ),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(64),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(Radii.md),
                         ),
-                        onPressed: () async {
-                          Haptics.medium();
-                          await _openNewRound(session);
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(PhosphorIconsRegular.plus),
-                            const SizedBox(width: Spacing.sm),
-                            Text('New Round',
+                      ),
+                      onPressed: () async {
+                        Haptics.medium();
+                        await _openNewRound(session);
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(PhosphorIconsRegular.plus),
+                          const SizedBox(width: Spacing.sm),
+                          Flexible(
+                            child: Text('New Round',
                                 style: text.titleMedium
                                     ?.copyWith(color: Colors.white)),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -272,6 +288,7 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
     );
     if (!ok) return;
     if (!mounted) return;
+    Haptics.medium();
     AdService.onSessionFinished();
     context.go('/session/${s.id}/summary');
   }
@@ -409,6 +426,7 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
       showDragHandle: true,
       isScrollControlled: true,
       builder: (ctx) {
+        final brightness = Theme.of(ctx).colorScheme.brightness;
         final deltas = <({int roundNum, int delta})>[];
         for (var i = 0; i < session.rounds.length; i++) {
           final d = computeRoundDelta(session.rounds[i], session);
@@ -461,9 +479,9 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                             ],
                             color: d.delta == 0
                                 ? Theme.of(ctx).colorScheme.onSurfaceVariant
-                                : d.delta > 0
-                                    ? const Color(0xFF2E7D32)
-                                    : const Color(0xFFC62828),
+                                : d.delta >= 0
+                                    ? successColor(brightness)
+                                    : dangerColor(brightness),
                           ),
                         ),
                       ],

@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/haptics.dart';
 import '../../session_setup/widgets/player_chip.dart' show playerColor;
 
 class PlayerRow extends StatefulWidget {
@@ -65,34 +66,36 @@ class _PlayerRowState extends State<PlayerRow>
     final avatar = playerColor(widget.name, brightness);
     final isGold = widget.rank == 1;
     final pulseColor = (widget.pulseDelta ?? 0) > 0
-        ? (brightness == Brightness.light
-            ? const Color(0xFF2E7D32)
-            : const Color(0xFF66BB6A))
-        : (brightness == Brightness.light
-            ? const Color(0xFFC62828)
-            : const Color(0xFFEF5350));
+        ? successColor(brightness)
+        : dangerColor(brightness);
 
     Color baseColor() {
       if (widget.score == 0) return scheme.onSurfaceVariant;
       if (widget.score > 0) {
-        return brightness == Brightness.light
-            ? const Color(0xFF2E7D32)
-            : const Color(0xFF66BB6A);
+        return successColor(brightness);
       }
-      return brightness == Brightness.light
-          ? const Color(0xFFC62828)
-          : const Color(0xFFEF5350);
+      return dangerColor(brightness);
     }
 
-    return Material(
-      color: scheme.surfaceContainerHighest,
+    return Semantics(
+      button: widget.onTap != null,
+      excludeSemantics: true,
+      label:
+          'Rank ${widget.rank}, ${widget.name}, ${formatScore(widget.score)}',
+      child: Material(
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(Radii.md),
       child: InkWell(
         borderRadius: BorderRadius.circular(Radii.md),
-        onTap: widget.onTap,
+        onTap: widget.onTap == null
+            ? null
+            : () {
+                Haptics.selection();
+                widget.onTap!();
+              },
         child: Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: Spacing.md, vertical: Spacing.sm + 2),
+              horizontal: Spacing.xs, vertical: Spacing.sm + 2),
           child: Row(
             children: [
               SizedBox(
@@ -141,6 +144,7 @@ class _PlayerRowState extends State<PlayerRow>
             ],
           ),
         ),
+      ),
       ),
     );
   }

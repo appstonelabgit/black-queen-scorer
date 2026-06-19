@@ -1,11 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'models/session.dart';
+import 'scoring.dart';
 import 'storage/players_repository.dart';
 import 'storage/session_repository.dart';
 
 final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
   return SessionRepository();
+});
+
+/// App version string ("v1.2.0") read from build metadata at runtime.
+final appVersionProvider = FutureProvider<String>((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  return 'v${info.version}';
 });
 
 final playersRepositoryProvider = Provider<PlayersRepository>((ref) {
@@ -27,6 +35,21 @@ final activeSessionProvider = Provider<Session?>((ref) {
 final sessionByIdProvider =
     StreamProvider.family<Session?, String>((ref, id) {
   return ref.watch(sessionRepositoryProvider).watch(id);
+});
+
+/// Aggregate lifetime stats, computed once per sessions change and cached —
+/// the underlying pass is O(sessions × rounds), so we don't want it on every
+/// History rebuild.
+final lifetimeStatsProvider = Provider<LifetimeStats>((ref) {
+  final sessions = ref.watch(allSessionsStreamProvider).value ?? const [];
+  return computeLifetimeStats(sessions);
+});
+
+/// Per-player lifetime records, memoized the same way. Shared by the History
+/// stats and the per-player breakdown screen.
+final playerLifetimesProvider = Provider<List<PlayerLifetime>>((ref) {
+  final sessions = ref.watch(allSessionsStreamProvider).value ?? const [];
+  return computePlayerLifetimes(sessions);
 });
 
 class RecentPlayersController extends StateNotifier<List<String>> {
@@ -51,6 +74,11 @@ class RecentPlayersController extends StateNotifier<List<String>> {
 
   Future<void> add(String name) async {
     await _repo.addMany([name]);
+    state = _repo.getRecent();
+  }
+
+  Future<void> rename(String oldName, String newName) async {
+    await _repo.rename(oldName, newName);
     state = _repo.getRecent();
   }
 

@@ -70,7 +70,12 @@ class HiveSessionRepository implements SessionRepository {
   }
 
   @override
-  Future<void> delete(String id) => _box.delete(id);
+  Future<void> delete(String id) async {
+    // If this session was shared live, mark its live record ended so watchers
+    // don't see a perpetual "Live" after a discard.
+    await LiveSessionWriter.instance.markEnded(id);
+    await _box.delete(id);
+  }
 
   @override
   Future<Session?> finish(String id) async {

@@ -12,7 +12,7 @@ One file, one tab open while submitting. Paste from here into App Store Connect 
 |---|---|
 | App name | Black Queen Scorer |
 | Version | 1.2.0 |
-| Build number | 1 (bump for every re-upload) |
+| Build number | 4 (bump for every re-upload) |
 | iOS bundle id | `com.blackqueenscorer.app` |
 | Android application id | `com.blackqueenscorer.app` |
 | Primary category | iOS: Utilities · Play: Apps → Tools |
@@ -54,24 +54,26 @@ card,score,scorer,bid,court,piece,rang,29,partner,trump,kot,sar,tracker,leaderbo
 
 **Copyright**: `© 2026 AppStoneLab`
 
-**Privacy answers** (set in 1.1.0 with AdMob + Firebase + live sharing; unchanged for 1.2.0):
-- Data collection: **Yes** — see § "App Privacy (1.1.0)" below for the category-by-category answers.
-- Tracking: **No** — AdMob is initialized with `nonPersonalizedAds: true` until the user accepts the ATT prompt. Answer "Used to Track You" as **No** for every data type (we show the prompt but set the corresponding tracking authorization state only for personalization, not cross-app tracking).
+**Privacy answers** (corrected 2026-04-24 after Apple flagged the ATT disclosure; binary unchanged):
+- Data collection: **Yes** — see § "App Privacy (1.1.0+)" below for the category-by-category answers.
+- Tracking: **Yes** — Info.plist ships `NSUserTrackingUsageDescription` and `apsl_ads` (wrapping `google_mobile_ads`) triggers the ATT prompt. Users who grant ATT receive personalized ads via AdMob, which means Device ID and Product Interaction are "used to track you" per Apple's definition. Answer **Yes** for those two categories (see matrix below). If we later force `nonPersonalizedAds: true` and drop the ATT key, we can revert to No — track that decision as Path B in `docs/privacy.html`.
 - Export compliance (non-exempt encryption): **No** — Info.plist has `ITSAppUsesNonExemptEncryption = false`; the app only uses HTTPS via standard OS/SDK libs.
 
 ## App Privacy (1.1.0+)
 
-Apple's "Data Types" answers (set at 1.1.0, still valid for 1.2.0):
+Apple's "Data Types" answers (corrected for 1.2.0 after ATT-disclosure review gate):
 
 | Category | Collected? | Linked to you? | Used to track you? | Purposes |
 |---|---|---|---|---|
-| Identifiers → Device ID | Yes | No | No | Third-Party Advertising, Analytics |
-| Usage Data → Product Interaction | Yes | No | No | Analytics |
+| Identifiers → Device ID | Yes | No | **Yes** | Third-Party Advertising, Analytics |
+| Usage Data → Product Interaction | Yes | No | **Yes** | Third-Party Advertising, Analytics |
 | Diagnostics → Crash Data | Yes | No | No | App Functionality |
 | Diagnostics → Performance Data | Yes | No | No | App Functionality |
 | User Content → Other User Content (player names, scores, rounds — only when live-sharing) | Yes | No | No | App Functionality |
 
 All other categories: **Not Collected**.
+
+> Why Device ID + Product Interaction are marked "Used to track you": Apple defines tracking as linking user/device data collected from our app with data collected from other apps/sites for targeted advertising or measurement, or sharing that data with data brokers. AdMob with personalized ads (granted via the ATT prompt) does exactly that — it joins our Device ID / interaction signals with Google's cross-app graph. Crash, Performance, and live-session User Content are app-functionality only and stay on Google / Firebase's App-Functionality purpose path, so those rows remain No.
 
 **Slots to fill in during submission** (don't put values here — just note them where the console shows them):
 
@@ -113,7 +115,7 @@ Live-share your card night. Fast offline scorer for Court Piece, Rang, 29.
 - Data encrypted in transit: **Yes** (HTTPS).
 - User can request deletion: **Yes** — "Settings → Data → Delete all history" plus uninstall clears the anonymous Firebase UID.
 
-**Content rating**: answer **No** to every content question → result **Everyone**.
+**Content rating**: pick the **Utility/Tools/Productivity** branch (NOT Game — this is a scorekeeper). Answer **No** to every content question, including both gambling questions (real-money AND simulated). Result **Everyone**. Full rationale + exact answers in `store/metadata/play-store.md` § Content rating. (1.2.0 build 4 reframes "bid" → "call a target score" across listing + app to clear the gambling-perception rejection.)
 
 **Contains ads**: **Yes**.
 

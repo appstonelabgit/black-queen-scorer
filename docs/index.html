@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Black Queen Scorer — Fast offline scorer for Court Piece, Rang, 29 and other bidding card games</title>
+  <title>Black Queen Scorer — Court Piece, Rang, 29 Scorer with Live-Share Scoreboard</title>
 
   <meta name="description" content="Black Queen Scorer is a fast, offline-first score tracker for bidding card games like Court Piece, Rang, 29, and Partner 29. Live-share your scoreboard so friends can watch in real time via QR code. Free, no account required." />
   <meta name="keywords" content="card game scorer, Court Piece scorer, Rang scorer, 29 card game scorer, Partner 29, Black Queen, bidding card game, offline scorer, live scoreboard, card night, team card game, card game leaderboard, QR scoreboard" />
@@ -64,6 +64,26 @@
       "Offline-first — gameplay works without network; live sharing and ads use internet",
       "Free with ads; no account, no in-app purchases"
     ]
+  }
+  </script>
+
+  <!-- AEO: Second MobileApplication node for the Android build so search engines
+       surface both install URLs when the query is Android-specific. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "Black Queen Scorer (Android)",
+    "description": "Android build of Black Queen Scorer — fast, offline-first scorer for bidding-based team card games. Same features as the iOS build.",
+    "url": "https://appstonelabgit.github.io/black-queen-scorer/",
+    "installUrl": "https://play.google.com/store/apps/details?id=com.blackqueenscorer.app",
+    "downloadUrl": "https://play.google.com/store/apps/details?id=com.blackqueenscorer.app",
+    "applicationCategory": "GameApplication",
+    "applicationSubCategory": "Card Game Utility",
+    "operatingSystem": "Android 5+",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "inLanguage": "en",
+    "isFamilyFriendly": true
   }
   </script>
 
@@ -142,7 +162,15 @@
         "name": "Does the app cost money?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No. Black Queen Scorer is free on the App Store. It is supported by ads; there are no in-app purchases."
+          "text": "No. Black Queen Scorer is free on the App Store and Google Play. It is supported by ads; there are no in-app purchases."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it on Android too?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Black Queen Scorer is available on the Google Play Store and the Apple App Store. Same features, same price (free)."
         }
       },
       {
@@ -157,147 +185,7 @@
   }
   </script>
 
-  <style>
-    :root {
-      --emerald: #0F5132;
-      --emerald-deep: #0A1F1A;
-      --gold: #E8B931;
-      --surface: #FAF7F2;
-      --on-surface: #1A1A1A;
-      --muted: #6B6B6B;
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-      color: var(--on-surface);
-      background: var(--surface);
-      line-height: 1.5;
-    }
-    header.hero {
-      background: linear-gradient(160deg, var(--emerald) 0%, var(--emerald-deep) 100%);
-      color: white;
-      padding: 4rem 1.5rem 5rem;
-      text-align: center;
-    }
-    .crest {
-      width: 112px;
-      height: 112px;
-      margin: 0 auto 1.5rem;
-      border-radius: 24px;
-      border: 2px solid rgba(232, 185, 49, 0.35);
-      overflow: hidden;
-      box-shadow: 0 18px 60px rgba(232, 185, 49, 0.2);
-    }
-    .crest img { width: 100%; height: 100%; display: block; }
-    .hero h1 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin: 0 0 0.5rem;
-    }
-    .hero h1 .accent { color: var(--gold); }
-    .hero p.tagline {
-      font-size: 1.1rem;
-      color: rgba(255, 255, 255, 0.78);
-      max-width: 640px;
-      margin: 0 auto 2rem;
-    }
-    .cta {
-      display: inline-flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .cta a {
-      display: inline-block;
-      height: 52px;
-      line-height: 52px;
-      padding: 0 1.5rem;
-      background: var(--gold);
-      color: var(--emerald-deep);
-      font-weight: 700;
-      text-decoration: none;
-      border-radius: 12px;
-      transition: transform 120ms;
-    }
-    .cta a:hover { transform: translateY(-2px); }
-    .cta a.ghost {
-      background: transparent;
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    .cta a[aria-disabled="true"] {
-      background: rgba(232, 185, 49, 0.35);
-      color: rgba(10, 31, 26, 0.75);
-      cursor: default;
-    }
-    .cta a[aria-disabled="true"]:hover { transform: none; }
-    main {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 3rem 1.5rem;
-    }
-    section { margin: 0 0 4rem; }
-    section h2 {
-      font-size: 1.75rem;
-      font-weight: 800;
-      letter-spacing: -0.25px;
-      margin: 0 0 1rem;
-    }
-    section h2 .accent { color: var(--emerald); }
-    section p.lede {
-      color: var(--muted);
-      max-width: 640px;
-      margin: 0 0 1.5rem;
-    }
-    ul.features {
-      list-style: none;
-      padding: 0;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1rem;
-    }
-    ul.features li {
-      background: white;
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      border: 1px solid rgba(0, 0, 0, 0.06);
-    }
-    ul.features li strong {
-      display: block;
-      color: var(--emerald);
-      margin-bottom: 0.25rem;
-    }
-    .faq details {
-      background: white;
-      border: 1px solid rgba(0, 0, 0, 0.06);
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 0.75rem;
-    }
-    .faq summary {
-      font-weight: 600;
-      cursor: pointer;
-      list-style: none;
-    }
-    .faq summary::-webkit-details-marker { display: none; }
-    .faq details[open] { border-color: var(--emerald); }
-    .faq p {
-      margin: 0.75rem 0 0;
-      color: var(--muted);
-    }
-    footer {
-      padding: 2.5rem 1.5rem;
-      background: var(--emerald-deep);
-      color: rgba(255, 255, 255, 0.72);
-      text-align: center;
-      font-size: 0.9rem;
-    }
-    footer a { color: var(--gold); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-  </style>
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <header class="hero">
@@ -308,7 +196,7 @@
     <p class="tagline">The fastest scorer for bidding card games. Court Piece, Rang, 29, Partner 29 — tally rounds in seconds, live-share your scoreboard so friends can watch in real time via QR code, share a podium card when you're done. Offline-first. Free. No account.</p>
     <div class="cta">
       <a href="https://apps.apple.com/us/app/black-queen-scorer/id6762565568" title="Download on the App Store">🍎 Download on the App Store</a>
-      <a href="#" aria-disabled="true" title="Coming to Google Play">▶ Coming to Google Play</a>
+      <a href="https://play.google.com/store/apps/details?id=com.blackqueenscorer.app" title="Get it on Google Play">▶ Get it on Google Play</a>
       <a href="#faq" class="ghost">Learn more</a>
     </div>
   </header>
@@ -369,6 +257,23 @@
       </ul>
     </section>
 
+    <section id="supported-games">
+      <h2>Supported <span class="accent">card games</span></h2>
+      <p class="lede">Black Queen Scorer works for any team bidding game — one player bids, a team tries to make it, opposition wins if they fail. Common matches:</p>
+
+      <h3>Court Piece (Rang / Trump / Kot Piece)</h3>
+      <p>Four-player partnership trick-taking game popular across South Asia. Set the bid, pick bidder and trump, tap Won or Lost each hand. The scoreboard recomputes instantly. <a href="./court-piece/">More on scoring Court Piece →</a></p>
+
+      <h3>29 Card Game (Partner 29)</h3>
+      <p>Popular in Kerala and Nova Scotia. Four players, two teams, trump-bid rounds to 29 points. Black Queen Scorer tracks cumulative score and round-by-round history with editable rounds. <a href="./29/">More on scoring 29 →</a></p>
+
+      <h3>Black Queen</h3>
+      <p>Bidding variant played across the Indian subcontinent. Same scoring model as Court Piece — enter bid and result, the math runs itself.</p>
+
+      <h3>Regional names and variants</h3>
+      <p>Court Piece is also called <a href="./rang/">Rang</a>, Rung, Trump, Kot Piece, or Sar Bazi. 29 is played as Partner 29 or 29 Card Game. The scorer handles any of these — the scoring mechanics are the same.</p>
+    </section>
+
     <section id="faq" class="faq">
       <h2>Frequently asked questions</h2>
 
@@ -406,7 +311,11 @@
       </details>
       <details>
         <summary>Does the app cost money?</summary>
-        <p>No. It's free on the App Store. Supported by ads; no in-app purchases.</p>
+        <p>No. Free on the App Store and Google Play. Supported by ads; no in-app purchases.</p>
+      </details>
+      <details>
+        <summary>Is it on Android too?</summary>
+        <p>Yes. Available on the Google Play Store and the Apple App Store. Same features, same price (free).</p>
       </details>
       <details>
         <summary>What platforms is it on?</summary>
