@@ -234,12 +234,15 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                 Text('Final Rankings', style: text.titleMedium),
                 const SizedBox(height: Spacing.sm),
                 for (var i = 0; i < stats.ranked.length; i++) ...[
+                  if (i > 0)
+                    Divider(
+                        height: 1,
+                        color: scheme.outlineVariant.withValues(alpha: 0.4)),
                   PlayerRow(
                     rank: i + 1,
                     name: stats.ranked[i].name,
                     score: stats.ranked[i].score,
                   ),
-                  const SizedBox(height: Spacing.sm),
                 ],
                 const SizedBox(height: Spacing.lg),
                 if (statCards.isNotEmpty) ...[

@@ -147,6 +147,11 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                 child: Column(
                   children: [
                     for (var i = 0; i < ranked.length; i++) ...[
+                      if (i > 0)
+                        Divider(
+                            height: 1,
+                            color: scheme.outlineVariant
+                                .withValues(alpha: 0.4)),
                       AnimatedSwitcher(
                         duration: AppDurations.slow,
                         switchInCurve: Curves.easeOutCubic,
@@ -160,7 +165,6 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                               _showPlayerDetail(session, ranked[i].key),
                         ),
                       ),
-                      const SizedBox(height: Spacing.sm),
                     ],
                   ],
                 ),

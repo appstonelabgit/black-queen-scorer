@@ -77,14 +77,14 @@ class _PlayerRowState extends State<PlayerRow>
     }
 
     return Material(
-      color: scheme.surfaceContainerHighest,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(Radii.md),
       child: InkWell(
         borderRadius: BorderRadius.circular(Radii.md),
         onTap: widget.onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: Spacing.md, vertical: Spacing.sm + 2),
+              horizontal: Spacing.xs, vertical: Spacing.sm + 2),
           child: Row(
             children: [
               SizedBox(
