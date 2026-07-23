@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Delete Your Data — Black Queen Scorer</title>
+  <meta name="description" content="How to delete your Black Queen Scorer data: in-app history, live-session broadcasts, and uninstall." />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://appstonelabgit.github.io/black-queen-scorer/delete-data.html" />
+  <link rel="icon" href="./icon.png" />
+
+  <style>
+    :root {
+      --emerald: #0F5132;
+      --emerald-deep: #0A1F1A;
+      --gold: #E8B931;
+      --surface: #FAF7F2;
+      --on-surface: #1A1A1A;
+      --muted: #6B6B6B;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      color: var(--on-surface);
+      background: var(--surface);
+      line-height: 1.65;
+    }
+    header.bar {
+      background: var(--emerald-deep);
+      color: white;
+      padding: 1rem 1.5rem;
+    }
+    header.bar a {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin: 0 0 0.25rem;
+    }
+    p.updated {
+      color: var(--muted);
+      margin: 0 0 2rem;
+      font-size: 0.9rem;
+    }
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 2rem 0 0.5rem;
+      color: var(--emerald);
+    }
+    p { margin: 0 0 1rem; }
+    ul, ol { padding-left: 1.25rem; }
+    li { margin-bottom: 0.25rem; }
+    a { color: var(--emerald); }
+    strong { color: var(--on-surface); }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      vertical-align: top;
+    }
+    th { background: rgba(15, 81, 50, 0.08); color: var(--emerald); }
+    footer {
+      padding: 2.5rem 1.5rem;
+      background: var(--emerald-deep);
+      color: rgba(255, 255, 255, 0.72);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <a href="./">← Black Queen Scorer</a>
+  </header>
+
+  <main>
+    <h1>Delete Your Data</h1>
+    <p class="updated">Last updated: 17 May 2026</p>
+
+    <p>This page explains how to delete data created by <strong>Black Queen Scorer</strong>, developed by <strong>AppStoneLab</strong>. Black Queen Scorer does not use accounts, so there is no profile to delete — only locally-stored gameplay and optional live-session broadcasts.</p>
+
+    <h2>1. Delete all in-app history</h2>
+    <p>This wipes every session, round, and player name stored on your device.</p>
+    <ol>
+      <li>Open <strong>Black Queen Scorer</strong>.</li>
+      <li>Tap <strong>Settings</strong> from the home screen.</li>
+      <li>Scroll to the <strong>Data</strong> section.</li>
+      <li>Tap <strong>Delete all history</strong>.</li>
+      <li>Confirm the prompt.</li>
+    </ol>
+
+    <h2>2. Delete a single session (and its live broadcast)</h2>
+    <p>If you only want to remove one session — including any live-share copy hosted on Firebase — delete it from history.</p>
+    <ol>
+      <li>Open <strong>Black Queen Scorer</strong>.</li>
+      <li>Tap <strong>History</strong> from the home screen.</li>
+      <li>Swipe the session row left, or long-press and choose <strong>Delete</strong>.</li>
+      <li>Confirm. The session is removed from your device immediately and from the live-share server within a few seconds.</li>
+    </ol>
+
+    <h2>3. Uninstall the app</h2>
+    <p>Uninstalling Black Queen Scorer permanently removes everything the app stored on your device. Any live-share broadcasts you started will auto-expire (see retention table below).</p>
+    <ol>
+      <li>On Android: long-press the app icon → <strong>Uninstall</strong>, or go to <strong>Settings → Apps → Black Queen Scorer → Uninstall</strong>.</li>
+      <li>On iOS: long-press the app icon → <strong>Remove App → Delete App</strong>.</li>
+    </ol>
+
+    <h2>4. Email request</h2>
+    <p>If you cannot reach the in-app controls, email <a href="mailto:dbvaghani@gmail.com">dbvaghani@gmail.com</a> with the 8-character live-session code (format <code>XXXX-XXXX</code>) you want deleted. We will purge it from the live-share server within 7 days and confirm by reply.</p>
+
+    <h2>What gets deleted vs. kept</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Where it lives</th>
+          <th>Deleted by</th>
+          <th>Retention if you do nothing</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Player names, rounds, scores, session history</td>
+          <td>On your device (Hive storage)</td>
+          <td>Step 1, 2, or 3</td>
+          <td>Until you delete or uninstall</td>
+        </tr>
+        <tr>
+          <td>Live-session broadcast (player names, rounds, timestamps)</td>
+          <td>Firebase Realtime Database</td>
+          <td>Step 2, 3, or 4</td>
+          <td>Auto-purged after 30 days of inactivity</td>
+        </tr>
+        <tr>
+          <td>Anonymous Firebase user ID</td>
+          <td>Firebase Auth (random ID, no profile)</td>
+          <td>Step 3 (uninstall)</td>
+          <td>No personal data attached; expires with the app install</td>
+        </tr>
+        <tr>
+          <td>Advertising identifier</td>
+          <td>Held by your device OS and Google AdMob</td>
+          <td>Reset in <strong>device settings</strong> (Android: <em>Settings → Google → Ads</em>; iOS: <em>Settings → Privacy → Tracking</em>)</td>
+          <td>Controlled by your device, not by this app</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Related</h2>
+    <p>For a full breakdown of what Black Queen Scorer collects and why, see the <a href="./privacy.html">Privacy Policy</a>.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about deletion? Email <a href="mailto:dbvaghani@gmail.com">dbvaghani@gmail.com</a>.</p>
+  </main>
+
+  <footer>
+    <p>© 2026 AppStoneLab · <a href="./">Home</a> · <a href="./privacy.html">Privacy</a> · <a href="mailto:dbvaghani@gmail.com">Contact</a></p>
+  </footer>
+</body>
+</html>

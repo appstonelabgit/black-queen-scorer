@@ -1,0 +1,20 @@
+{
+  // markdownlint config — relaxes noisy stylistic rules for prose/docs.
+  // Real-error rules stay on; chatty layout/table rules are off.
+  "default": true,
+  "MD013": false,  // line-length
+  "MD022": false,  // blanks around headings
+  "MD032": false,  // blanks around lists
+  "MD031": false,  // blanks around fenced code
+  "MD024": false,  // duplicate heading text
+  "MD026": false,  // trailing punctuation in headings
+  "MD033": false,  // inline HTML
+  "MD036": false,  // emphasis used as heading
+  "MD041": false,  // first line must be heading
+  "MD040": false,  // fenced code language required
+  "MD012": false,  // multiple blank lines
+  "MD055": false,  // table pipe style
+  "MD056": false,  // table column count
+  "MD058": false,  // blanks around tables
+  "MD060": false   // table column style
+}

@@ -1,0 +1,57 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart';
+import 'package:go_router/go_router.dart';
+
+import 'live_code.dart';
+
+/// Listens for incoming universal / app links and custom `bqs://` URIs
+/// and forwards them to the GoRouter instance. Initialise once from main.
+class DeepLinkHandler {
+  DeepLinkHandler._();
+  static final DeepLinkHandler instance = DeepLinkHandler._();
+
+  final _appLinks = AppLinks();
+  StreamSubscription<Uri>? _sub;
+
+  Future<void> attach(GoRouter router) async {
+    try {
+      final initial = await _appLinks.getInitialLink();
+      if (initial != null) _route(router, initial);
+      _sub = _appLinks.uriLinkStream.listen(
+        (uri) => _route(router, uri),
+        onError: (e) => debugPrint('DeepLink error: $e'),
+      );
+    } catch (e) {
+      debugPrint('DeepLink attach failed: $e');
+    }
+  }
+
+  void _route(GoRouter router, Uri uri) {
+    final path = _resolveRoute(uri);
+    if (path == null) return;
+    router.go(path);
+  }
+
+  String? _resolveRoute(Uri uri) {
+    // https://black-queen-scorer.vercel.app/l/<code>
+    if (uri.host == liveLinkHost) {
+      final segs = uri.pathSegments;
+      if (segs.length >= 2 && segs[0] == 'l' && segs[1].isNotEmpty) {
+        return '/live/${segs[1]}';
+      }
+    }
+    // bqs://live/<code>
+    if (uri.scheme == 'bqs' && uri.host == 'live') {
+      final code = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
+      if (code.isNotEmpty) return '/live/$code';
+    }
+    return null;
+  }
+
+  void dispose() {
+    _sub?.cancel();
+    _sub = null;
+  }
+}

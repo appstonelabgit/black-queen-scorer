@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Black Queen Scorer — Court Piece, Rang, 29 Scorer with Live-Share Scoreboard</title>
+
+  <meta name="description" content="Black Queen Scorer is a fast, offline-first score tracker for bidding card games like Court Piece, Rang, 29, and Partner 29. Live-share your scoreboard so friends can watch in real time via QR code. Free, no account required." />
+  <meta name="keywords" content="card game scorer, Court Piece scorer, Rang scorer, 29 card game scorer, Partner 29, Black Queen, bidding card game, offline scorer, live scoreboard, card night, team card game, card game leaderboard, QR scoreboard" />
+  <meta name="author" content="AppStoneLab" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Black Queen Scorer — Live-share card-night scoreboards" />
+  <meta property="og:description" content="Fast offline scorer for Court Piece, Rang, 29, and more. Live-share your scoreboard with friends via QR code or short link." />
+  <meta property="og:image" content="https://appstonelabgit.github.io/black-queen-scorer/og.png" />
+  <meta property="og:url" content="https://appstonelabgit.github.io/black-queen-scorer/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Black Queen Scorer" />
+  <meta name="twitter:description" content="Fast offline scorer for bidding card games. Live-share your scoreboard with friends via QR code. Free, no account required." />
+  <meta name="twitter:image" content="https://appstonelabgit.github.io/black-queen-scorer/og.png" />
+  <link rel="canonical" href="https://appstonelabgit.github.io/black-queen-scorer/" />
+  <link rel="icon" href="./icon.png" />
+
+  <!-- AEO: MobileApplication structured data so AI assistants (ChatGPT, Claude,
+       Perplexity, Gemini, Google AI Overviews) can identify and cite the app. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "Black Queen Scorer",
+    "description": "A fast, offline-first score tracker for bidding-based team card games. Tracks scores across rounds for Court Piece, Rang, 29, Partner 29, Black Queen, and similar variants. Includes opt-in live sharing so friends can watch the scoreboard update in real time via QR code or short link. Free, no account required.",
+    "url": "https://appstonelabgit.github.io/black-queen-scorer/",
+    "installUrl": "https://apps.apple.com/us/app/black-queen-scorer/id6762565568",
+    "downloadUrl": "https://apps.apple.com/us/app/black-queen-scorer/id6762565568",
+    "applicationCategory": "GameApplication",
+    "applicationSubCategory": "Card Game Utility",
+    "operatingSystem": "iOS 13+, Android 5+",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "inLanguage": "en",
+    "isFamilyFriendly": true,
+    "creator": {
+      "@type": "Organization",
+      "name": "AppStoneLab",
+      "url": "https://appstonelabgit.github.io/black-queen-scorer/"
+    },
+    "featureList": [
+      "Supports 4 to 12 players per session",
+      "Round entry in under 10 seconds with a custom numeric keypad",
+      "Always-correct math — scores are recomputed from rounds on every change",
+      "Optional bidder bonus that applies only to the bidder",
+      "Live leaderboard that reorders with animation",
+      "Live session sharing — friends watch the scoreboard in real time via QR code or short link, no app install needed for viewers",
+      "Seating order locks the player layout around the table",
+      "Persistent session banner resumes an active game in one tap",
+      "Edit or delete any past round; the leaderboard recalculates instantly",
+      "Undo safety net for new rounds and deletions",
+      "Celebratory finish screen with podium and fun stats",
+      "Shareable WhatsApp-ready summary image",
+      "Lifetime stats aggregated across all sessions",
+      "Offline-first — gameplay works without network; live sharing and ads use internet",
+      "Free with ads; no account, no in-app purchases"
+    ]
+  }
+  </script>
+
+  <!-- AEO: Second MobileApplication node for the Android build so search engines
+       surface both install URLs when the query is Android-specific. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "Black Queen Scorer (Android)",
+    "description": "Android build of Black Queen Scorer — fast, offline-first scorer for bidding-based team card games. Same features as the iOS build.",
+    "url": "https://appstonelabgit.github.io/black-queen-scorer/",
+    "installUrl": "https://play.google.com/store/apps/details?id=com.blackqueenscorer.app",
+    "downloadUrl": "https://play.google.com/store/apps/details?id=com.blackqueenscorer.app",
+    "applicationCategory": "GameApplication",
+    "applicationSubCategory": "Card Game Utility",
+    "operatingSystem": "Android 5+",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "inLanguage": "en",
+    "isFamilyFriendly": true
+  }
+  </script>
+
+  <!-- AEO: FAQPage schema for "what is...", "how does..." style queries. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Black Queen Scorer?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Black Queen Scorer is a mobile app that tracks scores across rounds for bidding-based team card games. It replaces the pen-and-paper scoring sheet that one person always ends up maintaining on card nights. It does not simulate card play — it only handles scoring."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which card games does Black Queen Scorer support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Any team bidding game where one player bids an amount, a team (the bidder plus optional teammates) tries to win that bid, and the opposition wins if the team fails. Common examples: Court Piece, Rang (Trump), 29, Partner 29, Black Queen, and many regional variants."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does scoring work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On a win, every player on the bidder's team gains +bid points; every player in the opposition loses -bid points. On a loss, the signs reverse. Optionally, the bidder alone gains or loses an additional ±bonus. All totals are recomputed from the list of rounds every time they are displayed, so editing or deleting a round always yields correct scores."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Black Queen Scorer work offline?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Gameplay works fully offline. Player names, rounds, scores, and session history are stored locally on your device. An internet connection is only used to load ads and for the optional live-sharing feature."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does live sharing work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On any session's scoreboard, tap the broadcast icon. The app shows a QR code and an 8-character short code (format XXXX-XXXX). Friends either scan the QR or open a short link — no app install or sign-up required on their side. They see the scoreboard update live as you record rounds. Sharing is opt-in per session and the synced data contains only player names, rounds, and timestamps; inactive sessions are purged after 30 days."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it show ads or collect data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The app shows ads via Google AdMob, which may collect device identifiers and related data for ad delivery and measurement in line with Google's policies. Gameplay data (players, rounds, scores) stays on your device unless you opt in to live sharing for a session. There is no account system. See the privacy policy for full detail."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many players can a session have?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Between 4 and 12 players per session."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I edit a round after saving it?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Tap any round tile to edit the bidder, team, bid amount, or result. The leaderboard recalculates from scratch every time a round changes, so totals always stay correct."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the app cost money?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Black Queen Scorer is free on the App Store and Google Play. It is supported by ads; there are no in-app purchases."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it on Android too?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Black Queen Scorer is available on the Google Play Store and the Apple App Store. Same features, same price (free)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What platforms is it available on?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "iOS 13 and later, Android 5 (API 21) and later."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="crest">
+      <img src="./icon.png" alt="Black Queen Scorer app icon — a gold crown and spade on an emerald tile" />
+    </div>
+    <h1>Black <span class="accent">Queen</span> Scorer</h1>
+    <p class="tagline">The fastest scorer for bidding card games. Court Piece, Rang, 29, Partner 29 — tally rounds in seconds, live-share your scoreboard so friends can watch in real time via QR code, share a podium card when you're done. Offline-first. Free. No account.</p>
+    <div class="cta">
+      <a href="https://apps.apple.com/us/app/black-queen-scorer/id6762565568" title="Download on the App Store">🍎 Download on the App Store</a>
+      <a href="https://play.google.com/store/apps/details?id=com.blackqueenscorer.app" title="Get it on Google Play">▶ Get it on Google Play</a>
+      <a href="#faq" class="ghost">Learn more</a>
+    </div>
+  </header>
+
+  <main>
+    <section id="features">
+      <h2>What <span class="accent">Black Queen Scorer</span> does</h2>
+      <p class="lede">Built for the one friend who always keeps score on card night. Setup takes seconds. Each round is a few taps. The math is transparent and always correct.</p>
+      <ul class="features">
+        <li>
+          <strong>Sessions in seconds</strong>
+          Add 4 to 12 players, tap start. Recent names are remembered for next time.
+        </li>
+        <li>
+          <strong>10-second round entry</strong>
+          Pick the bidder, tap teammates, type the bid on a custom keypad, tap Won or Lost.
+        </li>
+        <li>
+          <strong>Always-correct math</strong>
+          Totals are recomputed from the rounds list on every change. Edit freely — nothing goes stale.
+        </li>
+        <li>
+          <strong>Optional bidder bonus</strong>
+          A ±bonus that applies only to the bidder. Toggle per session.
+        </li>
+        <li>
+          <strong>Live leaderboard</strong>
+          Rows reorder smoothly as scores move. Score pulses green on gain, red on loss.
+        </li>
+        <li>
+          <strong>Live session sharing</strong>
+          Tap broadcast — friends scan a QR or open a short link and watch your scoreboard update live. No app install or sign-up on their side.
+        </li>
+        <li>
+          <strong>Seating order</strong>
+          Lock the player layout you actually sit in around the table. Scoreboard and round entry follow it.
+        </li>
+        <li>
+          <strong>Resume in one tap</strong>
+          A persistent banner reopens your active session after you leave the app to take a call or answer a text.
+        </li>
+        <li>
+          <strong>Round history</strong>
+          Every round is editable. Long-press to delete. Undo safety net for new rounds.
+        </li>
+        <li>
+          <strong>Shareable finish</strong>
+          Podium, fun stats, and a WhatsApp-friendly summary card to send the chat.
+        </li>
+        <li>
+          <strong>Lifetime stats</strong>
+          Top winner, top earner, longest cold streak, most bids won — across every session.
+        </li>
+        <li>
+          <strong>Offline-first gameplay</strong>
+          Scoring works without internet. No account required. Gameplay data stays on your device; ads and opt-in live sharing use the network.
+        </li>
+      </ul>
+    </section>
+
+    <section id="supported-games">
+      <h2>Supported <span class="accent">card games</span></h2>
+      <p class="lede">Black Queen Scorer works for any team bidding game — one player bids, a team tries to make it, opposition wins if they fail. Common matches:</p>
+
+      <h3>Court Piece (Rang / Trump / Kot Piece)</h3>
+      <p>Four-player partnership trick-taking game popular across South Asia. Set the bid, pick bidder and trump, tap Won or Lost each hand. The scoreboard recomputes instantly. <a href="./court-piece/">More on scoring Court Piece →</a></p>
+
+      <h3>29 Card Game (Partner 29)</h3>
+      <p>Popular in Kerala and Nova Scotia. Four players, two teams, trump-bid rounds to 29 points. Black Queen Scorer tracks cumulative score and round-by-round history with editable rounds. <a href="./29/">More on scoring 29 →</a></p>
+
+      <h3>Black Queen</h3>
+      <p>Bidding variant played across the Indian subcontinent. Same scoring model as Court Piece — enter bid and result, the math runs itself.</p>
+
+      <h3>Regional names and variants</h3>
+      <p>Court Piece is also called <a href="./rang/">Rang</a>, Rung, Trump, Kot Piece, or Sar Bazi. 29 is played as Partner 29 or 29 Card Game. The scorer handles any of these — the scoring mechanics are the same.</p>
+    </section>
+
+    <section id="faq" class="faq">
+      <h2>Frequently asked questions</h2>
+
+      <details>
+        <summary>What is Black Queen Scorer?</summary>
+        <p>A mobile score tracker for bidding-based team card games. It replaces the pen-and-paper scoring sheet that one person always ends up maintaining on card nights. The app does not simulate card play — it handles scoring only.</p>
+      </details>
+      <details>
+        <summary>Which card games does it support?</summary>
+        <p>Any team bidding game where one player bids an amount, a team tries to win that bid, and the opposition wins if the team fails. Common examples: Court Piece, Rang (Trump), 29, Partner 29, Black Queen, and many regional variants.</p>
+      </details>
+      <details>
+        <summary>How does the scoring math work?</summary>
+        <p>On a win, the bidder's team gains +bid, the opposition loses -bid. On a loss, the signs reverse. Optionally, the bidder alone gains or loses an additional ±bonus. All totals are recomputed from the rounds list every time they are displayed — so editing or deleting a round always yields correct scores.</p>
+      </details>
+      <details>
+        <summary>Does it work offline?</summary>
+        <p>Gameplay works fully offline — all scoring data is stored locally on your device. An internet connection is only used to load ads and for the optional live-sharing feature.</p>
+      </details>
+      <details>
+        <summary>How does live sharing work?</summary>
+        <p>On any session's scoreboard, tap the broadcast icon. The app shows a QR code and an 8-character short code (<code>XXXX-XXXX</code>). Friends scan the QR or open the short link — no app install or sign-up on their side. They see the scoreboard update live as you record rounds. Sharing is opt-in per session; inactive sessions are purged after 30 days.</p>
+      </details>
+      <details>
+        <summary>Does it show ads or collect data?</summary>
+        <p>The app shows ads via Google AdMob, which may collect device identifiers and related data for ad delivery and measurement under Google's policies. Gameplay data (players, rounds, scores) stays on your device unless you opt in to live sharing for a session. No account system. See the <a href="./privacy.html">privacy policy</a> for detail.</p>
+      </details>
+      <details>
+        <summary>How many players per session?</summary>
+        <p>Between 4 and 12.</p>
+      </details>
+      <details>
+        <summary>Can I edit a round after saving it?</summary>
+        <p>Yes. Tap any round tile to edit the bidder, team, bid, or result. Totals recompute instantly.</p>
+      </details>
+      <details>
+        <summary>Does the app cost money?</summary>
+        <p>No. Free on the App Store and Google Play. Supported by ads; no in-app purchases.</p>
+      </details>
+      <details>
+        <summary>Is it on Android too?</summary>
+        <p>Yes. Available on the Google Play Store and the Apple App Store. Same features, same price (free).</p>
+      </details>
+      <details>
+        <summary>What platforms is it on?</summary>
+        <p>iOS 13 and later, Android 5 (API 21) and later.</p>
+      </details>
+    </section>
+
+    <section id="privacy">
+      <h2>Privacy, briefly</h2>
+      <p>Your gameplay data — players, rounds, scores — stays on your device by default. Live sharing is opt-in per session; when you tap broadcast, only player names, rounds, and timestamps sync to a temporary session that anyone with the code can watch. No account system. Ads are served by Google AdMob, which may use device identifiers for ad delivery and measurement under Google's policies. See the <a href="./privacy.html">full privacy policy</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 AppStoneLab · <a href="./privacy.html">Privacy</a> · <a href="mailto:dbvaghani@gmail.com">Contact</a></p>
+  </footer>
+</body>
+</html>
