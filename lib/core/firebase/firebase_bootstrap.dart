@@ -5,12 +5,13 @@ import 'package:flutter/foundation.dart';
 
 import '../../firebase_options.dart';
 
-/// Our Realtime Database lives in asia-southeast1, not the Firebase SDK
-/// default (us-central1). Every FirebaseDatabase reference must pass this
-/// URL explicitly — the options-level databaseURL is ignored by some
-/// versions of the Flutter SDK.
-const _rtdbUrl =
-    'https://black-queen-scorer-default-rtdb.asia-southeast1.firebasedatabase.app';
+/// Our Realtime Database is region-scoped and differs per platform
+/// (Android → scorewise-9a7f6 in europe-west1, iOS → black-queen-scorer in
+/// asia-southeast1), so every FirebaseDatabase reference must pass the URL
+/// explicitly — the options-level databaseURL is ignored by some versions of
+/// the Flutter SDK. Source it from the per-platform [FirebaseOptions] so it
+/// always matches the initialized app.
+String get _rtdbUrl => DefaultFirebaseOptions.currentPlatform.databaseURL!;
 
 class FirebaseBootstrap {
   static bool _coreReady = false;

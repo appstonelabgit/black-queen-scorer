@@ -23,13 +23,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBAB7p5qPsg4shNbrvopRob8Jad2xuUWMQ',
-    appId: '1:908672463707:android:6cb0a9aa12b2f93346e07e',
-    messagingSenderId: '908672463707',
-    projectId: 'black-queen-scorer',
+    apiKey: 'AIzaSyBlOFigB2sd6A9XquYbhYbEhoW3Z2jy5_E',
+    appId: '1:497076648805:android:c3bc6d726cf3690e42ff8c',
+    messagingSenderId: '497076648805',
+    projectId: 'scorewise-9a7f6',
     databaseURL:
-        'https://black-queen-scorer-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'black-queen-scorer.firebasestorage.app',
+        'https://scorewise-9a7f6-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'scorewise-9a7f6.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

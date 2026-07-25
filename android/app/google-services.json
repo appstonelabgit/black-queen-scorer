@@ -1,22 +1,21 @@
 {
   "project_info": {
-    "project_number": "908672463707",
-    "firebase_url": "https://black-queen-scorer-default-rtdb.asia-southeast1.firebasedatabase.app",
-    "project_id": "black-queen-scorer",
-    "storage_bucket": "black-queen-scorer.firebasestorage.app"
+    "project_number": "497076648805",
+    "project_id": "scorewise-9a7f6",
+    "storage_bucket": "scorewise-9a7f6.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:908672463707:android:6cb0a9aa12b2f93346e07e",
+        "mobilesdk_app_id": "1:497076648805:android:c3bc6d726cf3690e42ff8c",
         "android_client_info": {
-          "package_name": "com.blackqueenscorer.app"
+          "package_name": "com.scorewise.app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBAB7p5qPsg4shNbrvopRob8Jad2xuUWMQ"
+          "current_key": "AIzaSyBlOFigB2sd6A9XquYbhYbEhoW3Z2jy5_E"
         }
       ],
       "services": {
