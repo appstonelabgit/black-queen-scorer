@@ -10,6 +10,11 @@ const _emeraldDeep = Color(0xFF0A1F1A);
 const _gold = Color(0xFFE8B931);
 const _nativeSurface = Color(0xFF143028);
 
+/// Fixed height reserved for the medium native slot. Shared by the inner ad
+/// container, the loading placeholder, and the outer sizing box so the slot
+/// never collapses to the creative's intrinsic (0-width) size while loading.
+const double _nativeHeight = 360;
+
 class _BqsAdIdManager extends AdsIdManager {
   final AdConfig cfg;
   const _BqsAdIdManager(this.cfg);
@@ -179,7 +184,7 @@ class AdService {
       ),
       clipBehavior: Clip.antiAlias,
       child: SizedBox(
-        height: 360,
+        height: _nativeHeight,
         child: ApslSequenceNativeAd(
           key: adKey,
           orderOfAdNetworks: const [AdNetwork.admob],
@@ -215,12 +220,18 @@ class _NativeSlot extends StatefulWidget {
 }
 
 class _NativeSlotState extends State<_NativeSlot> {
-  static const _maxAttempts = 3;
-  static const _retryDelay = Duration(seconds: 20);
+  // ApslSequenceNativeAd owns retries: exponential backoff over maxRetries=5
+  // (~2+4+8+16+32s), then a 45s recovery loop. We deliberately do NOT remount
+  // the ad on a `failed` event — the package emits `adFailedToLoad` before each
+  // of its own retries, and remounting with a fresh key disposed the in-flight
+  // backoff, so the two retry loops fought and blank windows got longer.
+  //
+  // Instead we keep one ad widget mounted (stable key) and let the package
+  // retry underneath. If nothing fills within this grace window, we collapse
+  // the whole "Sponsored" block rather than leave a placeholder spinning.
+  static const _giveUpAfter = Duration(seconds: 90);
 
-  int _attempts = 0;
-  int _reloadKey = 0;
-  Timer? _retryTimer;
+  Timer? _giveUpTimer;
 
   @override
   void initState() {
@@ -228,34 +239,26 @@ class _NativeSlotState extends State<_NativeSlot> {
     AdService.nativeStatus.value = AdLoadStatus.loading;
     AdService.nativeExhausted.value = false;
     AdService.nativeStatus.addListener(_onStatus);
+    _giveUpTimer = Timer(_giveUpAfter, () {
+      if (!mounted) return;
+      if (AdService.nativeStatus.value != AdLoadStatus.loaded) {
+        AdService.nativeExhausted.value = true; // Home collapses the block.
+      }
+    });
   }
 
   void _onStatus() {
-    final status = AdService.nativeStatus.value;
-    if (status == AdLoadStatus.loaded) {
-      _retryTimer?.cancel();
-      return;
-    }
-    if (status != AdLoadStatus.failed) return;
-    if (_attempts >= _maxAttempts) {
-      // Out of retries — let Home collapse the block.
-      AdService.nativeExhausted.value = true;
-      return;
-    }
-    if (_retryTimer == null || !_retryTimer!.isActive) {
-      _retryTimer = Timer(_retryDelay, () {
-        if (!mounted) return;
-        _attempts++;
-        AdService.nativeStatus.value = AdLoadStatus.loading;
-        setState(() => _reloadKey++); // fresh ad widget → new load attempt
-      });
+    // Once the creative fills, we're done waiting; transient `failed` events
+    // are ignored — the package handles the reload.
+    if (AdService.nativeStatus.value == AdLoadStatus.loaded) {
+      _giveUpTimer?.cancel();
     }
   }
 
   @override
   void dispose() {
     AdService.nativeStatus.removeListener(_onStatus);
-    _retryTimer?.cancel();
+    _giveUpTimer?.cancel();
     super.dispose();
   }
 
@@ -268,12 +271,23 @@ class _NativeSlotState extends State<_NativeSlot> {
         return ValueListenableBuilder<AdLoadStatus>(
           valueListenable: AdService.nativeStatus,
           builder: (_, status, __) {
-            return Stack(
-              children: [
-                AdService._nativeInner(adKey: ValueKey(_reloadKey)),
-                if (status != AdLoadStatus.loaded)
-                  Positioned.fill(child: AdService._nativePlaceholder()),
-              ],
+            // Pin the slot to a full-width, fixed-height box. While the
+            // creative loads, ApslAdmobNativeAd.show() returns SizedBox.shrink
+            // (0x0), so a bare Stack would size to that collapsed child and
+            // paint only the inner card's ~1px border — the stray "vertical
+            // line" artifact. StackFit.expand forces both the native view and
+            // the placeholder to the full box regardless of the ad's state.
+            return SizedBox(
+              width: double.infinity,
+              height: _nativeHeight,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  AdService._nativeInner(adKey: const ValueKey('native-ad')),
+                  if (status != AdLoadStatus.loaded)
+                    Positioned.fill(child: AdService._nativePlaceholder()),
+                ],
+              ),
             );
           },
         );
@@ -294,37 +308,39 @@ class _BannerSlot extends StatefulWidget {
 }
 
 class _BannerSlotState extends State<_BannerSlot> {
-  static const _maxAttempts = 3;
-  static const _retryDelay = Duration(seconds: 15);
+  // As with the native slot, ApslSequenceBannerAd owns retries (exp backoff
+  // over maxRetries=5, then a 45s recovery loop). We keep one banner widget
+  // mounted with a stable key and let it retry underneath instead of
+  // remounting it on each `failed` event. If nothing fills within the grace
+  // window, we collapse the strip to zero height so no empty box lingers.
+  static const _giveUpAfter = Duration(seconds: 90);
 
-  int _attempts = 0;
-  int _reloadKey = 0;
-  Timer? _retryTimer;
+  Timer? _giveUpTimer;
+  bool _exhausted = false;
 
   @override
   void initState() {
     super.initState();
-    // Retry on (re)entry: a prior failure shouldn't permanently kill the slot.
     AdService.bannerStatus.value = AdLoadStatus.loading;
     AdService.bannerStatus.addListener(_onStatus);
+    _giveUpTimer = Timer(_giveUpAfter, () {
+      if (!mounted) return;
+      if (AdService.bannerStatus.value != AdLoadStatus.loaded) {
+        setState(() => _exhausted = true);
+      }
+    });
   }
 
   void _onStatus() {
-    if (AdService.bannerStatus.value != AdLoadStatus.failed) return;
-    if (_attempts >= _maxAttempts) return;
-    if (_retryTimer != null && _retryTimer!.isActive) return;
-    _retryTimer = Timer(_retryDelay, () {
-      if (!mounted) return;
-      _attempts++;
-      AdService.bannerStatus.value = AdLoadStatus.loading;
-      setState(() => _reloadKey++); // fresh banner widget → new load attempt
-    });
+    if (AdService.bannerStatus.value == AdLoadStatus.loaded) {
+      _giveUpTimer?.cancel();
+    }
   }
 
   @override
   void dispose() {
     AdService.bannerStatus.removeListener(_onStatus);
-    _retryTimer?.cancel();
+    _giveUpTimer?.cancel();
     super.dispose();
   }
 
@@ -333,22 +349,13 @@ class _BannerSlotState extends State<_BannerSlot> {
     return ValueListenableBuilder<bool>(
       valueListenable: AdService.readyNotifier,
       builder: (_, ready, __) {
-        if (!ready) return const SizedBox.shrink();
-        return ValueListenableBuilder<AdLoadStatus>(
-          valueListenable: AdService.bannerStatus,
-          builder: (_, status, __) {
-            // Collapse only once retries are exhausted.
-            if (status == AdLoadStatus.failed && _attempts >= _maxAttempts) {
-              return const SizedBox.shrink();
-            }
-            return SizedBox(
-              height: 50,
-              child: ApslSequenceBannerAd(
-                key: ValueKey(_reloadKey),
-                orderOfAdNetworks: const [AdNetwork.admob],
-              ),
-            );
-          },
+        if (!ready || _exhausted) return const SizedBox.shrink();
+        return SizedBox(
+          height: 50,
+          child: ApslSequenceBannerAd(
+            key: const ValueKey('persistent-banner-ad'),
+            orderOfAdNetworks: const [AdNetwork.admob],
+          ),
         );
       },
     );
