@@ -33,13 +33,13 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAj5c_5oKrtYC1p-G75HnJAgYvhpbpQ7fo',
-    appId: '1:908672463707:ios:1d61eeccc8622f8146e07e',
-    messagingSenderId: '908672463707',
-    projectId: 'black-queen-scorer',
+    apiKey: 'AIzaSyBR0FLpW_GFjPaE0kpkWOfr39rdfYFgIHI',
+    appId: '1:497076648805:ios:f6862a03f047300642ff8c',
+    messagingSenderId: '497076648805',
+    projectId: 'scorewise-9a7f6',
     databaseURL:
-        'https://black-queen-scorer-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'black-queen-scorer.firebasestorage.app',
+        'https://scorewise-9a7f6-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'scorewise-9a7f6.firebasestorage.app',
     iosBundleId: 'com.blackqueenscorer.app',
   );
 }

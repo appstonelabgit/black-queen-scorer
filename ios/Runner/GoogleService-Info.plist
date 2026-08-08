@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyAj5c_5oKrtYC1p-G75HnJAgYvhpbpQ7fo</string>
+	<string>AIzaSyBR0FLpW_GFjPaE0kpkWOfr39rdfYFgIHI</string>
 	<key>GCM_SENDER_ID</key>
-	<string>908672463707</string>
+	<string>497076648805</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.blackqueenscorer.app</string>
 	<key>PROJECT_ID</key>
-	<string>black-queen-scorer</string>
+	<string>scorewise-9a7f6</string>
 	<key>STORAGE_BUCKET</key>
-	<string>black-queen-scorer.firebasestorage.app</string>
+	<string>scorewise-9a7f6.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:908672463707:ios:1d61eeccc8622f8146e07e</string>
+	<string>1:497076648805:ios:f6862a03f047300642ff8c</string>
+	<key>DATABASE_URL</key>
+	<string>https://scorewise-9a7f6-default-rtdb.europe-west1.firebasedatabase.app</string>
 </dict>
 </plist>
