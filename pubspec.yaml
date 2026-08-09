@@ -38,6 +38,15 @@ dependencies:
   qr_flutter: ^4.1.0
   app_links: ^6.3.2
 
+# path_provider_foundation >=2.5.0 pulls the `objective_c` FFI package, which
+# builds through Flutter's experimental native-assets path. On iOS that build
+# omits the simulator SDK (`Target native_assets required define SdkRoot`),
+# embedding the device slice of objective_c.framework and crashing the app on
+# the simulator with `incompatible platform (have 'iOS', need 'iOS-simulator')`.
+# Pin to 2.4.1 (last release before the objective_c dependency) to avoid it.
+dependency_overrides:
+  path_provider_foundation: 2.4.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
