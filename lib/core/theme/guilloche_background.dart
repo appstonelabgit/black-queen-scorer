@@ -5,12 +5,15 @@ import 'package:flutter/material.dart';
 import 'tokens.dart';
 
 /// Faint guilloché engraving — the interlocking parametric line-work printed on
-/// the back of playing cards and banknotes — painted once behind the whole app.
+/// the back of playing cards and banknotes — painted behind a screen.
 ///
-/// Mounted via `MaterialApp.builder` so it sits under the Navigator; every
-/// [Scaffold] is transparent (see [AppTheme]) so the engraving shows through on
-/// every screen. Isolated in a [RepaintBoundary] and drawn from a static
-/// [CustomPainter], so it paints once and never rebuilds with page content.
+/// Wrapped around each route individually (see the router's `_engraved`) rather
+/// than once under the whole Navigator: every [Scaffold] is transparent (see
+/// [AppTheme]), so a single shared background would let the outgoing screen
+/// bleed through the incoming one during a slide transition. Painting it
+/// per-page makes each route opaque so it cleanly occludes the one beneath.
+/// Isolated in a [RepaintBoundary] and drawn from a static [CustomPainter], so
+/// it paints once per screen and never rebuilds with page content.
 class EngravedBackground extends StatelessWidget {
   final Widget child;
   const EngravedBackground({super.key, required this.child});

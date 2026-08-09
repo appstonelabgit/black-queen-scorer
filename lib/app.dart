@@ -8,7 +8,6 @@ import 'core/live/deep_link_handler.dart';
 import 'core/router/app_router.dart';
 import 'core/strings.dart';
 import 'core/theme/app_theme.dart';
-import 'core/theme/guilloche_background.dart';
 import 'core/theme/theme_controller.dart';
 
 class BlackQueenScorerApp extends ConsumerStatefulWidget {
@@ -49,9 +48,6 @@ class _BlackQueenScorerAppState extends ConsumerState<BlackQueenScorerApp> {
       themeMode: themeMode,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
-      // Paint the guilloché engraving once, beneath the whole Navigator.
-      // Scaffolds are transparent (see AppTheme) so it shows on every screen.
-      builder: (context, child) => EngravedBackground(child: child!),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
