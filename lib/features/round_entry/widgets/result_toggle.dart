@@ -7,11 +7,16 @@ import '../../../core/utils/haptics.dart';
 
 class ResultToggle extends StatelessWidget {
   final void Function(bool won) onPick;
+
+  /// Optional "Fine a player" action. When non-null a secondary button is shown
+  /// beneath Won/Lost: the picked player loses the target, everyone else 0.
+  final VoidCallback? onFine;
   final bool enabled;
 
   const ResultToggle({
     super.key,
     required this.onPick,
+    this.onFine,
     required this.enabled,
   });
 
@@ -24,25 +29,46 @@ class ResultToggle extends StatelessWidget {
     final danger = brightness == Brightness.light
         ? const Color(0xFFC62828)
         : const Color(0xFFB71C1C);
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: _Btn(
-            label: Strings.resultWon,
-            icon: PhosphorIconsBold.check,
-            color: success,
-            onTap: enabled ? () => onPick(true) : null,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _Btn(
+                label: Strings.resultWon,
+                icon: PhosphorIconsBold.check,
+                color: success,
+                onTap: enabled ? () => onPick(true) : null,
+              ),
+            ),
+            const SizedBox(width: Spacing.sm),
+            Expanded(
+              child: _Btn(
+                label: Strings.resultLost,
+                icon: PhosphorIconsBold.x,
+                color: danger,
+                onTap: enabled ? () => onPick(false) : null,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: Spacing.sm),
-        Expanded(
-          child: _Btn(
-            label: Strings.resultLost,
-            icon: PhosphorIconsBold.x,
-            color: danger,
-            onTap: enabled ? () => onPick(false) : null,
+        if (onFine != null) ...[
+          const SizedBox(height: Spacing.sm),
+          OutlinedButton.icon(
+            onPressed: enabled ? onFine : null,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: danger,
+              side: BorderSide(color: danger.withValues(alpha: 0.6)),
+              minimumSize: const Size.fromHeight(56),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(Radii.md),
+              ),
+            ),
+            icon: const Icon(PhosphorIconsBold.flag, size: 20),
+            label: const Text(Strings.resultFine),
           ),
-        ),
+        ],
       ],
     );
   }

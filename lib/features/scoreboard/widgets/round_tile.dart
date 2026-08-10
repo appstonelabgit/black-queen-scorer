@@ -31,14 +31,29 @@ class RoundTile extends StatelessWidget {
     final posColor = successColor(brightness);
     final negColor = dangerColor(brightness);
 
-    final teamLabel = _summarizeTeam(round);
-    final bidStr = formatBid(round.bidAmount);
-    final resultStr = won ? 'Won' : 'Lost';
-    final deltaLabel =
-        '${won ? '+' : '\u2212'}$bidStr / ${won ? '\u2212' : '+'}$bidStr';
+    // Fine round (stored as a free-score round): one player loses the amount,
+    // everyone else 0. Render its own compact summary rather than the bid shape.
+    final bool isFine = round.isFree;
+    late final String title;
+    late final String deltaLabel;
+    if (isFine) {
+      final offender = round.scores!.entries.firstWhere(
+        (e) => e.value < 0,
+        orElse: () => const MapEntry('\u2014', 0),
+      );
+      final amountStr = formatBid(offender.value.abs());
+      title = '${offender.key} \u00b7 Fine';
+      deltaLabel = '\u2212$amountStr';
+    } else {
+      final teamLabel = _summarizeTeam(round);
+      final bidStr = formatBid(round.bidAmount);
+      final resultStr = won ? 'Won' : 'Lost';
+      title = '$teamLabel \u00b7 target $bidStr \u00b7 $resultStr';
+      deltaLabel =
+          '${won ? '+' : '\u2212'}$bidStr / ${won ? '\u2212' : '+'}$bidStr';
+    }
 
-    final semanticsLabel =
-        'Round $index, $teamLabel, target $bidStr, $resultStr, $deltaLabel';
+    final semanticsLabel = 'Round $index, $title, $deltaLabel';
 
     return Material(
       color: scheme.surfaceContainerHighest,
@@ -72,7 +87,7 @@ class RoundTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$teamLabel · target $bidStr · $resultStr',
+                      title,
                       style: text.bodyLarge,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -84,7 +99,7 @@ class RoundTile extends StatelessWidget {
               Text(
                 deltaLabel,
                 style: text.bodyMedium?.copyWith(
-                  color: won ? posColor : negColor,
+                  color: (isFine || !won) ? negColor : posColor,
                   fontWeight: FontWeight.w600,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),

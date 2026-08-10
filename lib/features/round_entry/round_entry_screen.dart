@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../core/live/live_session_writer.dart';
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
@@ -45,6 +46,12 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
   bool _initialised = false;
   bool _dirty = false;
 
+  // Live "current round" broadcast state. Only new bid rounds on an
+  // already-shared session announce their in-progress caller/bid to watchers.
+  String? _lastBroadcastSig;
+  bool _broadcastedCurrent = false;
+  bool _committed = false;
+
   @override
   void initState() {
     super.initState();
@@ -60,20 +67,58 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
 
   @override
   void dispose() {
+    // Left a new round without committing — pull the in-progress card from
+    // watchers. A commit clears it instead via the full session sync().
+    if (_broadcastedCurrent && !_committed) {
+      LiveSessionWriter.instance.clearCurrentRound(widget.sessionId);
+    }
     _shakeBidder.dispose();
     _shakeTeam.dispose();
     _shakeBid.dispose();
     super.dispose();
   }
 
+  /// Pushes the current caller/bid to watchers as an in-progress round, once
+  /// there's a real caller and a positive bid. Only fires for a NEW bid round
+  /// on a session that's already being shared live (no code is created here).
+  /// Deduped by signature so identical rebuilds don't re-write.
+  void _maybeBroadcastCurrentRound(Session session) {
+    if (widget.roundId != null || session.settings.isFreeScore) return;
+    final sig = (_bidder == null || _bidValue <= 0)
+        ? null
+        : '$_bidder|$_bidValue|${_teammates.join(",")}';
+    if (sig == null || sig == _lastBroadcastSig) return;
+    _lastBroadcastSig = sig;
+    _broadcastedCurrent = true;
+    LiveSessionWriter.instance.syncCurrentRound(
+      session.id,
+      bidder: _bidder!,
+      bid: _bidValue,
+      team: <String>[_bidder!, ..._teammates],
+    );
+  }
+
   void _initialiseFromRound(Session session, Round? round) {
     if (_initialised) return;
     if (round != null) {
-      _bidder = round.bidder;
-      _teammates
-        ..clear()
-        ..addAll(round.team.where((p) => p != round.bidder));
-      _bidStr = round.bidAmount.toString();
+      if (round.isFree) {
+        // Fine round: reconstruct offender + amount from the single negative
+        // entry so it re-opens editable in this bid form.
+        final offender = round.scores!.entries.firstWhere(
+          (e) => e.value < 0,
+          orElse: () => const MapEntry('', 0),
+        );
+        if (offender.key.isNotEmpty) {
+          _bidder = offender.key;
+          _bidStr = offender.value.abs().toString();
+        }
+      } else {
+        _bidder = round.bidder;
+        _teammates
+          ..clear()
+          ..addAll(round.team.where((p) => p != round.bidder));
+        _bidStr = round.bidAmount.toString();
+      }
     }
     _initialised = true;
   }
@@ -195,6 +240,9 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
       return;
     }
     Haptics.medium();
+    // Mark committed so dispose() doesn't yank the current-round card — the
+    // session sync() below overwrites the whole live node and drops it cleanly.
+    _committed = true;
     final team = <String>[_bidder!, ..._teammates];
     if (widget.roundId == null) {
       final round = Round.create(
@@ -206,13 +254,62 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
       final updated = session.copyWith(rounds: [...session.rounds, round]);
       await ref.read(sessionRepositoryProvider).save(updated);
     } else {
+      // Rebuild explicitly (not copyWith) so editing a Fine round back into a
+      // bid result clears the free-score `scores` map — copyWith can't null it.
       final updatedRounds = session.rounds
           .map((r) => r.id == widget.roundId
-              ? r.copyWith(
-                  bidder: _bidder,
+              ? Round(
+                  id: r.id,
+                  bidder: _bidder!,
                   team: team,
                   bidAmount: _bidValue,
                   won: won,
+                  createdAt: r.createdAt,
+                )
+              : r)
+          .toList();
+      final updated = session.copyWith(rounds: updatedRounds);
+      await ref.read(sessionRepositoryProvider).save(updated);
+    }
+    if (!mounted) return;
+    if (context.canPop()) context.pop();
+  }
+
+  /// Commits a Fine: the picked player loses the target amount, everyone else
+  /// scores 0. Stored as a free-score round so the scoring engine applies the
+  /// map verbatim (no caller/team/bonus). Reuses the same target + player pick.
+  Future<void> _commitFine(Session session) async {
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_bidder == null) {
+      Haptics.warning();
+      if (!reduceMotion) _shakeBidder.forward(from: 0);
+      return;
+    }
+    if (_bidValue <= 0) {
+      Haptics.warning();
+      if (!reduceMotion) _shakeBid.forward(from: 0);
+      return;
+    }
+    Haptics.medium();
+    _committed = true;
+    final scores = <String, int>{
+      for (final p in session.players) p: p == _bidder ? -_bidValue : 0,
+    };
+    if (widget.roundId == null) {
+      final round = Round.free(scores: scores);
+      final updated = session.copyWith(rounds: [...session.rounds, round]);
+      await ref.read(sessionRepositoryProvider).save(updated);
+    } else {
+      final updatedRounds = session.rounds
+          .map((r) => r.id == widget.roundId
+              ? Round(
+                  id: r.id,
+                  bidder: '',
+                  team: const [],
+                  bidAmount: 0,
+                  won: false,
+                  createdAt: r.createdAt,
+                  scores: scores,
                 )
               : r)
           .toList();
@@ -322,6 +419,12 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
         : session.rounds.length + 1;
 
     final bidNum = int.tryParse(_bidStr) ?? 0;
+
+    // Broadcast the in-progress round to any live watchers after this frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _maybeBroadcastCurrentRound(session);
+    });
 
     return PopScope(
       canPop: false,
@@ -509,6 +612,14 @@ class _RoundEntryScreenState extends ConsumerState<RoundEntryScreen>
               ResultToggle(
                 enabled: _canCommit,
                 onPick: (won) => _commit(won, session),
+                onFine: () => _commitFine(session),
+              ),
+              const SizedBox(height: Spacing.sm),
+              Text(
+                Strings.fineHelper,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
               ),
               const SizedBox(height: Spacing.xl),
             ],

@@ -14,6 +14,9 @@ class Strings {
 
   static const resultWon = 'Won';
   static const resultLost = 'Lost';
+  static const resultFine = 'Fine a player';
+  static const fineHelper =
+      'Selected player loses the target; everyone else scores 0.';
 
   static const finishConfirmTitle = 'Finish this session?';
   static const finishConfirmBody =
