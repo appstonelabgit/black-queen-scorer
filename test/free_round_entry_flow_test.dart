@@ -5,12 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:black_queen_scorer/data/models/session.dart';
-import 'package:black_queen_scorer/data/models/session_settings.dart';
-import 'package:black_queen_scorer/data/providers.dart';
-import 'package:black_queen_scorer/data/scoring.dart';
-import 'package:black_queen_scorer/data/storage/session_repository.dart';
-import 'package:black_queen_scorer/features/round_entry/round_entry_screen.dart';
+import 'package:scorewise/data/models/session.dart';
+import 'package:scorewise/data/models/session_settings.dart';
+import 'package:scorewise/data/providers.dart';
+import 'package:scorewise/data/scoring.dart';
+import 'package:scorewise/data/storage/session_repository.dart';
+import 'package:scorewise/features/round_entry/round_entry_screen.dart';
 
 class FakeSessionRepository implements SessionRepository {
   final Map<String, Session> _data = {};

@@ -114,7 +114,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
       );
       final dir = await getTemporaryDirectory();
       final file = File(
-          '${dir.path}/black_queen_${DateTime.now().millisecondsSinceEpoch}.png');
+          '${dir.path}/scorewise_${DateTime.now().millisecondsSinceEpoch}.png');
       await file.writeAsBytes(bytes);
       await SharePlus.instance.share(
         ShareParams(

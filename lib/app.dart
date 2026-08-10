@@ -10,15 +10,15 @@ import 'core/strings.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 
-class BlackQueenScorerApp extends ConsumerStatefulWidget {
-  const BlackQueenScorerApp({super.key});
+class ScoreWiseApp extends ConsumerStatefulWidget {
+  const ScoreWiseApp({super.key});
 
   @override
-  ConsumerState<BlackQueenScorerApp> createState() =>
-      _BlackQueenScorerAppState();
+  ConsumerState<ScoreWiseApp> createState() =>
+      _ScoreWiseAppState();
 }
 
-class _BlackQueenScorerAppState extends ConsumerState<BlackQueenScorerApp> {
+class _ScoreWiseAppState extends ConsumerState<ScoreWiseApp> {
   @override
   void initState() {
     super.initState();

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:black_queen_scorer/data/models/round.dart';
-import 'package:black_queen_scorer/data/models/session.dart';
-import 'package:black_queen_scorer/data/models/session_settings.dart';
-import 'package:black_queen_scorer/data/scoring.dart';
+import 'package:scorewise/data/models/round.dart';
+import 'package:scorewise/data/models/session.dart';
+import 'package:scorewise/data/models/session_settings.dart';
+import 'package:scorewise/data/scoring.dart';
 
 Session _freeSession(List<String> players, List<Map<String, int>> rounds) {
   return Session(

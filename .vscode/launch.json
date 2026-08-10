@@ -6,7 +6,7 @@
     "configurations": [
         
         {
-            "name": "black_queen",
+            "name": "ScoreWise",
             "request": "launch",
             "type": "dart"
         },

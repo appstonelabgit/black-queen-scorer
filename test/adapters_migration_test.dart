@@ -14,10 +14,10 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 
-import 'package:black_queen_scorer/data/models/adapters.dart';
-import 'package:black_queen_scorer/data/models/round.dart';
-import 'package:black_queen_scorer/data/models/session.dart';
-import 'package:black_queen_scorer/data/models/session_settings.dart';
+import 'package:scorewise/data/models/adapters.dart';
+import 'package:scorewise/data/models/round.dart';
+import 'package:scorewise/data/models/session.dart';
+import 'package:scorewise/data/models/session_settings.dart';
 
 BinaryWriterImpl _writer() => BinaryWriterImpl(TypeRegistryImpl());
 BinaryReader _reader(List<int> bytes) =>

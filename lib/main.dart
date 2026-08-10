@@ -22,5 +22,5 @@ Future<void> main() async {
   // it — the app must open instantly and work fully offline. Kicked off in the
   // background; the Share flow re-invokes init() on demand if it isn't ready.
   unawaited(FirebaseBootstrap.init());
-  runApp(const ProviderScope(child: BlackQueenScorerApp()));
+  runApp(const ProviderScope(child: ScoreWiseApp()));
 }

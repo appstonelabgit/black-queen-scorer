@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:black_queen_scorer/data/models/round.dart';
-import 'package:black_queen_scorer/data/models/session.dart';
-import 'package:black_queen_scorer/data/models/session_settings.dart';
+import 'package:scorewise/data/models/round.dart';
+import 'package:scorewise/data/models/session.dart';
+import 'package:scorewise/data/models/session_settings.dart';
 
 void main() {
   test('Round.create ensures bidder is in team', () {
