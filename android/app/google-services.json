@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "497076648805",
+    "firebase_url": "https://scorewise-9a7f6-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "scorewise-9a7f6",
     "storage_bucket": "scorewise-9a7f6.firebasestorage.app"
   },
@@ -10,6 +11,25 @@
         "mobilesdk_app_id": "1:497076648805:android:c3bc6d726cf3690e42ff8c",
         "android_client_info": {
           "package_name": "com.scorewise.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlOFigB2sd6A9XquYbhYbEhoW3Z2jy5_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:497076648805:android:f67240930b19ba4442ff8c",
+        "android_client_info": {
+          "package_name": "com.scorewise.cardscorer"
         }
       },
       "oauth_client": [],
