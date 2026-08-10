@@ -69,6 +69,48 @@ class LiveSessionWriter {
     }
   }
 
+  /// Broadcasts an in-progress round (caller + bid chosen, result pending) so
+  /// watchers see a "Current round" card before it's committed. No-op if the
+  /// session was never shared — it does NOT create a code (only an already-live
+  /// game announces its current hand).
+  Future<void> syncCurrentRound(
+    String sessionId, {
+    required String bidder,
+    required int bid,
+    required List<String> team,
+  }) async {
+    if (!FirebaseBootstrap.initialized) return;
+    final code = _codes?.get(sessionId);
+    if (code == null) return;
+    try {
+      await FirebaseBootstrap.db.ref('live_sessions/$code').update({
+        'currentRound': {
+          'bidder': bidder,
+          'bid': bid,
+          'bidTeam': team,
+        },
+      });
+    } catch (e) {
+      debugPrint('LiveSessionWriter.syncCurrentRound failed: $e');
+    }
+  }
+
+  /// Clears any in-progress round from the live record (scorer backed out of a
+  /// new round without committing). Committing instead overwrites the whole
+  /// node via [sync], which drops `currentRound` on its own. No-op if unshared.
+  Future<void> clearCurrentRound(String sessionId) async {
+    if (!FirebaseBootstrap.initialized) return;
+    final code = _codes?.get(sessionId);
+    if (code == null) return;
+    try {
+      await FirebaseBootstrap.db
+          .ref('live_sessions/$code/currentRound')
+          .remove();
+    } catch (e) {
+      debugPrint('LiveSessionWriter.clearCurrentRound failed: $e');
+    }
+  }
+
   /// Stamps `finishedAt` on a shared session's live record so watchers stop
   /// seeing it as "Live" once the host discards/deletes it without finishing.
   /// No-op if the session was never shared.

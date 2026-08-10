@@ -170,6 +170,8 @@ class _LiveScoreboard extends StatelessWidget {
             name: sortedPlayers[i],
             score: state.scores[sortedPlayers[i]] ?? 0,
             leading: started,
+            onTap: () =>
+                _showLivePlayerDetail(context, state, sortedPlayers[i]),
           ),
         ],
         // When the game has ended, surface the same fun-stats analytics the
@@ -185,11 +187,22 @@ class _LiveScoreboard extends StatelessWidget {
               StatsGrid(cards: cards),
             ];
           })(),
-        ] else if (state.lastRound != null) ...[
-          const SizedBox(height: Spacing.lg),
-          Text('Last round', style: text.titleMedium),
-          const SizedBox(height: Spacing.sm),
-          _LastRoundCard(round: state.lastRound!),
+        ] else ...[
+          if (state.currentRound?.isValid ?? false) ...[
+            const SizedBox(height: Spacing.lg),
+            Text('Current round', style: text.titleMedium),
+            const SizedBox(height: Spacing.sm),
+            _CurrentRoundCard(
+              round: state.currentRound!,
+              roundNum: state.roundCount + 1,
+            ),
+          ],
+          if (state.lastRound != null) ...[
+            const SizedBox(height: Spacing.lg),
+            Text('Last round', style: text.titleMedium),
+            const SizedBox(height: Spacing.sm),
+            _LastRoundCard(round: state.lastRound!),
+          ],
         ],
         const SizedBox(height: Spacing.lg),
         Text(
@@ -211,11 +224,13 @@ class _LeaderRow extends StatelessWidget {
   final String name;
   final int score;
   final bool leading;
+  final VoidCallback? onTap;
   const _LeaderRow({
     required this.rank,
     required this.name,
     required this.score,
     required this.leading,
+    this.onTap,
   });
 
   @override
@@ -223,8 +238,9 @@ class _LeaderRow extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final isLeader = leading && rank == 1;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Spacing.sm + 2),
+    final row = Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.xs, vertical: Spacing.sm + 2),
       child: Row(
         children: [
           SizedBox(
@@ -263,10 +279,157 @@ class _LeaderRow extends StatelessWidget {
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
+          if (onTap != null) ...[
+            const SizedBox(width: Spacing.xs),
+            Icon(PhosphorIconsRegular.caretRight,
+                size: 14, color: scheme.onSurfaceVariant),
+          ],
         ],
       ),
     );
+    if (onTap == null) return row;
+    return Semantics(
+      button: true,
+      label: 'Rank $rank, $name, ${formatScore(score)}',
+      onTapHint: 'View round-by-round history',
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(Radii.md),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Radii.md),
+          onTap: onTap,
+          child: row,
+        ),
+      ),
+    );
   }
+}
+
+/// Bottom sheet with a player's per-round score history for the current live
+/// game — mirrors what the host sees when tapping a player on the scoreboard,
+/// plus their caller record. Built entirely from the live snapshot.
+void _showLivePlayerDetail(
+    BuildContext context, LiveSessionState state, String name) {
+  showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    builder: (ctx) {
+      final scheme = Theme.of(ctx).colorScheme;
+      final textTheme = Theme.of(ctx).textTheme;
+      final brightness = scheme.brightness;
+      final deltas = <({int roundNum, int delta})>[];
+      var callsMade = 0;
+      var callsWon = 0;
+      for (var i = 0; i < state.rounds.length; i++) {
+        final r = state.rounds[i];
+        deltas.add((roundNum: i + 1, delta: r.delta[name] ?? 0));
+        if (r.bidder == name) {
+          callsMade++;
+          if (r.won) callsWon++;
+        }
+      }
+      final total = state.scores[name] ??
+          deltas.fold<int>(0, (sum, e) => sum + e.delta);
+      return Padding(
+        padding: EdgeInsets.only(
+          left: Spacing.md,
+          right: Spacing.md,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + Spacing.md,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: playerColor(name, brightness),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(playerInitial(name),
+                      style:
+                          textTheme.titleMedium?.copyWith(color: Colors.white)),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(name, style: textTheme.titleLarge),
+                      Text(
+                        'Total ${formatScore(total)}',
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: total == 0
+                              ? scheme.onSurfaceVariant
+                              : (total > 0
+                                  ? successColor(brightness)
+                                  : dangerColor(brightness)),
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.sm),
+            Text(
+              callsMade == 0
+                  ? 'No calls yet'
+                  : 'Called $callsMade · won $callsWon · lost ${callsMade - callsWon}',
+              style: textTheme.bodySmall
+                  ?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: Spacing.sm),
+            if (deltas.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: Spacing.md),
+                child: Text('No rounds yet.'),
+              ),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: deltas.length,
+                separatorBuilder: (_, __) => const SizedBox(height: Spacing.xs),
+                itemBuilder: (_, i) {
+                  final d = deltas[deltas.length - 1 - i];
+                  return Row(
+                    children: [
+                      SizedBox(
+                        width: 64,
+                        child: Text('Round ${d.roundNum}',
+                            style: textTheme.bodySmall),
+                      ),
+                      const SizedBox(width: Spacing.sm),
+                      Text(
+                        formatScore(d.delta),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                          color: d.delta == 0
+                              ? scheme.onSurfaceVariant
+                              : d.delta >= 0
+                                  ? successColor(brightness)
+                                  : dangerColor(brightness),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
 
 /// Fun-stat cards computed from a finished live session's rounds — mirrors
@@ -395,6 +558,70 @@ class _StatusStrip extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],
+    );
+  }
+}
+
+/// The round the host is entering right now — caller and bid are set, result
+/// pending. Accented to read as "in play" and distinct from the finished
+/// "Last round" card below it.
+class _CurrentRoundCard extends StatelessWidget {
+  final LiveCurrentRound round;
+  final int roundNum;
+  const _CurrentRoundCard({required this.round, required this.roundNum});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final accent = scheme.secondary;
+    final teamLabel = round.bidTeam.isEmpty
+        ? round.bidder
+        : round.bidTeam.join(' + ');
+    return Container(
+      padding: const EdgeInsets.all(Spacing.md),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(Radii.lg),
+        border: Border.all(color: accent.withValues(alpha: 0.45)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(PhosphorIconsFill.circle, size: 12, color: accent),
+              const SizedBox(width: Spacing.sm),
+              Expanded(
+                child: Text(
+                  '${round.bidder} called ${round.bid}',
+                  style: text.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(Radii.pill),
+                ),
+                child: Text(
+                  'Round $roundNum · in play',
+                  style: text.labelSmall?.copyWith(
+                    color: accent,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Team: $teamLabel',
+            style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+        ],
+      ),
     );
   }
 }

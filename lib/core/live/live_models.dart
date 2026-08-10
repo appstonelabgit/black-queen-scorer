@@ -12,6 +12,10 @@ class LiveSessionState {
   final LiveRound? lastRound;
   final List<LiveRound> rounds;
 
+  /// The round currently being entered by the host (caller + bid chosen, result
+  /// not in yet). Null when no round is in progress.
+  final LiveCurrentRound? currentRound;
+
   const LiveSessionState({
     required this.code,
     required this.finished,
@@ -24,6 +28,7 @@ class LiveSessionState {
     required this.bonus,
     required this.lastRound,
     required this.rounds,
+    required this.currentRound,
   });
 
   factory LiveSessionState.fromJson(String code, Map<dynamic, dynamic> json) {
@@ -37,6 +42,11 @@ class LiveSessionState {
     final allRounds = rounds
         .map((r) => LiveRound.fromJson(Map<String, dynamic>.from(r as Map)))
         .toList();
+    final currentRaw = json['currentRound'];
+    final current = currentRaw == null
+        ? null
+        : LiveCurrentRound.fromJson(
+            Map<String, dynamic>.from(currentRaw as Map));
 
     return LiveSessionState(
       code: code,
@@ -55,8 +65,35 @@ class LiveSessionState {
       bonus: (json['bonus'] as num?)?.toInt() ?? 0,
       lastRound: lastRoundRaw == null ? null : LiveRound.fromJson(lastRoundRaw),
       rounds: allRounds,
+      currentRound: current,
     );
   }
+}
+
+/// An in-progress round the host is entering: caller and bid are set, but the
+/// result (won/lost) and score delta aren't known yet.
+class LiveCurrentRound {
+  final String bidder;
+  final List<String> bidTeam;
+  final int bid;
+
+  const LiveCurrentRound({
+    required this.bidder,
+    required this.bidTeam,
+    required this.bid,
+  });
+
+  /// True once there's a real caller and a positive bid to show.
+  bool get isValid => bidder.isNotEmpty && bid > 0;
+
+  factory LiveCurrentRound.fromJson(Map<String, dynamic> json) =>
+      LiveCurrentRound(
+        bidder: json['bidder'] as String? ?? '',
+        bidTeam:
+            (json['bidTeam'] as List?)?.map((e) => e.toString()).toList() ??
+                const [],
+        bid: (json['bid'] as num?)?.toInt() ?? 0,
+      );
 }
 
 class LiveRound {
