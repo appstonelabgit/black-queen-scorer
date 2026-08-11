@@ -1,14 +1,52 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:apsl_ads/apsl_ads.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import '../theme/tokens.dart';
 import 'ad_config.dart';
 
-const _emeraldDeep = Color(0xFF0A1F1A);
-const _gold = Color(0xFFE8B931);
-const _nativeSurface = Color(0xFF143028);
+/// Native-ad colors for one brightness, derived from the app's Card Room
+/// tokens. The native template is styled at load time, so [_NativeSlot] keys
+/// the ad widget by brightness — a theme flip remounts and reloads it.
+class _AdPalette {
+  final Color surface;
+  final Color accent;
+  final Color onAccent;
+  final Color text;
+  final Color textSecondary;
+  final Color textTertiary;
+
+  const _AdPalette._({
+    required this.surface,
+    required this.accent,
+    required this.onAccent,
+    required this.text,
+    required this.textSecondary,
+    required this.textTertiary,
+  });
+
+  factory _AdPalette.of(Brightness b) => b == Brightness.light
+      ? _AdPalette._(
+          surface: AppColors.surfaceElevatedLight,
+          accent: AppColors.accentLight,
+          onAccent: AppColors.onSurfaceLight,
+          text: AppColors.onSurfaceLight,
+          textSecondary: AppColors.onSurfaceLight.withValues(alpha: 0.72),
+          textTertiary: AppColors.mutedLight,
+        )
+      : _AdPalette._(
+          surface: AppColors.surfaceElevatedDark,
+          accent: AppColors.accentDark,
+          onAccent: AppColors.onSurfaceLight,
+          text: AppColors.onSurfaceDark,
+          textSecondary: AppColors.onSurfaceDark.withValues(alpha: 0.72),
+          textTertiary: AppColors.mutedDark,
+        );
+}
 
 /// Fixed height reserved for the medium native slot. Shared by the inner ad
 /// container, the loading placeholder, and the outer sizing box so the slot
@@ -75,6 +113,9 @@ class AdService {
   /// failed — it simply no-ops and the app keeps working.
   static Future<void> initialize() async {
     if (_sdkInitialized) return;
+    // App Review requires the ATT prompt before any ad SDK starts, even when
+    // remote config later disables ads — so this runs before the config gate.
+    await _requestTrackingAuthorization();
     final cfg = await AdConfigLoader.load();
     if (!cfg.showAds || !cfg.hasUsableIds) return;
 
@@ -88,6 +129,25 @@ class AdService {
       _attachAdStatusListener();
     } catch (e) {
       debugPrint('AdService.initialize failed: $e');
+    }
+  }
+
+  /// iOS-only App Tracking Transparency prompt. Waits for the dialog to be
+  /// presentable (app must be active) and never throws — a denied/failed
+  /// request just means AdMob serves non-personalized ads.
+  static Future<void> _requestTrackingAuthorization() async {
+    if (kIsWeb || !Platform.isIOS) return;
+    try {
+      final status =
+          await AppTrackingTransparency.trackingAuthorizationStatus;
+      if (status == TrackingStatus.notDetermined) {
+        // Give the first frame a beat to settle; iOS silently drops the
+        // prompt if the app isn't fully active yet.
+        await Future.delayed(const Duration(milliseconds: 200));
+        await AppTrackingTransparency.requestTrackingAuthorization();
+      }
+    } catch (e) {
+      debugPrint('ATT request failed: $e');
     }
   }
 
@@ -123,19 +183,19 @@ class AdService {
   /// empty black box. Remounting (re-entering the shell) retries the load.
   static Widget banner() => const _BannerSlot();
 
-  /// Native ad themed to the app's emerald/gold tokens. Self-contained widget
-  /// that handles the loading placeholder and capped in-session retry — see
-  /// [_NativeSlot].
+  /// Native ad themed to the app's indigo/gold tokens, following the active
+  /// light/dark theme. Self-contained widget that handles the loading
+  /// placeholder and capped in-session retry — see [_NativeSlot].
   static Widget nativeMedium() => const _NativeSlot();
 
   /// Clean full-width card shown over the native slot while it loads, so the
   /// user sees an intentional placeholder instead of a stray sliver.
-  static Widget _nativePlaceholder() {
+  static Widget _nativePlaceholder(_AdPalette p) {
     return Container(
       decoration: BoxDecoration(
-        color: _nativeSurface,
+        color: p.surface,
         borderRadius: BorderRadius.circular(Radii.lg),
-        border: Border.all(color: _gold.withValues(alpha: 0.18)),
+        border: Border.all(color: p.accent.withValues(alpha: 0.18)),
       ),
       alignment: Alignment.center,
       child: SizedBox(
@@ -143,43 +203,43 @@ class AdService {
         height: 22,
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(_gold.withValues(alpha: 0.5)),
+          valueColor: AlwaysStoppedAnimation(p.accent.withValues(alpha: 0.5)),
         ),
       ),
     );
   }
 
-  static Widget _nativeInner({Key? adKey}) {
+  static Widget _nativeInner(_AdPalette p, {Key? adKey}) {
     final style = NativeTemplateStyle(
       templateType: TemplateType.medium,
-      mainBackgroundColor: _nativeSurface,
+      mainBackgroundColor: p.surface,
       cornerRadius: 0,
       callToActionTextStyle: NativeTemplateTextStyle(
-        textColor: _emeraldDeep,
-        backgroundColor: _gold,
+        textColor: p.onAccent,
+        backgroundColor: p.accent,
         style: NativeTemplateFontStyle.bold,
         size: 14,
       ),
       primaryTextStyle: NativeTemplateTextStyle(
-        textColor: Colors.white,
+        textColor: p.text,
         style: NativeTemplateFontStyle.bold,
         size: 16,
       ),
       secondaryTextStyle: NativeTemplateTextStyle(
-        textColor: Colors.white.withValues(alpha: 0.72),
+        textColor: p.textSecondary,
         size: 13,
       ),
       tertiaryTextStyle: NativeTemplateTextStyle(
-        textColor: Colors.white.withValues(alpha: 0.55),
+        textColor: p.textTertiary,
         size: 12,
       ),
     );
     return Container(
       decoration: BoxDecoration(
-        color: _nativeSurface,
+        color: p.surface,
         borderRadius: BorderRadius.circular(Radii.lg),
         border: Border.all(
-          color: _gold.withValues(alpha: 0.25),
+          color: p.accent.withValues(alpha: 0.25),
         ),
       ),
       clipBehavior: Clip.antiAlias,
@@ -232,6 +292,7 @@ class _NativeSlotState extends State<_NativeSlot> {
   static const _giveUpAfter = Duration(seconds: 90);
 
   Timer? _giveUpTimer;
+  Brightness? _lastBrightness;
 
   @override
   void initState() {
@@ -239,12 +300,32 @@ class _NativeSlotState extends State<_NativeSlot> {
     AdService.nativeStatus.value = AdLoadStatus.loading;
     AdService.nativeExhausted.value = false;
     AdService.nativeStatus.addListener(_onStatus);
+    _armGiveUpTimer();
+  }
+
+  void _armGiveUpTimer() {
+    _giveUpTimer?.cancel();
     _giveUpTimer = Timer(_giveUpAfter, () {
       if (!mounted) return;
       if (AdService.nativeStatus.value != AdLoadStatus.loaded) {
         AdService.nativeExhausted.value = true; // Home collapses the block.
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // A brightness flip remounts the ad (its key carries the brightness), so
+    // the creative reloads. Reset the status to bring the placeholder back
+    // over the reload window instead of showing an empty card.
+    final brightness = Theme.of(context).brightness;
+    if (_lastBrightness != null && _lastBrightness != brightness) {
+      AdService.nativeStatus.value = AdLoadStatus.loading;
+      AdService.nativeExhausted.value = false;
+      _armGiveUpTimer();
+    }
+    _lastBrightness = brightness;
   }
 
   void _onStatus() {
@@ -264,6 +345,12 @@ class _NativeSlotState extends State<_NativeSlot> {
 
   @override
   Widget build(BuildContext context) {
+    // The template style only applies when the ad loads, so the key carries
+    // the brightness: flipping the theme remounts the ad widget and reloads
+    // the creative with the matching palette. Costs one reload per theme
+    // switch — rare enough to be the right trade against a mismatched card.
+    final brightness = Theme.of(context).brightness;
+    final palette = _AdPalette.of(brightness);
     return ValueListenableBuilder<bool>(
       valueListenable: AdService.readyNotifier,
       builder: (_, ready, __) {
@@ -283,9 +370,13 @@ class _NativeSlotState extends State<_NativeSlot> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  AdService._nativeInner(adKey: const ValueKey('native-ad')),
+                  AdService._nativeInner(
+                    palette,
+                    adKey: ValueKey('native-ad-${brightness.name}'),
+                  ),
                   if (status != AdLoadStatus.loaded)
-                    Positioned.fill(child: AdService._nativePlaceholder()),
+                    Positioned.fill(
+                        child: AdService._nativePlaceholder(palette)),
                 ],
               ),
             );
