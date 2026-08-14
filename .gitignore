@@ -47,3 +47,5 @@ app.*.map.json
 # Local tooling state
 .claude/
 *.log
+.vercel
+.env*
