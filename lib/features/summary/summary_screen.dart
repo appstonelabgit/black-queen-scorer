@@ -14,6 +14,7 @@ import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/haptics.dart';
+import '../../core/utils/share_origin.dart';
 import '../../data/models/session.dart';
 import '../../data/providers.dart';
 import '../../data/scoring.dart';
@@ -116,11 +117,13 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
       final file = File(
           '${dir.path}/scorewise_${DateTime.now().millisecondsSinceEpoch}.png');
       await file.writeAsBytes(bytes);
+      if (!mounted) return;
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path)],
           text:
               '${Strings.appName} — ${stats.ranked.firstOrNull?.name ?? 'Winner'} won!',
+          sharePositionOrigin: shareOriginOf(context),
         ),
       );
     } catch (e) {

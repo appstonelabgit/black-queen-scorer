@@ -11,6 +11,7 @@ import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/haptics.dart';
+import '../../core/utils/share_origin.dart';
 import '../../data/models/session.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/confirm_dialog.dart';
@@ -102,8 +103,9 @@ class HomeScreen extends ConsumerWidget {
             ShareParams(
               text:
                   'ScoreWise — fast offline scorer for Court Piece, Rang, 29, Partner 29. Live-share your card night.\n'
-                  'Get it: https://appstonelabgit.github.io/black-queen-scorer/',
+                  'Get it: https://black-queen-scorer.vercel.app/',
               subject: 'ScoreWise',
+              sharePositionOrigin: shareOriginOf(context),
             ),
           );
         },

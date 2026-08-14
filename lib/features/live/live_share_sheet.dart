@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../core/live/live_code.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/share_origin.dart';
 import '../../shared/widgets/app_toast.dart';
 
 /// Share sheet shown from Scoreboard when users want friends to watch
@@ -104,7 +105,10 @@ class LiveShareSheet extends StatelessWidget {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () {
-                      SharePlus.instance.share(ShareParams(text: _shareText));
+                      SharePlus.instance.share(ShareParams(
+                        text: _shareText,
+                        sharePositionOrigin: shareOriginOf(context),
+                      ));
                     },
                     icon: const Icon(PhosphorIconsRegular.shareNetwork,
                         size: 18),
