@@ -62,10 +62,10 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "5437fe25cc5f3c247d5a1225004ffe3b80e132f9"
+      resolved-ref: "65a971ec246133fefc1fa52a5f41a034dc282062"
       url: "https://github.com/appstonelabgit/shubh_panchang_ads.git"
     source: git
-    version: "1.0.0"
+    version: "1.1.0"
   archive:
     dependency: transitive
     description:
@@ -386,10 +386,10 @@ packages:
     dependency: transitive
     description:
       name: google_mobile_ads
-      sha256: f35e040875bb54e8a3455bcffed3b4ac9e9263fbf7751b9fd1ae7f30793faee8
+      sha256: "8094e1ace8b0da33fe79027ca6959763c96a28855025cb7c8ec60838e1d56ed8"
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.0"
+    version: "9.1.0"
   gtk:
     dependency: transitive
     description:
@@ -941,4 +941,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.10.0 <4.0.0"
-  flutter: ">=3.38.0"
+  flutter: ">=3.38.1"

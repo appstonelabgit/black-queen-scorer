@@ -38,5 +38,20 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    # google_mobile_ads 9.x: FLTAdPreloader.h includes the SDK's private
+    # GoogleMobileAds_Beta.h, which trips "non-modular header inside
+    # framework module" when pods build as frameworks.
+    # The flag must also be on whichever target compiles the module, so it
+    # is applied to every pod target and (below) to Runner via the
+    # aggregate xcconfigs.
+    target.build_configurations.each do |config|
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+    end
+  end
+  installer.aggregate_targets.each do |aggregate_target|
+    aggregate_target.xcconfigs.each do |config_name, config_file|
+      config_file.attributes['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+      config_file.save_as(aggregate_target.xcconfig_path(config_name))
+    end
   end
 end
