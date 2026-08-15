@@ -121,15 +121,26 @@ class _LiveViewerScreenState extends State<LiveViewerScreen> {
   }
 }
 
-class _LiveScoreboard extends StatelessWidget {
+class _LiveScoreboard extends StatefulWidget {
   final LiveSessionState state;
   const _LiveScoreboard({required this.state});
 
   @override
+  State<_LiveScoreboard> createState() => _LiveScoreboardState();
+}
+
+class _LiveScoreboardState extends State<_LiveScoreboard> {
+  /// Winner on top by default; the toggle flips to lowest-first.
+  bool _winnerFirst = true;
+
+  @override
   Widget build(BuildContext context) {
+    final state = widget.state;
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final sortedPlayers = [...state.players]
+    // Always ranked winner-first so rank numbers (and the trophy) keep
+    // meaning standing, regardless of display order.
+    final ranked = [...state.players]
       ..sort((a, b) => (state.scores[b] ?? 0).compareTo(state.scores[a] ?? 0));
     final started = state.roundCount > 0;
 
@@ -144,10 +155,21 @@ class _LiveScoreboard extends StatelessWidget {
           '${state.bonus > 0 ? "+${state.bonus} bonus" : "no bonus"}',
           style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
         ),
+        // Current round first — it's what a live watcher checks most often,
+        // and putting it above the (potentially long) leaderboard keeps it
+        // visible without scrolling.
+        if (!state.finished && (state.currentRound?.isValid ?? false)) ...[
+          const SizedBox(height: Spacing.lg),
+          Text('Current round', style: text.titleMedium),
+          const SizedBox(height: Spacing.sm),
+          _CurrentRoundCard(
+            round: state.currentRound!,
+            roundNum: state.roundCount + 1,
+          ),
+        ],
         const SizedBox(height: Spacing.lg),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text('Leaderboard', style: text.titleMedium),
             const Spacer(),
@@ -155,24 +177,39 @@ class _LiveScoreboard extends StatelessWidget {
               Text('Waiting for round 1',
                   style: text.bodySmall
                       ?.copyWith(color: scheme.onSurfaceVariant)),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: _winnerFirst ? 'Lowest first' : 'Winner first',
+              icon: PhosphorIcon(
+                _winnerFirst
+                    ? PhosphorIconsRegular.sortDescending
+                    : PhosphorIconsRegular.sortAscending,
+                size: 20,
+                color: scheme.onSurfaceVariant,
+              ),
+              onPressed: () => setState(() => _winnerFirst = !_winnerFirst),
+            ),
           ],
         ),
         const SizedBox(height: Spacing.xs),
         // Flat, divider-separated rows — lighter than per-row cards for a
         // potentially long leaderboard.
-        for (var i = 0; i < sortedPlayers.length; i++) ...[
+        for (var i = 0; i < ranked.length; i++) ...[
           if (i > 0)
             Divider(
                 height: 1,
                 color: scheme.outlineVariant.withValues(alpha: 0.4)),
-          _LeaderRow(
-            rank: i + 1,
-            name: sortedPlayers[i],
-            score: state.scores[sortedPlayers[i]] ?? 0,
-            leading: started,
-            onTap: () =>
-                _showLivePlayerDetail(context, state, sortedPlayers[i]),
-          ),
+          Builder(builder: (context) {
+            final standing = _winnerFirst ? i : ranked.length - 1 - i;
+            final name = ranked[standing];
+            return _LeaderRow(
+              rank: standing + 1,
+              name: name,
+              score: state.scores[name] ?? 0,
+              leading: started,
+              onTap: () => _showLivePlayerDetail(context, state, name),
+            );
+          }),
         ],
         // When the game has ended, surface the same fun-stats analytics the
         // host sees on their summary — the watcher gets a complete recap.
@@ -188,15 +225,6 @@ class _LiveScoreboard extends StatelessWidget {
             ];
           })(),
         ] else ...[
-          if (state.currentRound?.isValid ?? false) ...[
-            const SizedBox(height: Spacing.lg),
-            Text('Current round', style: text.titleMedium),
-            const SizedBox(height: Spacing.sm),
-            _CurrentRoundCard(
-              round: state.currentRound!,
-              roundNum: state.roundCount + 1,
-            ),
-          ],
           if (state.lastRound != null) ...[
             const SizedBox(height: Spacing.lg),
             Text('Last round', style: text.titleMedium),
