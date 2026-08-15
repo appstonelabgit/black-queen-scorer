@@ -178,9 +178,9 @@ class AdService {
     });
   }
 
-  /// Persistent banner. Reserves its 50px only while loading or once filled;
-  /// collapses to zero height on failure so a dead slot never shows as an
-  /// empty black box. Remounting (re-entering the shell) retries the load.
+  /// Persistent banner. Takes up zero height until a creative actually
+  /// fills — the screen stays full while the ad loads (or never fills) and
+  /// the 50px strip appears only on load. Remounting retries the load.
   static Widget banner() => const _BannerSlot();
 
   /// Native ad themed to the app's indigo/gold tokens, following the active
@@ -388,9 +388,10 @@ class _NativeSlotState extends State<_NativeSlot> {
 }
 
 /// The persistent banner slot. Keeps the ad mounted (so it can load and the
-/// SDK refresh timer can tick) while [AdService.bannerStatus] is loading or
-/// loaded, and collapses to zero height on failure. Resetting the status on
-/// mount gives a fresh load attempt each time the shell is re-entered.
+/// SDK refresh timer can tick) but contributes zero height until a creative
+/// fills — loading happens behind a full-height screen instead of an empty
+/// 50px strip. Resetting the status on mount gives a fresh load attempt each
+/// time the shell is re-entered.
 class _BannerSlot extends StatefulWidget {
   const _BannerSlot();
 
@@ -441,11 +442,21 @@ class _BannerSlotState extends State<_BannerSlot> {
       valueListenable: AdService.readyNotifier,
       builder: (_, ready, __) {
         if (!ready || _exhausted) return const SizedBox.shrink();
-        return SizedBox(
-          height: 50,
-          child: ApslSequenceBannerAd(
-            key: const ValueKey('persistent-banner-ad'),
-            orderOfAdNetworks: const [AdNetwork.admob],
+        // Offstage keeps the ad widget mounted and laid out (so the load
+        // and the package's retry loop run) without painting or taking
+        // height. The strip appears only once bannerStatus flips to loaded.
+        return ValueListenableBuilder<AdLoadStatus>(
+          valueListenable: AdService.bannerStatus,
+          builder: (_, status, child) => Offstage(
+            offstage: status != AdLoadStatus.loaded,
+            child: child,
+          ),
+          child: SizedBox(
+            height: 50,
+            child: ApslSequenceBannerAd(
+              key: const ValueKey('persistent-banner-ad'),
+              orderOfAdNetworks: const [AdNetwork.admob],
+            ),
           ),
         );
       },
