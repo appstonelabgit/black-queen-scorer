@@ -7,6 +7,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/ads/ad_service.dart';
+import '../../core/live/live_code.dart';
 import '../../core/strings.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
@@ -103,7 +104,7 @@ class HomeScreen extends ConsumerWidget {
             ShareParams(
               text:
                   'ScoreWise — fast offline scorer for Court Piece, Rang, 29, Partner 29. Live-share your card night.\n'
-                  'Get it: https://black-queen-scorer.vercel.app/',
+                  'Get it: https://$liveLinkHost/',
               subject: 'ScoreWise',
               sharePositionOrigin: shareOriginOf(context),
             ),

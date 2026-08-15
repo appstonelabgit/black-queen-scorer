@@ -4,7 +4,12 @@ import 'dart:math' as math;
 /// association files (`.well-known/`). Vercel — it serves `.well-known`
 /// at the domain root and rewrites `/l/:code`, neither of which GitHub
 /// Pages project sites can do. Change in ONE place if the domain moves.
-const liveLinkHost = 'black-queen-scorer.vercel.app';
+const liveLinkHost = 'scorewise-legal.vercel.app';
+
+/// Hosts whose `/l/<code>` links older builds may still have in the wild
+/// (printed QRs, shared messages). Incoming links from any of these must
+/// keep resolving to the live viewer.
+const legacyLiveLinkHosts = ['black-queen-scorer.vercel.app'];
 
 /// Public URL for a live session — encoded in the QR + share text.
 String liveLinkUrl(String code) => 'https://$liveLinkHost/l/$code';
