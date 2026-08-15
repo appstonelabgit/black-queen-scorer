@@ -1,0 +1,15 @@
+{
+  "rules": {
+    "ad_config": {
+      ".read": true,
+      ".write": false
+    },
+    "live_sessions": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && (!data.exists() ? newData.child('creatorUid').val() === auth.uid : data.child('creatorUid').val() === auth.uid)",
+        ".validate": "newData.hasChildren(['creatorUid', 'createdAt', 'players'])"
+      }
+    }
+  }
+}
