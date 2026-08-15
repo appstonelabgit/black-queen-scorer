@@ -229,7 +229,11 @@ class _LiveScoreboardState extends State<_LiveScoreboard> {
             const SizedBox(height: Spacing.lg),
             Text('Last round', style: text.titleMedium),
             const SizedBox(height: Spacing.sm),
-            _LastRoundCard(round: state.lastRound!),
+            _LastRoundCard(
+              round: state.lastRound!,
+              onTap: () => _showLiveRoundDetail(
+                  context, state, state.lastRound!, state.rounds.length),
+            ),
           ],
         ],
         const SizedBox(height: Spacing.lg),
@@ -460,6 +464,139 @@ void _showLivePlayerDetail(
   );
 }
 
+/// Bottom sheet with a round's full summary: the call, its result, and both
+/// sides (caller's team vs defenders) with each player's score change.
+void _showLiveRoundDetail(BuildContext context, LiveSessionState state,
+    LiveRound round, int roundNum) {
+  showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    builder: (ctx) {
+      final scheme = Theme.of(ctx).colorScheme;
+      final textTheme = Theme.of(ctx).textTheme;
+      final brightness = scheme.brightness;
+      final resultColor =
+          round.won ? successColor(brightness) : dangerColor(brightness);
+      final callers =
+          round.bidTeam.isEmpty ? [round.bidder] : round.bidTeam;
+      final defenders =
+          state.players.where((p) => !callers.contains(p)).toList();
+
+      Widget playerRow(String name) {
+        final delta = round.delta[name] ?? 0;
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: playerColor(name, brightness),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(playerInitial(name),
+                    style:
+                        textTheme.labelLarge?.copyWith(color: Colors.white)),
+              ),
+              const SizedBox(width: Spacing.md),
+              Expanded(child: Text(name, style: textTheme.titleMedium)),
+              if (name == round.bidder) ...[
+                Text('Caller',
+                    style: textTheme.labelSmall
+                        ?.copyWith(color: scheme.onSurfaceVariant)),
+                const SizedBox(width: Spacing.sm),
+              ],
+              Text(
+                formatScore(delta),
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: delta == 0
+                      ? scheme.onSurfaceVariant
+                      : (delta > 0
+                          ? successColor(brightness)
+                          : dangerColor(brightness)),
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      Widget sectionHeader(String title) => Padding(
+            padding: const EdgeInsets.only(
+                top: Spacing.md, bottom: Spacing.xs),
+            child: Text(
+              title,
+              style: textTheme.labelLarge
+                  ?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+          );
+
+      return Padding(
+        padding: EdgeInsets.only(
+          left: Spacing.md,
+          right: Spacing.md,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + Spacing.md,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  round.won
+                      ? PhosphorIconsFill.checkCircle
+                      : PhosphorIconsFill.xCircle,
+                  color: resultColor,
+                  size: 24,
+                ),
+                const SizedBox(width: Spacing.sm),
+                Expanded(
+                    child:
+                        Text('Round $roundNum', style: textTheme.titleLarge)),
+                Text(
+                  round.won ? 'Won' : 'Lost',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: resultColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.xs),
+            Text(
+              '${round.bidder} called ${round.bid}',
+              style: textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    sectionHeader("Caller's side"),
+                    for (final name in callers) playerRow(name),
+                    if (defenders.isNotEmpty) ...[
+                      sectionHeader('Defenders'),
+                      for (final name in defenders) playerRow(name),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
 /// Fun-stat cards computed from a finished live session's rounds — mirrors
 /// the host's summary "Fun Stats" so a watcher gets the full recap.
 List<Widget> _liveFunStats(BuildContext context, LiveSessionState state) {
@@ -656,7 +793,8 @@ class _CurrentRoundCard extends StatelessWidget {
 
 class _LastRoundCard extends StatelessWidget {
   final LiveRound round;
-  const _LastRoundCard({required this.round});
+  final VoidCallback? onTap;
+  const _LastRoundCard({required this.round, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -664,46 +802,60 @@ class _LastRoundCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final resultColor =
         round.won ? successColor(scheme.brightness) : dangerColor(scheme.brightness);
-    return Container(
-      padding: const EdgeInsets.all(Spacing.md),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+    return Material(
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      borderRadius: BorderRadius.circular(Radii.lg),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(Radii.lg),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        child: Container(
+          padding: const EdgeInsets.all(Spacing.md),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Radii.lg),
+            border:
+                Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                round.won
-                    ? PhosphorIconsFill.checkCircle
-                    : PhosphorIconsFill.xCircle,
-                color: resultColor,
-                size: 20,
+              Row(
+                children: [
+                  Icon(
+                    round.won
+                        ? PhosphorIconsFill.checkCircle
+                        : PhosphorIconsFill.xCircle,
+                    color: resultColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  Text(
+                    '${round.bidder} called ${round.bid}',
+                    style:
+                        text.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const Spacer(),
+                  Text(
+                    round.won ? 'Won' : 'Lost',
+                    style: text.titleSmall?.copyWith(
+                      color: resultColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (onTap != null) ...[
+                    const SizedBox(width: Spacing.xs),
+                    Icon(PhosphorIconsRegular.caretRight,
+                        size: 16, color: scheme.onSurfaceVariant),
+                  ],
+                ],
               ),
-              const SizedBox(width: Spacing.sm),
+              const SizedBox(height: 6),
               Text(
-                '${round.bidder} called ${round.bid}',
-                style: text.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const Spacer(),
-              Text(
-                round.won ? 'Won' : 'Lost',
-                style: text.titleSmall?.copyWith(
-                  color: resultColor,
-                  fontWeight: FontWeight.w700,
-                ),
+                'Team: ${round.bidTeam.join(" + ")}',
+                style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Team: ${round.bidTeam.join(" + ")}',
-            style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-          ),
-        ],
+        ),
       ),
     );
   }
