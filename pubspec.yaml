@@ -36,7 +36,7 @@ dependencies:
       url: https://github.com/appstonelabgit/shubh_panchang_ads.git
       ref: main
   qr_flutter: ^4.1.0
-  app_links: ^6.3.2
+  app_links: ^7.0.0
   app_tracking_transparency: ^2.0.7
 
 # path_provider_foundation >=2.5.0 pulls the `objective_c` FFI package, which
