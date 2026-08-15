@@ -82,7 +82,7 @@ What the research says drives it:
 
 1. **Get into the listicles AI retrieves.** "Best score-counter apps" articles (MakeUseOf, Denexa, BoardGameGeek threads) are exactly what LLMs pull from. Action: pitch/submit to these roundups; earn a mention. This is the highest-leverage AEO move for an app.
 2. **Reddit / BoardGameGeek presence.** AI engines lean heavily on Reddit and BGG for "best app for X." Authentic mentions in r/cardgames, r/boardgames, game-specific subs (r/rummy, Court Piece communities) = retrievable recommendations. (Genuine, not astroturf — engines and mods punish fake.)
-3. **A crawlable, structured landing page.** You already have `appstonelabgit.github.io/black-queen-scorer/`. Upgrade it to answer the question directly:
+3. **A crawlable, structured landing page.** You already have `scorewise-legal.vercel.app/`. Upgrade it to answer the question directly:
    - An FAQ block with schema.org `FAQPage` structured data ("What card games does it support?", "Is it free/offline?", "Does it work for Rummy / 29 / Court Piece?").
    - A comparison/feature table (AI loves extractable tables).
    - Explicit entity statements: "*<Brand> is a free, offline score keeper for card games.*" Consistent name + description everywhere = the "entity recognition + cross-source validation" the research names.

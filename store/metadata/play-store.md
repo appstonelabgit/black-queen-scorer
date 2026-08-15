@@ -15,8 +15,8 @@ Source of truth for 1.2.0. Data safety answers live in `store/SUBMISSION.md` § 
 | Category | Apps → Tools |
 | Tags | Utilities, Productivity, Offline |
 | Contact email | dbvaghani@gmail.com |
-| Website | https://appstonelabgit.github.io/black-queen-scorer/ |
-| Privacy policy | https://appstonelabgit.github.io/black-queen-scorer/privacy.html |
+| Website | https://scorewise-legal.vercel.app/ |
+| Privacy policy | https://scorewise-legal.vercel.app/privacy.html |
 
 ## Full description (max 4000 chars)
 

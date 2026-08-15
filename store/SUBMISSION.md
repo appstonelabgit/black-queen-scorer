@@ -23,10 +23,10 @@ One file, one tab open while submitting. Paste from here into App Store Connect 
 
 | Field | Value |
 |---|---|
-| Privacy Policy URL | https://appstonelabgit.github.io/black-queen-scorer/privacy.html |
-| Marketing / Website URL | https://appstonelabgit.github.io/black-queen-scorer/ |
+| Privacy Policy URL | https://scorewise-legal.vercel.app/privacy.html |
+| Marketing / Website URL | https://scorewise-legal.vercel.app/ |
 | Support email | dbvaghani@gmail.com |
-| Source repo | https://github.com/appstonelabgit/black-queen-scorer |
+| Source repo | https://github.com/appstonelabgit/scorewise |
 
 ---
 

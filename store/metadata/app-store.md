@@ -119,9 +119,9 @@ Made for card nights.
 • Polish — smoother toasts, cleaner round-entry flow, bug fixes across history and summary.
 ```
 
-**Support URL** (required): `https://github.com/appstonelabgit/black-queen-scorer/issues`
+**Support URL** (required): `https://github.com/appstonelabgit/scorewise/issues`
 
-**Marketing URL** (optional): `https://appstonelabgit.github.io/black-queen-scorer/`
+**Marketing URL** (optional): `https://scorewise-legal.vercel.app/`
 
 **Copyright**: `© 2026 AppStoneLab`
 

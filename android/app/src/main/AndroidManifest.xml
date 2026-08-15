@@ -32,11 +32,6 @@
                     android:scheme="https"
                     android:host="scorewise-legal.vercel.app"
                     android:pathPrefix="/l"/>
-                <!-- Legacy domain: QRs/links shared by older builds. -->
-                <data
-                    android:scheme="https"
-                    android:host="black-queen-scorer.vercel.app"
-                    android:pathPrefix="/l"/>
             </intent-filter>
         </activity>
 

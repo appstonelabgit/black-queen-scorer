@@ -35,8 +35,8 @@ class DeepLinkHandler {
   }
 
   String? _resolveRoute(Uri uri) {
-    // https://<liveLinkHost>/l/<code> (current or legacy domain)
-    if (uri.host == liveLinkHost || legacyLiveLinkHosts.contains(uri.host)) {
+    // https://<liveLinkHost>/l/<code>
+    if (uri.host == liveLinkHost) {
       final segs = uri.pathSegments;
       if (segs.length >= 2 && segs[0] == 'l' && segs[1].isNotEmpty) {
         return '/live/${segs[1]}';

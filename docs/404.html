@@ -14,12 +14,11 @@
   </style>
   <script>
     (function () {
-      var m = location.pathname.match(/\/black-queen-scorer\/l\/([A-Z0-9\-]+)/i);
+      var m = location.pathname.match(/\/l\/([A-Z0-9\-]+)/i);
       if (m) {
-        // SPA fallback: live-session URLs land here because GitHub Pages
-        // doesn't know the /l/<code> path exists as a file. Forward to
-        // the real landing with the code attached as a query param.
-        location.replace('/black-queen-scorer/l/?code=' + encodeURIComponent(m[1].toUpperCase()));
+        // SPA fallback: forward stray live-session URLs to the real
+        // landing with the code attached as a query param.
+        location.replace('/l/?code=' + encodeURIComponent(m[1].toUpperCase()));
       } else {
         // No live code in URL — show a real not-found message once DOM is ready.
         document.addEventListener('DOMContentLoaded', function () {
@@ -35,7 +34,7 @@
     <p class="loading" style="display:block;opacity:0.7;">Taking you to the app…</p>
     <div class="not-found">
       <h1>Page not found</h1>
-      <p><a href="/black-queen-scorer/">Go to home</a></p>
+      <p><a href="/">Go to home</a></p>
     </div>
   </main>
 </body>

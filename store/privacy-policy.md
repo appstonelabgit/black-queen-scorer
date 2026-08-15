@@ -2,7 +2,7 @@
 
 Last updated: 24 April 2026
 
-> **Canonical version**: the published copy of this policy lives at <https://appstonelabgit.github.io/black-queen-scorer/privacy.html> (source: `docs/privacy.html`). Keep this markdown file in sync whenever that HTML file changes.
+> **Canonical version**: the published copy of this policy lives at <https://scorewise-legal.vercel.app/privacy.html> (source: `docs/privacy.html`). Keep this markdown file in sync whenever that HTML file changes.
 
 Black Queen Scorer ("the app", "we") is developed and maintained by **AppStoneLab**. This page explains, in plain English, what data the app handles.
 
