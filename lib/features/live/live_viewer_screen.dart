@@ -143,14 +143,22 @@ class _LiveScoreboardState extends State<_LiveScoreboard> {
     final ranked = [...state.players]
       ..sort((a, b) => (state.scores[b] ?? 0).compareTo(state.scores[a] ?? 0));
     final started = state.roundCount > 0;
-    // Caller record per player — wins/losses shown beside the name.
-    final callWins = <String, int>{};
-    final callLosses = <String, int>{};
+    // Per-player record shown beside the name: calls made (bidder only),
+    // plus rounds won/lost — every player is on the caller's side or the
+    // defending side each round, so W/L accrue for everyone.
+    final calls = <String, int>{};
+    final wins = <String, int>{};
+    final losses = <String, int>{};
     for (final r in state.rounds) {
-      if (r.won) {
-        callWins[r.bidder] = (callWins[r.bidder] ?? 0) + 1;
-      } else {
-        callLosses[r.bidder] = (callLosses[r.bidder] ?? 0) + 1;
+      calls[r.bidder] = (calls[r.bidder] ?? 0) + 1;
+      final callers = r.bidTeam.isEmpty ? [r.bidder] : r.bidTeam;
+      for (final p in state.players) {
+        final wonRound = callers.contains(p) == r.won;
+        if (wonRound) {
+          wins[p] = (wins[p] ?? 0) + 1;
+        } else {
+          losses[p] = (losses[p] ?? 0) + 1;
+        }
       }
     }
 
@@ -217,8 +225,9 @@ class _LiveScoreboardState extends State<_LiveScoreboard> {
               name: name,
               score: state.scores[name] ?? 0,
               leading: started,
-              wins: callWins[name] ?? 0,
-              losses: callLosses[name] ?? 0,
+              calls: calls[name] ?? 0,
+              wins: wins[name] ?? 0,
+              losses: losses[name] ?? 0,
               onTap: () => _showLivePlayerDetail(context, state, name),
             );
           }),
@@ -268,6 +277,7 @@ class _LeaderRow extends StatelessWidget {
   final String name;
   final int score;
   final bool leading;
+  final int calls;
   final int wins;
   final int losses;
   final VoidCallback? onTap;
@@ -276,6 +286,7 @@ class _LeaderRow extends StatelessWidget {
     required this.name,
     required this.score,
     required this.leading,
+    this.calls = 0,
     this.wins = 0,
     this.losses = 0,
     this.onTap,
@@ -322,11 +333,18 @@ class _LeaderRow extends StatelessWidget {
                       style: text.titleMedium,
                       overflow: TextOverflow.ellipsis),
                 ),
-                // Caller record — only once the player has made a call.
-                if (wins + losses > 0) ...[
+                // Record — calls made, rounds won, rounds lost. Appears
+                // once the first round is scored.
+                if (calls + wins + losses > 0) ...[
                   const SizedBox(width: Spacing.sm),
                   Text.rich(
                     TextSpan(children: [
+                      TextSpan(
+                          text: '${calls}C',
+                          style: TextStyle(color: scheme.onSurfaceVariant)),
+                      TextSpan(
+                          text: ' · ',
+                          style: TextStyle(color: scheme.onSurfaceVariant)),
                       TextSpan(
                           text: '${wins}W',
                           style: TextStyle(
@@ -372,7 +390,7 @@ class _LeaderRow extends StatelessWidget {
     return Semantics(
       button: true,
       label: 'Rank $rank, $name, ${formatScore(score)}'
-          '${wins + losses > 0 ? ', $wins calls won, $losses lost' : ''}',
+          '${calls + wins + losses > 0 ? ', $calls calls, $wins rounds won, $losses lost' : ''}',
       onTapHint: 'View round-by-round history',
       child: Material(
         color: Colors.transparent,
