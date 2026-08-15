@@ -78,19 +78,20 @@ flutter_launcher_icons:
   image_path: "assets/icon/icon.png"
   min_sdk_android: 21
   remove_alpha_ios: true
-  adaptive_icon_background: "#0A1F1A"
+  adaptive_icon_background: "#4338CA"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
 
 flutter_native_splash:
-  color: "#0A1F1A"
+  color: "#4338CA"
   image: "assets/icon/splash.png"
-  color_dark: "#0A1F1A"
+  color_dark: "#4338CA"
   image_dark: "assets/icon/splash.png"
   android_12:
-    image: "assets/icon/splash.png"
-    color: "#0A1F1A"
-    image_dark: "assets/icon/splash.png"
-    color_dark: "#0A1F1A"
+    image: "assets/icon/splash_android12.png"
+    color: "#4338CA"
+    image_dark: "assets/icon/splash_android12.png"
+    color_dark: "#4338CA"
+    branding: "assets/icon/branding.png"
   android: true
   ios: true
   fullscreen: false
