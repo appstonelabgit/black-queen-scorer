@@ -21,8 +21,9 @@ import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/error_state.dart';
+import '../../shared/widgets/leaderboard_row.dart';
+import '../../shared/widgets/player_record.dart';
 import '../../shared/widgets/shell_back_button.dart';
-import 'widgets/player_row.dart';
 import 'widgets/round_list.dart';
 
 class ScoreboardScreen extends ConsumerStatefulWidget {
@@ -80,6 +81,14 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
       ..sort((a, b) => b.value.compareTo(a.value));
     final roundsCount = session.rounds.length;
     final nextRoundN = roundsCount + 1;
+    // Per-player record (calls / round wins / losses) shown beside names —
+    // same tally the live viewer shows watchers.
+    final records = tallyPlayerRecords(
+      players: session.players,
+      rounds: session.rounds
+          .where((r) => !r.isFree)
+          .map((r) => (bidder: r.bidder, team: r.team, won: r.won)),
+    );
 
     // Determine pulse deltas.
     final pulseDeltas = <String, int>{};
@@ -163,15 +172,30 @@ class _ScoreboardScreenState extends ConsumerState<ScoreboardScreen> {
                       // No AnimatedSwitcher: keying by name made it cross-fade
                       // between two different players on a rank swap (flicker).
                       // The in-row score pulse already signals changes.
-                      PlayerRow(
+                      LeaderboardPlayerRow(
                         key: ValueKey(ranked[i].key),
                         rank: i + 1,
                         name: ranked[i].key,
                         score: ranked[i].value,
+                        leading: roundsCount > 0,
                         pulseDelta: pulseDeltas[ranked[i].key],
+                        calls: records.calls[ranked[i].key] ?? 0,
+                        wins: records.wins[ranked[i].key] ?? 0,
+                        losses: records.losses[ranked[i].key] ?? 0,
                         onTap: () => _showPlayerDetail(session, ranked[i].key),
                       ),
                     ],
+                    // Key for the C/W/L record beside names — first-time
+                    // users shouldn't have to guess the abbreviations.
+                    if (records.wins.isNotEmpty || records.losses.isNotEmpty)
+                      const Padding(
+                        padding: EdgeInsets.only(
+                            top: Spacing.xs, left: Spacing.xs),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: PlayerRecordLegend(),
+                        ),
+                      ),
                   ],
                 ),
               ),

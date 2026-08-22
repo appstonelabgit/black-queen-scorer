@@ -9,6 +9,9 @@ import '../../core/theme/tokens.dart';
 import '../../core/utils/formatters.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/error_state.dart';
+import '../../shared/widgets/leaderboard_row.dart';
+import '../../shared/widgets/player_record.dart';
+import '../../shared/widgets/round_list_tile.dart';
 import '../../shared/widgets/shell_back_button.dart';
 import '../session_setup/widgets/player_chip.dart';
 import '../summary/widgets/stats_card.dart';
@@ -133,6 +136,10 @@ class _LiveScoreboardState extends State<_LiveScoreboard> {
   /// Winner on top by default; the toggle flips to lowest-first.
   bool _winnerFirst = true;
 
+  /// Rounds list collapsed by default — a watcher mostly wants the latest
+  /// round; expanding reveals the full history like the host's board.
+  bool _roundsCollapsed = true;
+
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
@@ -144,23 +151,15 @@ class _LiveScoreboardState extends State<_LiveScoreboard> {
       ..sort((a, b) => (state.scores[b] ?? 0).compareTo(state.scores[a] ?? 0));
     final started = state.roundCount > 0;
     // Per-player record shown beside the name: calls made (bidder only),
-    // plus rounds won/lost — every player is on the caller's side or the
-    // defending side each round, so W/L accrue for everyone.
-    final calls = <String, int>{};
-    final wins = <String, int>{};
-    final losses = <String, int>{};
-    for (final r in state.rounds) {
-      calls[r.bidder] = (calls[r.bidder] ?? 0) + 1;
-      final callers = r.bidTeam.isEmpty ? [r.bidder] : r.bidTeam;
-      for (final p in state.players) {
-        final wonRound = callers.contains(p) == r.won;
-        if (wonRound) {
-          wins[p] = (wins[p] ?? 0) + 1;
-        } else {
-          losses[p] = (losses[p] ?? 0) + 1;
-        }
-      }
-    }
+    // plus rounds won/lost.
+    final records = tallyPlayerRecords(
+      players: state.players,
+      rounds: state.rounds
+          .map((r) => (bidder: r.bidder, team: r.bidTeam, won: r.won)),
+    );
+    final calls = records.calls;
+    final wins = records.wins;
+    final losses = records.losses;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -220,7 +219,7 @@ class _LiveScoreboardState extends State<_LiveScoreboard> {
           Builder(builder: (context) {
             final standing = _winnerFirst ? i : ranked.length - 1 - i;
             final name = ranked[standing];
-            return _LeaderRow(
+            return LeaderboardPlayerRow(
               rank: standing + 1,
               name: name,
               score: state.scores[name] ?? 0,
@@ -232,6 +231,16 @@ class _LiveScoreboardState extends State<_LiveScoreboard> {
             );
           }),
         ],
+        // Key for the C/W/L record beside names — first-time watchers
+        // shouldn't have to guess the abbreviations.
+        if (started)
+          const Padding(
+            padding: EdgeInsets.only(top: Spacing.xs, left: Spacing.xs),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: PlayerRecordLegend(),
+            ),
+          ),
         // When the game has ended, surface the same fun-stats analytics the
         // host sees on their summary — the watcher gets a complete recap.
         if (state.finished) ...[
@@ -246,14 +255,75 @@ class _LiveScoreboardState extends State<_LiveScoreboard> {
             ];
           })(),
         ] else ...[
-          if (state.lastRound != null) ...[
+          // Rounds — mirrors the host's board: header with a collapse
+          // toggle, newest first. Collapsed still shows the latest round so
+          // the "what just happened" glance survives; expanding gives a
+          // late-joining watcher the full history.
+          if (state.rounds.isNotEmpty) ...[
             const SizedBox(height: Spacing.lg),
-            Text('Last round', style: text.titleMedium),
-            const SizedBox(height: Spacing.sm),
-            _LastRoundCard(
-              round: state.lastRound!,
-              onTap: () => _showLiveRoundDetail(
-                  context, state, state.lastRound!, state.rounds.length),
+            Semantics(
+              button: true,
+              label:
+                  'Rounds, ${_roundsCollapsed ? 'collapsed, showing last round only' : 'expanded'}',
+              child: InkWell(
+                onTap: () =>
+                    setState(() => _roundsCollapsed = !_roundsCollapsed),
+                borderRadius: BorderRadius.circular(Radii.sm),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: Spacing.sm, horizontal: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _roundsCollapsed
+                              ? 'Last round'
+                              : 'Rounds (${state.rounds.length})',
+                          style: text.titleMedium,
+                        ),
+                      ),
+                      if (_roundsCollapsed && state.rounds.length > 1) ...[
+                        Text('See all ${state.rounds.length}',
+                            style: text.bodySmall
+                                ?.copyWith(color: scheme.onSurfaceVariant)),
+                        const SizedBox(width: Spacing.xs),
+                      ],
+                      Icon(
+                        _roundsCollapsed
+                            ? PhosphorIconsRegular.caretDown
+                            : PhosphorIconsRegular.caretUp,
+                        size: 18,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: Spacing.xs),
+            AnimatedSize(
+              duration: AppDurations.base,
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              // Collapsed: rich latest-round card. Expanded: the same compact
+              // tiles the host's board uses, newest first.
+              child: _roundsCollapsed
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: Spacing.sm),
+                      child: _LastRoundCard(
+                        round: state.rounds.last,
+                        onTap: () => _showLiveRoundDetail(context, state,
+                            state.rounds.last, state.rounds.length),
+                      ),
+                    )
+                  : Column(
+                      children: [
+                        for (var i = state.rounds.length - 1; i >= 0; i--) ...[
+                          _liveRoundTile(context, state, i),
+                          const SizedBox(height: Spacing.sm),
+                        ],
+                      ],
+                    ),
             ),
           ],
         ],
@@ -268,139 +338,19 @@ class _LiveScoreboardState extends State<_LiveScoreboard> {
       ],
     );
   }
-}
 
-/// Minimal leaderboard row — rank (trophy for the leader once play starts),
-/// avatar, name, signed score. No card chrome, just a hairline between rows.
-class _LeaderRow extends StatelessWidget {
-  final int rank;
-  final String name;
-  final int score;
-  final bool leading;
-  final int calls;
-  final int wins;
-  final int losses;
-  final VoidCallback? onTap;
-  const _LeaderRow({
-    required this.rank,
-    required this.name,
-    required this.score,
-    required this.leading,
-    this.calls = 0,
-    this.wins = 0,
-    this.losses = 0,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    final isLeader = leading && rank == 1;
-    final row = Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: Spacing.xs, vertical: Spacing.sm + 2),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 24,
-            child: isLeader
-                ? Icon(PhosphorIconsFill.trophy,
-                    size: 18, color: scheme.secondary)
-                : Text('$rank',
-                    textAlign: TextAlign.center,
-                    style: text.bodyMedium
-                        ?.copyWith(color: scheme.onSurfaceVariant)),
-          ),
-          const SizedBox(width: Spacing.sm),
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: playerColor(name, scheme.brightness),
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(playerInitial(name),
-                style: text.labelLarge?.copyWith(color: Colors.white)),
-          ),
-          const SizedBox(width: Spacing.md),
-          Expanded(
-            child: Row(
-              children: [
-                Flexible(
-                  child: Text(name,
-                      style: text.titleMedium,
-                      overflow: TextOverflow.ellipsis),
-                ),
-                // Record — calls made, rounds won, rounds lost. Appears
-                // once the first round is scored.
-                if (calls + wins + losses > 0) ...[
-                  const SizedBox(width: Spacing.sm),
-                  Text.rich(
-                    TextSpan(children: [
-                      TextSpan(
-                          text: '${calls}C',
-                          style: TextStyle(color: scheme.onSurfaceVariant)),
-                      TextSpan(
-                          text: ' · ',
-                          style: TextStyle(color: scheme.onSurfaceVariant)),
-                      TextSpan(
-                          text: '${wins}W',
-                          style: TextStyle(
-                              color: successColor(scheme.brightness))),
-                      TextSpan(
-                          text: ' · ',
-                          style: TextStyle(color: scheme.onSurfaceVariant)),
-                      TextSpan(
-                          text: '${losses}L',
-                          style: TextStyle(
-                              color: dangerColor(scheme.brightness))),
-                    ]),
-                    style: text.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Text(
-            formatScore(score),
-            style: text.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: score == 0
-                  ? scheme.onSurfaceVariant
-                  : (score > 0
-                      ? successColor(scheme.brightness)
-                      : dangerColor(scheme.brightness)),
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-          if (onTap != null) ...[
-            const SizedBox(width: Spacing.xs),
-            Icon(PhosphorIconsRegular.caretRight,
-                size: 14, color: scheme.onSurfaceVariant),
-          ],
-        ],
-      ),
-    );
-    if (onTap == null) return row;
-    return Semantics(
-      button: true,
-      label: 'Rank $rank, $name, ${formatScore(score)}'
-          '${calls + wins + losses > 0 ? ', $calls calls, $wins rounds won, $losses lost' : ''}',
-      onTapHint: 'View round-by-round history',
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(Radii.md),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(Radii.md),
-          onTap: onTap,
-          child: row,
-        ),
-      ),
+  /// Maps a [LiveRound] onto the shared [RoundListTile] so the expanded list
+  /// renders identically to the host's round history.
+  Widget _liveRoundTile(BuildContext context, LiveSessionState state, int i) {
+    final r = state.rounds[i];
+    final teamLabel = RoundListTile.summarizeTeam(r.bidder, r.bidTeam);
+    final bidStr = formatBid(r.bid);
+    return RoundListTile(
+      index: i + 1,
+      title: '$teamLabel · target $bidStr · ${r.won ? 'Won' : 'Lost'}',
+      deltaLabel: '${r.won ? '+' : '−'}$bidStr / ${r.won ? '−' : '+'}$bidStr',
+      negative: !r.won,
+      onTap: () => _showLiveRoundDetail(context, state, r, i + 1),
     );
   }
 }

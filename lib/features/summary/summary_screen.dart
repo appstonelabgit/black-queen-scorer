@@ -23,7 +23,7 @@ import '../../shared/widgets/app_toast.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/error_state.dart';
-import '../scoreboard/widgets/player_row.dart';
+import '../../shared/widgets/leaderboard_row.dart';
 import 'widgets/podium.dart';
 import 'widgets/share_card.dart';
 import 'widgets/stats_card.dart';
@@ -241,7 +241,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                     Divider(
                         height: 1,
                         color: scheme.outlineVariant.withValues(alpha: 0.4)),
-                  PlayerRow(
+                  LeaderboardPlayerRow(
                     rank: i + 1,
                     name: stats.ranked[i].name,
                     score: stats.ranked[i].score,
