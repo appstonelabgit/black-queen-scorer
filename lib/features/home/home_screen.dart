@@ -217,9 +217,9 @@ class _GlassActionBar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _BarAction(
-                    icon: PhosphorIconsRegular.shareNetwork,
-                    label: 'Share',
-                    onTap: onShareApp,
+                    icon: PhosphorIconsRegular.gearSix,
+                    label: 'Settings',
+                    onTap: onSettings,
                   ),
                   _BarAction(
                     icon: PhosphorIconsRegular.broadcast,
@@ -227,9 +227,9 @@ class _GlassActionBar extends StatelessWidget {
                     onTap: onWatchLive,
                   ),
                   _BarAction(
-                    icon: PhosphorIconsRegular.gearSix,
-                    label: 'Settings',
-                    onTap: onSettings,
+                    icon: PhosphorIconsRegular.shareNetwork,
+                    label: 'Share',
+                    onTap: onShareApp,
                   ),
                 ],
               ),

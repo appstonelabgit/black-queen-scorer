@@ -42,9 +42,10 @@ class SummaryScreen extends ConsumerStatefulWidget {
 }
 
 class _SummaryScreenState extends ConsumerState<SummaryScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _screenshotController = ScreenshotController();
   late final AnimationController _confetti;
+  late final AnimationController _entrance;
   bool _finalised = false;
   bool _sharing = false;
 
@@ -53,11 +54,20 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
     super.initState();
     _confetti = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 2600),
+    );
+    _entrance = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final disable = MediaQuery.of(context).disableAnimations;
-      if (!disable && !widget.fromHistory) _confetti.forward();
+      if (disable) {
+        _entrance.value = 1;
+      } else {
+        _entrance.forward();
+        if (!widget.fromHistory) _confetti.forward();
+      }
       _finaliseSession();
     });
   }
@@ -94,7 +104,43 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
   @override
   void dispose() {
     _confetti.dispose();
+    _entrance.dispose();
     super.dispose();
+  }
+
+  int get _quipSeed => widget.sessionId.hashCode;
+
+  /// Elastic pop for the winner banner — the emotional headline gets a
+  /// springier entrance than the rest of the page.
+  Widget _popIn(Widget child) {
+    final scale = CurvedAnimation(
+      parent: _entrance,
+      curve: const Interval(0.15, 0.75, curve: Curves.elasticOut),
+    );
+    final fade = CurvedAnimation(
+      parent: _entrance,
+      curve: const Interval(0.15, 0.4, curve: Curves.easeOut),
+    );
+    return FadeTransition(
+      opacity: fade,
+      child: ScaleTransition(scale: scale, child: child),
+    );
+  }
+
+  /// Fade+slide a summary section in, staggered along the entrance timeline.
+  Widget _reveal(double start, double end, Widget child) {
+    final anim = CurvedAnimation(
+      parent: _entrance,
+      curve: Interval(start, end, curve: Curves.easeOutCubic),
+    );
+    return FadeTransition(
+      opacity: anim,
+      child: SlideTransition(
+        position: Tween(begin: const Offset(0, 0.10), end: Offset.zero)
+            .animate(anim),
+        child: child,
+      ),
+    );
   }
 
   Future<void> _share(Session session, SessionStats stats) async {
@@ -102,15 +148,22 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
     Haptics.medium();
     setState(() => _sharing = true);
     try {
+      // Fixed targetSize + a clean MediaQueryData: without them the card is
+      // laid out at the phone's logical width (and the user's text scale),
+      // which crushed the 1080px design into a wrapped, truncated mess.
       final Uint8List bytes = await _screenshotController.captureFromWidget(
         InheritedTheme.captureAll(
           context,
           MediaQuery(
-            data: MediaQuery.of(context),
+            data: const MediaQueryData(
+              size: Size(1080, 1350),
+              devicePixelRatio: 1,
+            ),
             child: ShareCard(session: session, stats: stats),
           ),
         ),
         pixelRatio: 1,
+        targetSize: const Size(1080, 1350),
         delay: const Duration(milliseconds: 10),
       );
       final dir = await getTemporaryDirectory();
@@ -203,56 +256,86 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
             child: ListView(
               padding: const EdgeInsets.all(Spacing.md),
               children: [
-                Column(
-                  children: [
-                    Text(
-                      widget.fromHistory
-                          ? 'Session Summary'
-                          : '🎉 Session Complete',
-                      style: text.displayMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: Spacing.xs),
-                    Text(
-                      '${plural(session.players.length, 'player')} · ${plural(stats.totalRounds, 'round')} · ${formatDuration(stats.totalDuration)}',
-                      style: text.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                _reveal(
+                  0.0,
+                  0.35,
+                  Column(
+                    children: [
+                      Text(
+                        widget.fromHistory
+                            ? 'Session Summary'
+                            : '🎉 Session Complete',
+                        style: text.displayMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: Spacing.xs),
+                      Text(
+                        '${plural(session.players.length, 'player')} · ${plural(stats.totalRounds, 'round')} · ${formatDuration(stats.totalDuration)}',
+                        style: text.bodyMedium?.copyWith(
+                            color: scheme.onSurfaceVariant),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
                 if (stats.ranked.isNotEmpty) ...[
                   const SizedBox(height: Spacing.lg),
-                  _WinnerBanner(
-                    name: stats.ranked.first.name,
-                    score: stats.ranked.first.score,
-                    tie: stats.ranked.length >= 2 &&
-                        stats.ranked[0].score == stats.ranked[1].score,
+                  _popIn(
+                    Builder(builder: (context) {
+                      final tie = stats.ranked.length >= 2 &&
+                          stats.ranked[0].score == stats.ranked[1].score;
+                      return _WinnerBanner(
+                        name: stats.ranked.first.name,
+                        score: stats.ranked.first.score,
+                        tie: tie,
+                        quip: _pick(
+                            tie ? _tieQuips : _winnerQuips, _quipSeed),
+                      );
+                    }),
                   ),
                 ],
                 const SizedBox(height: Spacing.lg),
                 if (stats.ranked.length >= 3)
-                  Podium(top: stats.ranked.take(3).toList()),
+                  _reveal(0.25, 0.65,
+                      Podium(top: stats.ranked.take(3).toList())),
                 const SizedBox(height: Spacing.lg),
-                Text('Final Rankings', style: text.titleMedium),
-                const SizedBox(height: Spacing.sm),
-                for (var i = 0; i < stats.ranked.length; i++) ...[
-                  if (i > 0)
-                    Divider(
-                        height: 1,
-                        color: scheme.outlineVariant.withValues(alpha: 0.4)),
-                  LeaderboardPlayerRow(
-                    rank: i + 1,
-                    name: stats.ranked[i].name,
-                    score: stats.ranked[i].score,
+                _reveal(
+                  0.4,
+                  0.8,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text('Final Rankings', style: text.titleMedium),
+                      const SizedBox(height: Spacing.sm),
+                      for (var i = 0; i < stats.ranked.length; i++) ...[
+                        if (i > 0)
+                          Divider(
+                              height: 1,
+                              color: scheme.outlineVariant
+                                  .withValues(alpha: 0.4)),
+                        LeaderboardPlayerRow(
+                          rank: i + 1,
+                          name: stats.ranked[i].name,
+                          score: stats.ranked[i].score,
+                        ),
+                      ],
+                    ],
                   ),
-                ],
+                ),
                 const SizedBox(height: Spacing.lg),
-                if (statCards.isNotEmpty) ...[
-                  Text('Fun Stats', style: text.titleMedium),
-                  const SizedBox(height: Spacing.sm),
-                  StatsGrid(cards: statCards),
-                ],
+                if (statCards.isNotEmpty)
+                  _reveal(
+                    0.55,
+                    1.0,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text('Fun Stats', style: text.titleMedium),
+                        const SizedBox(height: Spacing.sm),
+                        StatsGrid(cards: statCards),
+                      ],
+                    ),
+                  ),
                 const SizedBox(height: Spacing.lg),
                 AppButton(
                   label: _sharing ? 'Preparing…' : 'Share',
@@ -358,9 +441,48 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
             'avg ${stats.boldestBidder!.avg.toStringAsFixed(0)}',
       ));
     }
+    // A gentle roast for last place — only in games big enough that it's
+    // clearly a joke, and never when the "loser" actually tied the winner.
+    if (stats.ranked.length >= 3 &&
+        stats.ranked.last.score != stats.ranked.first.score) {
+      cards.add(StatsCard(
+        icon: PhosphorIconsFill.smileyMeh,
+        title: 'The wooden spoon',
+        value: stats.ranked.last.name,
+        avatarName: stats.ranked.last.name,
+        subtitle: _pick(_spoonQuips, _quipSeed),
+      ));
+    }
     return cards;
   }
 }
+
+/// One-liners for the summary. Picked deterministically per session so the
+/// joke doesn't reshuffle on rebuild or when reopening from History.
+const _winnerQuips = [
+  'Skill? Luck? We may never know.',
+  'Someone check their sleeves. 🃏',
+  'The cards feared them tonight.',
+  'Frame this. Print it. Hang it.',
+  'Retire now — go out on top.',
+  'Statistically suspicious. Officially impressive.',
+];
+
+const _tieQuips = [
+  'Nobody loses. Nobody wins. Rematch?',
+  'Two crowns, one throne. Awkward.',
+  'Settle it over the next deal.',
+];
+
+const _spoonQuips = [
+  'Carried the vibes, not the points.',
+  'Moral support MVP.',
+  'The comeback starts next game.',
+  'Shuffled beautifully, though.',
+  'Bravely kept everyone else off last place.',
+];
+
+String _pick(List<String> list, int seed) => list[seed.abs() % list.length];
 
 class _ConfettiPainter extends CustomPainter {
   final double t;
@@ -370,25 +492,35 @@ class _ConfettiPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (t == 0 || t >= 1) return;
     final rng = math.Random(42);
+    // Brand palette: indigos + golds with a couple of card-table accents.
     final colors = const [
-      Color(0xFFD4A017),
-      Color(0xFF0F5132),
-      Color(0xFFE8B931),
-      Color(0xFF198754),
-      Color(0xFFC62828),
+      Color(0xFFE7B84B),
+      Color(0xFF6257E8),
+      Color(0xFF4338CA),
+      Color(0xFFD9A31E),
+      Color(0xFFEF5350),
+      Color(0xFFFFFFFF),
     ];
-    for (var i = 0; i < 60; i++) {
-      final x = rng.nextDouble() * size.width;
+    for (var i = 0; i < 90; i++) {
+      final x0 = rng.nextDouble() * size.width;
       final fallSpeed = 0.6 + rng.nextDouble() * 0.8;
+      final sway = (rng.nextDouble() - 0.5) * 60;
+      final phase = rng.nextDouble() * math.pi * 2;
+      final x = x0 + math.sin(t * math.pi * 3 + phase) * sway * t;
       final y = (t * fallSpeed) * (size.height + 60) - 20;
-      final rotation = t * (rng.nextDouble() - 0.5) * 6;
+      final rotation = t * (rng.nextDouble() - 0.5) * 8;
       final color = colors[rng.nextInt(colors.length)]
           .withValues(alpha: (1 - t).clamp(0.0, 1.0));
+      final circle = rng.nextDouble() < 0.3;
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(rotation);
       final paint = Paint()..color = color;
-      canvas.drawRect(const Rect.fromLTWH(-4, -8, 8, 16), paint);
+      if (circle) {
+        canvas.drawCircle(Offset.zero, 4.5, paint);
+      } else {
+        canvas.drawRect(const Rect.fromLTWH(-4, -8, 8, 16), paint);
+      }
       canvas.restore();
     }
   }
@@ -404,8 +536,12 @@ class _WinnerBanner extends StatelessWidget {
   final String name;
   final int score;
   final bool tie;
+  final String quip;
   const _WinnerBanner(
-      {required this.name, required this.score, required this.tie});
+      {required this.name,
+      required this.score,
+      required this.tie,
+      required this.quip});
 
   @override
   Widget build(BuildContext context) {
@@ -457,6 +593,17 @@ class _WinnerBanner extends StatelessWidget {
                     color: scheme.onSurfaceVariant,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  quip,
+                  style: text.bodySmall?.copyWith(
+                    color: scheme.secondary,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

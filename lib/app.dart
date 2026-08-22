@@ -14,8 +14,7 @@ class ScoreWiseApp extends ConsumerStatefulWidget {
   const ScoreWiseApp({super.key});
 
   @override
-  ConsumerState<ScoreWiseApp> createState() =>
-      _ScoreWiseAppState();
+  ConsumerState<ScoreWiseApp> createState() => _ScoreWiseAppState();
 }
 
 class _ScoreWiseAppState extends ConsumerState<ScoreWiseApp> {
